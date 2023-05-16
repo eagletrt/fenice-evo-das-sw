@@ -1,4 +1,8 @@
 {
-    "cortex-debug.armToolchainPath": "/usr/bin",
-    "cortex-debug.openocdPath": "/usr/bin/openocd"
+    "cortex-debug.armToolchainPath": "/home/alex/Software/ARM-toolchain/bin",
+    "cortex-debug.openocdPath": "/usr/bin/openocd",
+    "files.associations": {
+        "main.h": "c",
+        "timer_utils.h": "c"
+    }
 }

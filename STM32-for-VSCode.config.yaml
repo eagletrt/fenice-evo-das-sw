@@ -74,6 +74,8 @@ includeDirectories:
   - Src/**
   - Core/Src/**
   - Core/Lib/micro-libs/logger/**
+  - Core/Lib/micro-libs/pwm/**
+  - Core/Lib/micro-libs/timer-utils/**
 
 
 # Files that should be included in the compilation.
@@ -85,6 +87,8 @@ sourceFiles:
   - Src/**
   - Core/Src/**
   - Core/Lib/micro-libs/logger/**
+  - Core/Lib/micro-libs/pwm/**
+  - Core/Lib/micro-libs/timer-utils/**
 
 
 # When no makefile is present it will show a warning pop-up.

@@ -57,6 +57,18 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define SD_CLOSE_Pin GPIO_PIN_1
+#define SD_CLOSE_GPIO_Port GPIOB
+#define BRAKE_LIGHT_CH1_Pin GPIO_PIN_6
+#define BRAKE_LIGHT_CH1_GPIO_Port GPIOC
+#define BRAKE_LIGHT_CH2_Pin GPIO_PIN_7
+#define BRAKE_LIGHT_CH2_GPIO_Port GPIOC
+#define BRAKE_LIGHT_CH3_Pin GPIO_PIN_8
+#define BRAKE_LIGHT_CH3_GPIO_Port GPIOC
+#define AUX_BUZZER_Pin GPIO_PIN_9
+#define AUX_BUZZER_GPIO_Port GPIOC
+#define RTD_BUZZER_Pin GPIO_PIN_8
+#define RTD_BUZZER_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

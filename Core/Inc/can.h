@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    tim.h
+  * @file    can.h
   * @brief   This file contains all the function prototypes for
-  *          the tim.c file
+  *          the can.c file
   ******************************************************************************
   * @attention
   *
@@ -18,8 +18,8 @@
   */
 /* USER CODE END Header */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __TIM_H__
-#define __TIM_H__
+#ifndef __CAN_H__
+#define __CAN_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,26 +32,32 @@ extern "C" {
 
 /* USER CODE END Includes */
 
-extern TIM_HandleTypeDef htim3;
+extern CAN_HandleTypeDef hcan1;
 
-extern TIM_HandleTypeDef htim8;
+extern CAN_HandleTypeDef hcan2;
 
 /* USER CODE BEGIN Private defines */
-
+/* Network aliases */
+#define CAN_PRIMARY_NETWORK   hcan1
+#define CAN_SECONDARY_NETWORK hcan2
 /* USER CODE END Private defines */
 
-void MX_TIM3_Init(void);
-void MX_TIM8_Init(void);
-
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+void MX_CAN1_Init(void);
+void MX_CAN2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+typedef uint16_t CAN_IdTypeDef;
 
+typedef struct {
+    CAN_IdTypeDef id;
+    uint8_t size;
+    uint8_t data[8];
+} CAN_MessageTypeDef;
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __TIM_H__ */
+#endif /* __CAN_H__ */
 

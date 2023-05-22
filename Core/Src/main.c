@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "can.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -25,11 +26,13 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "string.h"
-
+#include "stdio.h"
 #include "usart.h"
-
+#include "brakelight.h"
 #include "logger.h"
 #include "pwm.h"
+#include "buzzer.h"
+#include "timer_utils.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -39,7 +42,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define MAIN_DBG_BUF_LEN 256
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -106,6 +109,9 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_TIM8_Init();
+  MX_TIM3_Init();
+  MX_CAN1_Init();
+  MX_CAN2_Init();
   /* USER CODE BEGIN 2 */
 
   /* Initialize logger */
@@ -119,10 +125,6 @@ int main(void)
   if (__HAL_RCC_GET_PLL_OSCSOURCE() != RCC_PLLSOURCE_HSE)
       LOG_write(LOGLEVEL_ERR, "The system clock is not using the external crystal, PORCODIO");
 
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
   
   /* Signal Startup */
   pwm_start_channel(&htim8, TIM_CHANNEL_4);
@@ -130,10 +132,29 @@ int main(void)
   HAL_Delay(500);
   pwm_stop_channel(&htim8, TIM_CHANNEL_4);
 
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+
+  /* Initialize Brakelight */
+  BKL_Init();
+
+
+  /* Shutdown circuit should already be open by default, but ensure it is */
+  HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
+
+  /* Signal successful startup */
+  for (int i = 0; i++ < 2; HAL_Delay(50)) BUZ_beep_ms_sync(20);
+
+  /* Close the shutdown circuit */
+  HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
+
+  void _MAIN_print_dbg_line(char *title, char *txt);
+
+  LOG_write(LOGLEVEL_DEBUG, "Hello World!");
   while (1)
   {
-    LOG_write(LOGLEVEL_DEBUG, "Hello World!");
-    HAL_Delay(500);
 
     /* USER CODE END WHILE */
 

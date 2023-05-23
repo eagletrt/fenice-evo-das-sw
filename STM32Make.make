@@ -42,6 +42,8 @@ Core/Lib/micro-libs/timer-utils/timer_utils.c \
 Core/Src/brakelight.c \
 Core/Src/buzzer.c \
 Core/Src/can.c \
+Core/Src/can_messages.c \
+Core/Src/can_user_functions.c \
 Core/Src/encoders.c \
 Core/Src/gpio.c \
 Core/Src/main.c \

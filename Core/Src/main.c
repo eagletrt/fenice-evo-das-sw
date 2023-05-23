@@ -35,6 +35,7 @@
 #include "timer_utils.h"
 #include "time_base.h"
 #include "encoders.h"
+#include "can_messages.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -55,7 +56,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint32_t _MAIN_last_loop_start_ms = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -110,15 +111,14 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_TIM8_Init();
+  MX_TIM3_Init();
   MX_CAN1_Init();
   MX_CAN2_Init();
-  
-  MX_TIM2_Init();
-  MX_TIM3_Init();
-  MX_TIM5_Init();
-  MX_TIM8_Init();
-  MX_TIM10_Init();
   MX_TIM13_Init();
+  MX_TIM2_Init();
+  MX_TIM5_Init();
+  MX_TIM10_Init();
   /* USER CODE BEGIN 2 */
 
   /* Initialize logger */
@@ -141,14 +141,14 @@ int main(void)
 
   /* Start encoders' timers */
   if (HAL_TIM_Encoder_Start(&ENC_L_TIM, TIM_CHANNEL_ALL) != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2");
-  if (HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_1)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2/CH1");
-  if (HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_2)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2/CH2");
+  // if (HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_1)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2/CH1");
+  // if (HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_2)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2/CH2");
   
   if (HAL_TIM_Encoder_Start(&ENC_R_TIM, TIM_CHANNEL_ALL) != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5");
-  if (HAL_TIM_OC_Start(&htim5, TIM_CHANNEL_1)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5/CH1");
-  if (HAL_TIM_OC_Start(&htim5, TIM_CHANNEL_2)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5/CH2");
+  // if (HAL_TIM_OC_Start(&htim5, TIM_CHANNEL_1)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5/CH1");
+  // if (HAL_TIM_OC_Start(&htim5, TIM_CHANNEL_2)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5/CH2");
 
-
+  uint32_t last_enc_calc = 0;
 
   /* USER CODE END 2 */
 
@@ -176,10 +176,30 @@ int main(void)
   LOG_write(LOGLEVEL_DEBUG, "Hello World!");
   while (1)
   {
-    
+    _MAIN_last_loop_start_ms = HAL_GetTick();
+
+    // float speed_l = ENC_L_get_radsec();
+    // float speed_r = ENC_L_get_radsec();
+    // LOG_write(LOGLEVEL_INFO, "Ground speeds:");
+    // LOG_write(LOGLEVEL_INFO, "\tLeft: %d m/s", (uint32_t)speed_l);
+    // LOG_write(LOGLEVEL_INFO, "\tRight: %d m/s", (uint32_t)speed_r);
+
+    // HAL_Delay(100);
+
+    /* Flush CAN TX queue */
+    CANMSG_flush_TX();
+
+    if(HAL_GetTick() - primary_INTERVAL_SPEED >= last_enc_calc) {
+      last_enc_calc = HAL_GetTick();
+      ENC_send_vals_in_CAN();
+    }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+    /* Record loop duration */
+    uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
   }
   /* USER CODE END 3 */
 }

@@ -42,12 +42,14 @@ Core/Lib/micro-libs/timer-utils/timer_utils.c \
 Core/Src/brakelight.c \
 Core/Src/buzzer.c \
 Core/Src/can.c \
+Core/Src/encoders.c \
 Core/Src/gpio.c \
 Core/Src/main.c \
 Core/Src/stm32f4xx_hal_msp.c \
 Core/Src/stm32f4xx_it.c \
 Core/Src/system_stm32f4xx.c \
 Core/Src/tim.c \
+Core/Src/time_base.c \
 Core/Src/usart.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.c \

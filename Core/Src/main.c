@@ -33,6 +33,8 @@
 #include "pwm.h"
 #include "buzzer.h"
 #include "timer_utils.h"
+#include "time_base.h"
+#include "encoders.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -108,10 +110,15 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_TIM8_Init();
-  MX_TIM3_Init();
   MX_CAN1_Init();
   MX_CAN2_Init();
+  
+  MX_TIM2_Init();
+  MX_TIM3_Init();
+  MX_TIM5_Init();
+  MX_TIM8_Init();
+  MX_TIM10_Init();
+  MX_TIM13_Init();
   /* USER CODE BEGIN 2 */
 
   /* Initialize logger */
@@ -132,6 +139,17 @@ int main(void)
   HAL_Delay(500);
   pwm_stop_channel(&htim8, TIM_CHANNEL_4);
 
+  /* Start encoders' timers */
+  if (HAL_TIM_Encoder_Start(&ENC_L_TIM, TIM_CHANNEL_ALL) != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2");
+  if (HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_1)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2/CH1");
+  if (HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_2)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2/CH2");
+  
+  if (HAL_TIM_Encoder_Start(&ENC_R_TIM, TIM_CHANNEL_ALL) != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5");
+  if (HAL_TIM_OC_Start(&htim5, TIM_CHANNEL_1)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5/CH1");
+  if (HAL_TIM_OC_Start(&htim5, TIM_CHANNEL_2)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5/CH2");
+
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -140,6 +158,9 @@ int main(void)
   /* Initialize Brakelight */
   BKL_Init();
 
+  /* Initilize time_base */
+  HAL_TIM_OC_Start_IT(&htim13, TIM_CHANNEL_1);
+  time_base_init(&htim13);
 
   /* Shutdown circuit should already be open by default, but ensure it is */
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
@@ -155,7 +176,7 @@ int main(void)
   LOG_write(LOGLEVEL_DEBUG, "Hello World!");
   while (1)
   {
-
+    
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -217,7 +238,28 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
+  static uint64_t last_speed_sample = 0, last_angle_sample = 0;
+  // if (htim == &htim1) {
+  //   _MAIN_update_watchdog = true;
+  //   BUZ_timer_callback();
+  // } else 
+  if(htim == &htim10){
+      if ((true) && (get_time() - last_speed_sample > ENC_SPEED_PERIOD_MS)){
+        ENC_R_push_speed_rads();
+        ENC_L_push_speed_rads();
+        last_speed_sample = get_time();
+      }
+      
+      // NOTE: commentato finché non viene attivato SPI per il volante
+      // if ((true) && (get_time() - last_angle_sample > ENC_STEER_PERIOD_MS)){
+      //   ENC_C_push_angle_deg();
+      //   last_angle_sample = get_time();
+      // }
+  } else if (htim == &htim13) {
+      time_base_elapsed();
+  } 
+}
 /* USER CODE END 4 */
 
 /**

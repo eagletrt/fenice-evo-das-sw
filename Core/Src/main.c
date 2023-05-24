@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "can.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -119,6 +120,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM5_Init();
   MX_TIM10_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
   /* Initialize logger */
@@ -160,6 +162,7 @@ int main(void)
 
   /* Initilize time_base */
   HAL_TIM_OC_Start_IT(&htim13, TIM_CHANNEL_1);
+  HAL_TIM_OC_Start_IT(&htim10, TIM_CHANNEL_1);
   time_base_init(&htim13);
 
   /* Shutdown circuit should already be open by default, but ensure it is */
@@ -178,13 +181,13 @@ int main(void)
   {
     _MAIN_last_loop_start_ms = HAL_GetTick();
 
-    // float speed_l = ENC_L_get_radsec();
-    // float speed_r = ENC_L_get_radsec();
-    // LOG_write(LOGLEVEL_INFO, "Ground speeds:");
-    // LOG_write(LOGLEVEL_INFO, "\tLeft: %d m/s", (uint32_t)speed_l);
-    // LOG_write(LOGLEVEL_INFO, "\tRight: %d m/s", (uint32_t)speed_r);
+    float speed_l = ENC_L_get_radsec();
+    float speed_r = ENC_R_get_radsec();
+    LOG_write(LOGLEVEL_INFO, "Ground speeds:");
+    LOG_write(LOGLEVEL_INFO, "\tLeft: %d m/s", (uint32_t)speed_l);
+    LOG_write(LOGLEVEL_INFO, "\tRight: %d m/s", (uint32_t)speed_r);
 
-    // HAL_Delay(100);
+    HAL_Delay(100);
 
     /* Flush CAN TX queue */
     CANMSG_flush_TX();

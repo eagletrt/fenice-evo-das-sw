@@ -57,6 +57,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define CS_EEPROM_Pin GPIO_PIN_4
+#define CS_EEPROM_GPIO_Port GPIOC
 #define SD_CLOSE_Pin GPIO_PIN_1
 #define SD_CLOSE_GPIO_Port GPIOB
 #define BRAKE_LIGHT_CH1_Pin GPIO_PIN_6

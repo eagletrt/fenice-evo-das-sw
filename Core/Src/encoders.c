@@ -3,14 +3,13 @@
 #include "logger.h"
 #include "tim.h"
 #include "limits.h"
-#include "math.h"
 #include "time_base.h"
 // #include "spi.h"
 #include <float.h>
 
 #include <math.h>
 
-float _ENC_L_rollavg[ENC_ROLLAVG_SIZE],
+volatile float _ENC_L_rollavg[ENC_ROLLAVG_SIZE],
       _ENC_R_rollavg[ENC_ROLLAVG_SIZE],
       _ENC_C_median_window[ENC_ROLLAVG_SIZE] = {};
 uint8_t _ENC_L_rollavg_idx = 0, _ENC_R_rollavg_idx = 0, _ENC_C_median_window_idx = 0; 
@@ -33,10 +32,14 @@ float _ENC_speed_multiplier = 5.238726792f;  /*< Multiplier to convert encoder s
                = 5.238726792
 */
 
+/* 
+    120 numero di poli nella circonferenza
+*/
+
 
 float _ENC_ms_to_radsec(float);
 
-
+#define __BSD_VISIBLE 1 // NOTE: definito per far funzionare M_PI
 /**
  * @brief     Calculate the ground speed in meters/second
  * 
@@ -47,7 +50,7 @@ float _ENC_ms_to_radsec(float);
 //  (tim_counter / (120.0 * 400)) * 2*M_PI / (ellapsed_ms/1000.0)
 float _ENC_calculate_wheel_speed(uint32_t tim_counter, uint32_t elapsed_us) {
     return (tim_counter / (120.0 * 400)) * 2*3.14 * 1000000.0 / elapsed_us;
-} // NOTE: cambiare il pi greco
+}
 
 /**
  * @brief     Calulate the difference between the current value of the timer counter

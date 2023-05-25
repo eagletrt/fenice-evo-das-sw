@@ -21,6 +21,8 @@
 #include "can.h"
 
 /* USER CODE BEGIN 0 */
+#include "can_user_functions.h"
+void _CAN_wait(CAN_HandleTypeDef*);
 
 /* USER CODE END 0 */
 
@@ -55,7 +57,7 @@ void MX_CAN1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN CAN1_Init 2 */
-
+  CAN_user_init(&hcan1);
   /* USER CODE END CAN1_Init 2 */
 
 }
@@ -87,7 +89,7 @@ void MX_CAN2_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN CAN2_Init 2 */
-
+  CAN_user_init(&hcan1);
   /* USER CODE END CAN2_Init 2 */
 
 }

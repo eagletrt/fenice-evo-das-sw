@@ -228,6 +228,8 @@ void _CAN_process_incoming_rx(CAN_HandleTypeDef * hcan, uint32_t rx_fifo) {
 	HAL_CAN_GetRxMessage(hcan, rx_fifo, &header, msg.data);
 	msg.id = header.StdId;
 	msg.size = header.DLC;
+    
+    LOG_write(LOGLEVEL_DEBUG, "Hello World!");
 
     #if CAN_DEBUG
         char txt[70] = "[CAN] RX: ";

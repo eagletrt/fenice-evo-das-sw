@@ -456,7 +456,7 @@ void _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
             msg->size = secondary_serialize_STEERING_ANGLE(msg->data, CANMSG_SteerVal.data.angle);
             break;
         default:
-            LOG_write(LOGLEVEL_ERR, "[CANMSG/Serialize] Unknown message id: 0x%X", msg->id);
+            LOG_write(LOGLEVEL_ERR, "[CANMSG/Serialize] Unknown message id: 0x%X", msg->id); 
             break;
     }
 }

@@ -121,6 +121,7 @@ int main(void)
   MX_TIM5_Init();
   MX_TIM10_Init();
   MX_SPI1_Init();
+  MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
 
   /* Initialize logger */
@@ -179,15 +180,6 @@ int main(void)
   LOG_write(LOGLEVEL_DEBUG, "Hello World!");
   while (1)
   {
-    _MAIN_last_loop_start_ms = HAL_GetTick();
-
-    float speed_l = ENC_L_get_radsec();
-    float speed_r = ENC_R_get_radsec();
-    LOG_write(LOGLEVEL_INFO, "Ground speeds:");
-    LOG_write(LOGLEVEL_INFO, "\tLeft: %d m/s", (uint32_t)speed_l);
-    LOG_write(LOGLEVEL_INFO, "\tRight: %d m/s", (uint32_t)speed_r);
-
-    HAL_Delay(100);
 
     /* Flush CAN TX queue */
     CANMSG_flush_TX();
@@ -196,12 +188,15 @@ int main(void)
       last_enc_calc = HAL_GetTick();
       ENC_send_vals_in_CAN();
     }
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 
     /* Record loop duration */
+    HAL_Delay(1000);
+    float steer_ang = ENC_C_get_angle_deg();
+    LOG_write(LOGLEVEL_INFO, "Steering angle: %d", (uint16_t)steer_ang);
+    HAL_Delay(1000);
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
   }
   /* USER CODE END 3 */
@@ -274,11 +269,10 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
         last_speed_sample = get_time();
       }
       
-      // NOTE: commentato finché non viene attivato SPI per il volante
-      // if ((true) && (get_time() - last_angle_sample > ENC_STEER_PERIOD_MS)){
-      //   ENC_C_push_angle_deg();
-      //   last_angle_sample = get_time();
-      // }
+      if ((true) && (get_time() - last_angle_sample > ENC_STEER_PERIOD_MS)){
+        ENC_C_push_angle_deg();
+        last_angle_sample = get_time();
+      }
   } else if (htim == &htim13) {
       time_base_elapsed();
   } 

@@ -4,12 +4,12 @@
 #include "tim.h"
 #include "limits.h"
 #include "time_base.h"
-// #include "spi.h"
+#include "spi.h"
 #include <float.h>
 
 #include <math.h>
 
-volatile float _ENC_L_rollavg[ENC_ROLLAVG_SIZE],
+float _ENC_L_rollavg[ENC_ROLLAVG_SIZE],
       _ENC_R_rollavg[ENC_ROLLAVG_SIZE],
       _ENC_C_median_window[ENC_ROLLAVG_SIZE] = {};
 uint8_t _ENC_L_rollavg_idx = 0, _ENC_R_rollavg_idx = 0, _ENC_C_median_window_idx = 0; 
@@ -119,55 +119,55 @@ void ENC_R_push_speed_rads() {
 /**
  * @brief     Calculate the ground speed from steering wheel encoder
  */
-// void ENC_C_push_angle_deg(){
-//     float calib_center_ang = 193.8f;
-//     uint16_t buf = 0;
+void ENC_C_push_angle_deg(){
+    float calib_center_ang = 193.8f;
+    uint16_t buf = 0;
     
-//     /* Clock rate must be <= 4 MHz (from datasheet) */
-//     /* Also, the interval between two consecutive conversions must be > 20 μs */
-//     HAL_SPI_Receive(&hspi3, (uint8_t*)&buf, 2, 100);
+    /* Clock rate must be <= 4 MHz (from datasheet) */
+    /* Also, the interval between two consecutive conversions must be > 20 μs */
+    HAL_SPI_Receive(&hspi2, (uint8_t*)&buf, 2, 100);
 
-//     /* Now `buf` contains [LSB|MSB] (MSB arrived first and is written first - little endian) */
-//     uint8_t msb = (uint8_t)(buf >> 8);
-//     uint8_t lsb = (uint8_t)(buf & 0x00FF);
+    /* Now `buf` contains [LSB|MSB] (MSB arrived first and is written first - little endian) */
+    uint8_t msb = (uint8_t)(buf >> 8);
+    uint8_t lsb = (uint8_t)(buf & 0x00FF);
 
-//     /* We need `buf` to be [MSB|LSB], but the transmission is 12 bits long so we discard the last 4 */
-//     buf = ((uint16_t)(lsb) << 8) | (msb);
-//     buf = (buf >> 3) & 0x0FFF;
+    /* We need `buf` to be [MSB|LSB], but the transmission is 12 bits long so we discard the last 4 */
+    buf = ((uint16_t)(lsb) << 8) | (msb);
+    buf = (buf >> 3) & 0x0FFF;
 
-//     float angle = 360.0f / 4096.f * buf;
+    float angle = 360.0f / 4096.f * buf;
 
-//     /* Update array of values*/
-//     for (int i = ENC_ROLLAVG_SIZE-1; i > 0; i--){
-//         _ENC_C_median_window[i] = _ENC_C_median_window[i-1];
-//     }
-//     _ENC_C_median_window[0] = -(angle - calib_center_ang);
+    /* Update array of values*/
+    for (int i = ENC_ROLLAVG_SIZE-1; i > 0; i--){
+        _ENC_C_median_window[i] = _ENC_C_median_window[i-1];
+    }
+    _ENC_C_median_window[0] = -(angle - calib_center_ang);
 
-// }
+}
 
 /**
  * @brief     Read the absolute steering wheel angle
  */
-// float ENC_C_get_angle_deg() {
+float ENC_C_get_angle_deg() {
      
-//     float min = FLT_MAX, max = FLT_MIN, median = 0;
-//     for (int i = 0; i < ENC_ROLLAVG_SIZE; i++){
-//         if (_ENC_C_median_window[i] < min){
-//             min = _ENC_C_median_window[i];
-//         }
-//         if (_ENC_C_median_window[i] > max){
-//             max = _ENC_C_median_window[i];
-//         }
-//         median += _ENC_C_median_window[i];
-//     }
-//     median = median - max - min;
-//     median /= (ENC_ROLLAVG_SIZE-2);
+    float min = FLT_MAX, max = FLT_MIN, median = 0;
+    for (int i = 0; i < ENC_ROLLAVG_SIZE; i++){
+        if (_ENC_C_median_window[i] < min){
+            min = _ENC_C_median_window[i];
+        }
+        if (_ENC_C_median_window[i] > max){
+            max = _ENC_C_median_window[i];
+        }
+        median += _ENC_C_median_window[i];
+    }
+    median = median - max - min;
+    median /= (ENC_ROLLAVG_SIZE-2);
 
-//     return median;
-// }
+    return median;
+}
 
 void ENC_send_vals_in_CAN() {
-    // CANMSG_SteerVal.data.angle = ENC_C_get_angle_deg();
+    CANMSG_SteerVal.data.angle = ENC_C_get_angle_deg();
     CANMSG_SteerVal.data.angle = 0.0;
     CANMSG_SteerVal.info.is_new = true;
 

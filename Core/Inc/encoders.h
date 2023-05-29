@@ -16,7 +16,7 @@
 
 #define ENC_L_TIM htim2 /*< Left encoder timer */
 #define ENC_R_TIM htim5 /*< Right encoder timer */
-// #define ENC_C_SPI hspi3 /*< Center encoder SPI */
+#define ENC_C_SPI hspi2 /*< Center encoder SPI */
 
 #define ENC_ROLLAVG_SIZE 5
 
@@ -41,12 +41,12 @@ float ENC_R_get_radsec();
 /**
  * @brief     Calculate the ground speed from steering wheel encoder
  */
-// void ENC_C_push_angle_deg();
+void ENC_C_push_angle_deg();
 
 /**
  * @brief     Get the steering encoder's absolute position in degrees   
  */
-// float ENC_C_get_angle_deg();
+float ENC_C_get_angle_deg();
 
 
 /**

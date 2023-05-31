@@ -35,7 +35,7 @@ void _CANMSG_deserialize_msg_by_id(CAN_MessageTypeDef);
 size_t _CANMSG_parse_INV_L_message(CAN_MessageTypeDef*);
 size_t _CANMSG_parse_INV_R_message(CAN_MessageTypeDef*);
 bool _CANMSG_needs_to_be_sent(CAN_IdTypeDef, CAN_HandleTypeDef*);
-void _CANMSG_serialize_msg_by_id(CAN_IdTypeDef, CAN_MessageTypeDef*);
+bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef, CAN_MessageTypeDef*);
 
 
 /* Private variables -------------------------------------------------------- */
@@ -370,8 +370,12 @@ void CANMSG_flush_TX() {
         /* Send if interval is elapsed or interval is "once" and msg is new */
         if (info != NULL && _CANMSG_needs_to_be_sent(id, nwk)) {
             CAN_MessageTypeDef msg;
-            _CANMSG_serialize_msg_by_id(id, &msg);
-            CAN_send(&msg, nwk);
+            
+            if (_CANMSG_serialize_msg_by_id(id, &msg))
+                CAN_send(&msg, nwk);
+            else
+                LOG_write(LOGLEVEL_WARN, "[CANMSG/flushTX] Failed to serialize message 0x%X", id);
+
             info->timestamp = HAL_GetTick();
             info->is_new = false;
         }
@@ -392,7 +396,7 @@ bool _CANMSG_needs_to_be_sent(CAN_IdTypeDef id, CAN_HandleTypeDef* nwk) {
            (elapsed >= interval && interval != primary_INTERVAL_ONCE);
 }
 
-void _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
+bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
     msg->id = id;
     
     switch (id) {
@@ -457,6 +461,9 @@ void _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
             break;
         default:
             LOG_write(LOGLEVEL_ERR, "[CANMSG/Serialize] Unknown message id: 0x%X", msg->id); 
+            return false;
             break;
     }
+
+    return true;
 }

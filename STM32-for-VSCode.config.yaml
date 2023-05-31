@@ -76,6 +76,8 @@ includeDirectories:
   - Core/Lib/micro-libs/logger/**
   - Core/Lib/micro-libs/pwm/**
   - Core/Lib/micro-libs/timer-utils/**
+  - Core/Lib/micro-libs/m95256/**
+  - Core/Lib/micro-libs/eeprom-config/**
 
 
 # Files that should be included in the compilation.
@@ -89,6 +91,8 @@ sourceFiles:
   - Core/Lib/micro-libs/logger/**
   - Core/Lib/micro-libs/pwm/**
   - Core/Lib/micro-libs/timer-utils/**
+  - Core/Lib/micro-libs/m95256/**
+  - Core/Lib/micro-libs/eeprom-config/**
 
 
 # When no makefile is present it will show a warning pop-up.

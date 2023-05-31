@@ -27,11 +27,11 @@
 #define ENC_STEER_FREQ_HZ  200 /* 200Hz */
 #define ENC_STEER_PERIOD_MS  1000/ENC_STEER_FREQ_HZ /* 5ms */
 
+
 /**
  * @brief     Compute the speed of the front-left wheel in radians/second
  */
 float ENC_L_get_radsec();
-
 
 /**
  * @brief     Compute the speed of the front-right wheel in radians/second

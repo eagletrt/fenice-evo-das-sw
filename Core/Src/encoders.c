@@ -130,6 +130,7 @@ void ENC_C_push_angle_deg(){
     /* Now `buf` contains [LSB|MSB] (MSB arrived first and is written first - little endian) */
     uint8_t msb = (uint8_t)(buf >> 8);
     uint8_t lsb = (uint8_t)(buf & 0x00FF);
+    // LOG_write(LOGLEVEL_DEBUG, "msb: 0x%x, lsb: 0x%x", msb, lsb);
 
     /* We need `buf` to be [MSB|LSB], but the transmission is 12 bits long so we discard the last 4 */
     buf = ((uint16_t)(lsb) << 8) | (msb);
@@ -141,7 +142,7 @@ void ENC_C_push_angle_deg(){
     for (int i = ENC_ROLLAVG_SIZE-1; i > 0; i--){
         _ENC_C_median_window[i] = _ENC_C_median_window[i-1];
     }
-    _ENC_C_median_window[0] = -(angle - calib_center_ang);
+    _ENC_C_median_window[0] = angle; // -(angle - calib_center_ang);
 
 }
 

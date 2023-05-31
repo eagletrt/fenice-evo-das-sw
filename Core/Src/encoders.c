@@ -120,7 +120,7 @@ void ENC_R_push_speed_rads() {
  * @brief     Calculate the ground speed from steering wheel encoder
  */
 void ENC_C_push_angle_deg(){
-    float calib_center_ang = 193.8f;
+    float calib_center_ang = 0; // 193.8f;
     uint16_t buf = 0;
     
     /* Clock rate must be <= 4 MHz (from datasheet) */
@@ -139,10 +139,10 @@ void ENC_C_push_angle_deg(){
     float angle = 360.0f / 4096.f * buf;
 
     /* Update array of values*/
-    for (int i = ENC_ROLLAVG_SIZE-1; i > 0; i--){
+    for (int i = ENC_ROLLAVG_SIZE-1; i > 0; i--)
         _ENC_C_median_window[i] = _ENC_C_median_window[i-1];
-    }
-    _ENC_C_median_window[0] = angle; // -(angle - calib_center_ang);
+    
+    _ENC_C_median_window[0] = -(angle - calib_center_ang);
 
 }
 

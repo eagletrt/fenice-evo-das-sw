@@ -30,6 +30,7 @@
 #include "stdio.h"
 #include "usart.h"
 #include "brakelight.h"
+#include "fsm.h"
 #include "logger.h"
 #include "pwm.h"
 #include "buzzer.h"
@@ -58,12 +59,13 @@
 
 /* USER CODE BEGIN PV */
 uint32_t _MAIN_last_loop_start_ms = 0;
+VFSM_state_t vfsm_current_state = VFSM_STATE_INIT;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void _MAIN_print_dbg_line(char *title, char *txt);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -72,7 +74,7 @@ void SystemClock_Config(void);
 /* Redefine the weak function in logger.c to use the UART as textual output */
 void _LOG_write_raw(char *txt) {
     HAL_UART_Transmit(&huart2, (uint8_t*)txt, strlen(txt), 1000);
-    HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 3, 100);
+    HAL_UART_Transmit(&huart2, (uint8_t*)"\033[K\r\n", 5, 100);
 }
 
 /* Call pwm-lib's callback upon TIM pulse-finished */
@@ -136,20 +138,17 @@ int main(void)
       LOG_write(LOGLEVEL_ERR, "The system clock is not using the external crystal, PORCODIO");
 
   
+  LOG_write(LOGLEVEL_INFO, "\e[1;1H\e[2J");
+  LOG_print_fenice_logo("            -    D A S   f i r m w a r e   v 2 . 0   -            ");
+
   /* Signal Startup */
   pwm_start_channel(&htim8, TIM_CHANNEL_4);
-  LOG_print_fenice_logo("            -    D A S   f i r m w a r e   v 2 . 0   -            ");
   HAL_Delay(500);
   pwm_stop_channel(&htim8, TIM_CHANNEL_4);
 
   /* Start encoders' timers */
   if (HAL_TIM_Encoder_Start(&ENC_L_TIM, TIM_CHANNEL_ALL) != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2");
-  // if (HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_1)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2/CH1");
-  // if (HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_2)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2/CH2");
-  
   if (HAL_TIM_Encoder_Start(&ENC_R_TIM, TIM_CHANNEL_ALL) != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5");
-  // if (HAL_TIM_OC_Start(&htim5, TIM_CHANNEL_1)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5/CH1");
-  // if (HAL_TIM_OC_Start(&htim5, TIM_CHANNEL_2)        != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5/CH2");
 
   uint32_t last_enc_calc = 0;
 
@@ -169,17 +168,14 @@ int main(void)
   /* Shutdown circuit should already be open by default, but ensure it is */
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
 
-  /* Signal successful startup */
-  for (int i = 0; i++ < 2; HAL_Delay(50)) BUZ_beep_ms_sync(20);
-
   /* Close the shutdown circuit */
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
-
-  void _MAIN_print_dbg_line(char *title, char *txt);
 
   LOG_write(LOGLEVEL_DEBUG, "Hello World!");
   while (1)
   {
+    /* Step forward the FSM */
+    vfsm_current_state = VFSM_run_state(vfsm_current_state, NULL);
 
     /* Flush CAN TX queue */
     CANMSG_flush_TX();
@@ -193,9 +189,6 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
     /* Record loop duration */
-    HAL_Delay(1000);
-    float steer_ang = ENC_C_get_angle_deg();
-    LOG_write(LOGLEVEL_INFO, "Steering angle: %d", (uint16_t)steer_ang);
     HAL_Delay(1000);
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
   }

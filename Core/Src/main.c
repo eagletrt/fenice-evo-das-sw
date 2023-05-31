@@ -167,11 +167,10 @@ int main(void)
 
   /* Shutdown circuit should already be open by default, but ensure it is */
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
-
+  
   /* Close the shutdown circuit */
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
 
-  LOG_write(LOGLEVEL_DEBUG, "Hello World!");
   while (1)
   {
     /* Step forward the FSM */

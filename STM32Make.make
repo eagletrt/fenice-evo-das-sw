@@ -49,6 +49,7 @@ Core/Src/can_messages.c \
 Core/Src/can_user_functions.c \
 Core/Src/dma.c \
 Core/Src/encoders.c \
+Core/Src/fsm.c \
 Core/Src/gpio.c \
 Core/Src/main.c \
 Core/Src/pedals.c \
@@ -177,7 +178,7 @@ CXXFLAGS += -g -gdwarf -ggdb
 endif
 
 # Add additional flags
-CFLAGS += -Wall -fdata-sections -ffunction-sections 
+CFLAGS += -DFSM_DEBUG -Wall -fdata-sections -ffunction-sections 
 ASFLAGS += -Wall -fdata-sections -ffunction-sections 
 CXXFLAGS += 
 

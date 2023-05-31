@@ -344,7 +344,7 @@ CANMSG_MetadataTypeDef* CANMSG_get_metadata_from_id(CAN_IdTypeDef id) {
 void CANMSG_flush_TX() {
     /* Static set of IDs that need to be sent */
     static CAN_IdTypeDef ids_to_send[] = {
-        primary_ID_DAS_VERSION,
+        // primary_ID_DAS_VERSION,
         primary_ID_DAS_ERRORS,
         primary_ID_CAR_STATUS,
         primary_ID_SET_TS_STATUS_DAS,

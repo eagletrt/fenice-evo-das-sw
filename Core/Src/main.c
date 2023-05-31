@@ -18,7 +18,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
 #include "can.h"
+#include "dma.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -51,13 +53,13 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
 uint32_t _MAIN_last_loop_start_ms = 0;
+uint8_t flag_ADC = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -111,6 +113,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_TIM8_Init();
   MX_TIM3_Init();
@@ -122,6 +125,7 @@ int main(void)
   MX_TIM10_Init();
   MX_SPI1_Init();
   MX_SPI2_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
   /* Initialize logger */
@@ -153,6 +157,14 @@ int main(void)
 
   uint32_t last_enc_calc = 0;
 
+
+  uint32_t ADC_DMA_buffer[1] = {0U}; 
+  
+
+  /* Begin DMA stream with the ADC */
+  if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)ADC_DMA_buffer, (uint32_t)1) != HAL_OK)
+    LOG_write(LOGLEVEL_ERR, "ADC DMA start failed");
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -183,6 +195,10 @@ int main(void)
 
     /* Flush CAN TX queue */
     CANMSG_flush_TX();
+    HAL_GPIO_WritePin(MUX_0_GPIO_Port, MUX_0_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(MUX_1_GPIO_Port, MUX_1_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(MUX_2_GPIO_Port, MUX_2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(MUX_3_GPIO_Port, MUX_3_Pin, GPIO_PIN_RESET);
 
     if(HAL_GetTick() - primary_INTERVAL_SPEED >= last_enc_calc) {
       last_enc_calc = HAL_GetTick();
@@ -192,11 +208,22 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
+    /* 
+     * 0000 -> PITOT
+     * 1000 -> APPS_2
+     * 0100 -> APPS_1
+     * 1100 -> BPPS_2
+     * 0010 -> BPPS_1
+     * 0001 -> BRAKE_F
+     * 1001 -> BRAKE_R 
+     */
+    if (flag_ADC == 1){
+      flag_ADC = 0;
+      LOG_write(LOGLEVEL_INFO, "ADC value: %d", ADC_DMA_buffer[0]);
+      HAL_ADC_Start_DMA(&hadc1, (uint32_t*)ADC_DMA_buffer, (uint32_t)1);
+    }
+    
     /* Record loop duration */
-    HAL_Delay(1000);
-    float steer_ang = ENC_C_get_angle_deg();
-    LOG_write(LOGLEVEL_INFO, "Steering angle: %d", (uint16_t)steer_ang);
-    HAL_Delay(1000);
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
   }
   /* USER CODE END 3 */
@@ -276,6 +303,12 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
   } else if (htim == &htim13) {
       time_base_elapsed();
   } 
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+  if(hadc == &hadc1){
+  flag_ADC = 1;
+  }
 }
 /* USER CODE END 4 */
 

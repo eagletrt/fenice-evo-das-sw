@@ -39,7 +39,6 @@ float _ENC_speed_multiplier = 5.238726792f;  /*< Multiplier to convert encoder s
 
 float _ENC_ms_to_radsec(float);
 
-#define __BSD_VISIBLE 1 // NOTE: definito per far funzionare M_PI
 /**
  * @brief     Calculate the ground speed in meters/second
  * 
@@ -49,7 +48,7 @@ float _ENC_ms_to_radsec(float);
  */
 //  (tim_counter / (120.0 * 400)) * 2*M_PI / (ellapsed_ms/1000.0)
 float _ENC_calculate_wheel_speed(uint32_t tim_counter, uint32_t elapsed_us) {
-    return (tim_counter / (120.0 * 400)) * 2*3.14 * 1000000.0 / elapsed_us;
+    return (tim_counter / (120.0 * 400)) * 2*M_PI * 1000000.0 / elapsed_us;
 }
 
 /**

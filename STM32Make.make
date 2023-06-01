@@ -42,6 +42,7 @@ Core/Lib/micro-libs/m95256/m95256.c \
 Core/Lib/micro-libs/pwm/pwm.c \
 Core/Lib/micro-libs/timer-utils/timer_utils.c \
 Core/Src/adc.c \
+Core/Src/adc_fsm.c \
 Core/Src/brakelight.c \
 Core/Src/buzzer.c \
 Core/Src/can.c \

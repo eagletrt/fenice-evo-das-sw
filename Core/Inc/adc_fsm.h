@@ -5,14 +5,13 @@
 #include "stdbool.h"
 
 
-bool ADC_StartMux();
+bool ADC_StartMuxCapure();
 
-uint8_t ADC_get_APPS1();
-uint8_t ADC_get_APPS2();
-uint8_t ADC_get_BPPS1();
-uint8_t ADC_get_BPPS2();
-uint8_t ADC_get_BRK_F();
-uint8_t ADC_get_BRK_R();
-
+uint32_t ADC_get_APPS1();
+uint32_t ADC_get_APPS2();
+uint32_t ADC_get_BPPS1();
+uint32_t ADC_get_BPPS2();
+uint32_t ADC_get_BRK_F();
+uint32_t ADC_get_BRK_R();
 
 #endif

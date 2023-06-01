@@ -28,6 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "adc_fsm.h"
 #include "string.h"
 #include "stdio.h"
 #include "usart.h"
@@ -60,7 +61,6 @@
 
 /* USER CODE BEGIN PV */
 uint32_t _MAIN_last_loop_start_ms = 0;
-uint8_t flag_ADC = 0;
 VFSM_state_t vfsm_current_state = VFSM_STATE_INIT;
 /* USER CODE END PV */
 
@@ -154,21 +154,6 @@ int main(void)
   if (HAL_TIM_Encoder_Start(&ENC_L_TIM, TIM_CHANNEL_ALL) != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2");
   if (HAL_TIM_Encoder_Start(&ENC_R_TIM, TIM_CHANNEL_ALL) != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5");
 
-  uint32_t last_enc_calc = 0;
-
-
-  uint32_t ADC_DMA_buffer[1] = {0U}; 
-  
-
-  /* Begin DMA stream with the ADC */
-  if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)ADC_DMA_buffer, (uint32_t)1) != HAL_OK)
-    LOG_write(LOGLEVEL_ERR, "ADC DMA start failed");
-
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-
   /* Initialize Brakelight */
   BKL_Init();
 
@@ -176,6 +161,16 @@ int main(void)
   HAL_TIM_OC_Start_IT(&htim13, TIM_CHANNEL_1);
   HAL_TIM_OC_Start_IT(&htim10, TIM_CHANNEL_1);
   time_base_init(&htim13);
+
+  /* Initialize the ADC capture loop */
+  ADC_StartMuxCapure();
+
+  uint32_t last_enc_calc = 0;
+
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 
   /* Shutdown circuit should already be open by default, but ensure it is */
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
@@ -190,11 +185,7 @@ int main(void)
 
     /* Flush CAN TX queue */
     CANMSG_flush_TX();
-    HAL_GPIO_WritePin(MUX_0_GPIO_Port, MUX_0_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(MUX_1_GPIO_Port, MUX_1_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(MUX_2_GPIO_Port, MUX_2_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(MUX_3_GPIO_Port, MUX_3_Pin, GPIO_PIN_RESET);
-
+    
     if(HAL_GetTick() - primary_INTERVAL_SPEED >= last_enc_calc) {
       last_enc_calc = HAL_GetTick();
       ENC_send_vals_in_CAN();
@@ -203,20 +194,13 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-    /* 
-     * 0000 -> PITOT
-     * 1000 -> APPS_2
-     * 0100 -> APPS_1
-     * 1100 -> BPPS_2
-     * 0010 -> BPPS_1
-     * 0001 -> BRAKE_F
-     * 1001 -> BRAKE_R 
-     */
-    if (flag_ADC == 1){
-      flag_ADC = 0;
-      LOG_write(LOGLEVEL_INFO, "ADC value: %d", ADC_DMA_buffer[0]);
-      HAL_ADC_Start_DMA(&hadc1, (uint32_t*)ADC_DMA_buffer, (uint32_t)1);
-    }
+    LOG_write(LOGLEVEL_DEBUG, "APPS1: %d", ADC_get_APPS1());
+    LOG_write(LOGLEVEL_DEBUG, "APPS2: %d", ADC_get_APPS2());
+    LOG_write(LOGLEVEL_DEBUG, "BPPS1: %d", ADC_get_BPPS1());
+    LOG_write(LOGLEVEL_DEBUG, "BPPS2: %d", ADC_get_BPPS2());
+    LOG_write(LOGLEVEL_DEBUG, "BRK-F: %d", ADC_get_BRK_F());
+    LOG_write(LOGLEVEL_DEBUG, "BRK-R: %d", ADC_get_BRK_R());
+
     
     /* Record loop duration */
     HAL_Delay(1000);
@@ -301,11 +285,6 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
   } 
 }
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
-  if(hadc == &hadc1){
-  flag_ADC = 1;
-  }
-}
 /* USER CODE END 4 */
 
 /**

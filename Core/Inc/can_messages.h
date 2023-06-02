@@ -3,12 +3,8 @@
 
 #include "can.h"
 #include "stdbool.h"
-#include "../Lib/can/lib/primary/c/ids.h"
-#include "../Lib/can/lib/primary/c/network.h"
-#include "../Lib/can/lib/primary/c/watchdog.h"
-#include "../Lib/can/lib/secondary/c/ids.h"
-#include "../Lib/can/lib/secondary/c/network.h"
-#include "../Lib/can/lib/secondary/c/watchdog.h"
+#include "../Lib/can/lib/primary/network.h"
+#include "../Lib/can/lib/secondary/network.h"
 
 
 typedef struct {
@@ -18,38 +14,38 @@ typedef struct {
 
 
 /* Primary Network */
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_DAS_VERSION data;      } CANMSG_DASVersionTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_DAS_ERRORS data;       } CANMSG_DASErrorsTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_STEER_STATUS data;     } CANMSG_SteerStatusTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_CAR_STATUS data;       } CANMSG_CarStatusTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_SET_CAR_STATUS data;   } CANMSG_SetCarStatusTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_SPEED_conversion data; } CANMSG_SpeedTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_HV_VOLTAGE data;       } CANMSG_HVVoltageTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_HV_CURRENT data;       } CANMSG_HVCurrentTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_HV_TEMP data;          } CANMSG_HVTemperatureTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_HV_ERRORS data;        } CANMSG_HVErrorsTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_HV_FEEDBACKS_STATUS data; } CANMSG_HVFeedbacksTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_TS_STATUS data;        } CANMSG_TSStatusTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_SET_TS_STATUS data;    } CANMSG_SetTSStatusTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_LV_CURRENT data;       } CANMSG_LVCurrentTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_LV_VOLTAGE data;       } CANMSG_LVVoltageTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_LV_TEMPERATURE data;   } CANMSG_LVTemperatureTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_INVERTER_CONNECTION_STATUS data;     } CANMSG_InvConnStatusTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_SET_INVERTER_CONNECTION_STATUS data; } CANMSG_SetInvConnStatusTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_SET_PEDALS_RANGE data; } CANMSG_SetPedRangeTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_SET_STEERING_ANGLE_RANGE data; } CANMSG_SetSteerRangeTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_AMBIENT_TEMPERATURE data; } CANMSG_AmbientTemperatureTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_CONTROL_OUTPUT_conversion data; } CANMSG_CtrlOutTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_das_version_t data;      } CANMSG_DASVersionTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_das_errors_t data;       } CANMSG_DASErrorsTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_steer_status_t data;     } CANMSG_SteerStatusTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_car_status_t data;       } CANMSG_CarStatusTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_set_car_status_t data;   } CANMSG_SetCarStatusTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_speed_converted_t data; } CANMSG_SpeedTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_hv_voltage_t data;       } CANMSG_HVVoltageTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_hv_current_t data;       } CANMSG_HVCurrentTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_hv_temp_t data;          } CANMSG_HVTemperatureTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_hv_errors_converted_t data;        } CANMSG_HVErrorsTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_hv_feedbacks_status_t data; } CANMSG_HVFeedbacksTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_ts_status_t data;        } CANMSG_TSStatusTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_set_ts_status_t data;    } CANMSG_SetTSStatusTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_lv_current_t data;       } CANMSG_LVCurrentTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_lv_voltage_t data;       } CANMSG_LVVoltageTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_lv_temperature_t data;   } CANMSG_LVTemperatureTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_inverter_connection_status_t data;     } CANMSG_InvConnStatusTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_set_inverter_connection_status_t data; } CANMSG_SetInvConnStatusTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_set_pedals_range_t data; } CANMSG_SetPedRangeTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_set_steering_angle_range_t data; } CANMSG_SetSteerRangeTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_ambient_temperature_t data; } CANMSG_AmbientTemperatureTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_control_output_converted_t data; } CANMSG_CtrlOutTypeDef;
 
 /* Primary Network - Inverters */
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_INV_L_REQUEST data;    } CANMSG_Inv_SetTorqueTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_message_INV_L_RESPONSE data;   } CANMSG_Inv_ResponseTypeDef;
+// typedef struct { CANMSG_MetadataTypeDef info; primary_message_INV_L_REQUEST data;    } CANMSG_Inv_SetTorqueTypeDef;
+// typedef struct { CANMSG_MetadataTypeDef info; primary_message_INV_L_RESPONSE data;   } CANMSG_Inv_ResponseTypeDef;
 
 /* Secondary Network */
-typedef struct { CANMSG_MetadataTypeDef info; secondary_message_PEDALS_OUTPUT_conversion data;  } CANMSG_PedValsTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; secondary_message_STEERING_ANGLE data; } CANMSG_SteerValTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; secondary_message_IMU_ACCELERATION_conversion data; } CANMSG_IMUAccTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; secondary_message_IMU_ANGULAR_RATE_conversion data; } CANMSG_IMUAngTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; secondary_pedals_output_converted_t data;  } CANMSG_PedValsTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; secondary_steering_angle_t data; } CANMSG_SteerValTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; secondary_imu_acceleration_converted_t data; } CANMSG_IMUAccTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; secondary_imu_angular_rate_converted_t data; } CANMSG_IMUAngTypeDef;
 
 
 extern CANMSG_DASVersionTypeDef       CANMSG_DASVersion;
@@ -73,10 +69,10 @@ extern CANMSG_SetInvConnStatusTypeDef CANMSG_SetInvConnStatus;
 extern CANMSG_SetPedRangeTypeDef      CANMSG_SetPedRange;
 extern CANMSG_SetSteerRangeTypeDef    CANMSG_SetSteerRange;
 
-extern CANMSG_Inv_SetTorqueTypeDef    CANMSG_InvL_SetTorque;
-extern CANMSG_Inv_SetTorqueTypeDef    CANMSG_InvR_SetTorque;
-extern CANMSG_Inv_ResponseTypeDef     CANMSG_InvL_Status, CANMSG_InvL_IOInfo, CANMSG_InvL_Errors, CANMSG_InvL_Speed, CANMSG_InvL_MTemp, CANMSG_InvL_ITemp;
-extern CANMSG_Inv_ResponseTypeDef     CANMSG_InvR_Status, CANMSG_InvR_IOInfo, CANMSG_InvR_Errors, CANMSG_InvR_Speed, CANMSG_InvR_MTemp, CANMSG_InvR_ITemp;
+// extern CANMSG_Inv_SetTorqueTypeDef    CANMSG_InvL_SetTorque;
+// extern CANMSG_Inv_SetTorqueTypeDef    CANMSG_InvR_SetTorque;
+// extern CANMSG_Inv_ResponseTypeDef     CANMSG_InvL_Status, CANMSG_InvL_IOInfo, CANMSG_InvL_Errors, CANMSG_InvL_Speed, CANMSG_InvL_MTemp, CANMSG_InvL_ITemp;
+// extern CANMSG_Inv_ResponseTypeDef     CANMSG_InvR_Status, CANMSG_InvR_IOInfo, CANMSG_InvR_Errors, CANMSG_InvR_Speed, CANMSG_InvR_MTemp, CANMSG_InvR_ITemp;
 
 extern CANMSG_PedValsTypeDef          CANMSG_PedVals;
 extern CANMSG_CtrlOutTypeDef          CANMSG_CtrlOut;

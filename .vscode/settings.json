@@ -8,6 +8,8 @@
         "brakelight.h": "c",
         "pwm.h": "c",
         "time_base.h": "c",
-        "watchdog.h": "c"
+        "watchdog.h": "c",
+        "can_messages.h": "c",
+        "network.h": "c"
     }
 }

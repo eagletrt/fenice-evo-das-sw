@@ -10,6 +10,7 @@
         "time_base.h": "c",
         "watchdog.h": "c",
         "can_messages.h": "c",
-        "network.h": "c"
+        "network.h": "c",
+        "can.h": "c"
     }
 }

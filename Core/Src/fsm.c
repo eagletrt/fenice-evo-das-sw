@@ -47,39 +47,39 @@ state_func_t *const VFSM_state_table[VFSM_NUM_STATES] = {
 
 /* utility function to update the CAN status message */
 void _VFSM_update_CarStatus(VFSM_state_t curr_state) {
-  primary_CarStatus s;
+  primary_car_status_car_status s;
 
   switch (curr_state) {
     case VFSM_STATE_INIT:
     case VFSM_STATE_ENABLE_INV_UPDATES:
     case VFSM_STATE_CHECK_INV_SETTINGS:
-      s = primary_CarStatus_PRE_SETUP;
+      s = primary_car_status_car_status_PRE_SETUP;
       break;
     case VFSM_STATE_IDLE:
-      s = primary_CarStatus_IDLE;
+      s = primary_car_status_car_status_IDLE;
       break;
     case VFSM_STATE_START_TS_PRECHARGE:
     case VFSM_STATE_WAIT_TS_PRECHARGE:
-      s = primary_CarStatus_POST_SETUP;
+      s = primary_car_status_car_status_POST_SETUP;
       break;
     case VFSM_STATE_WAIT_DRIVER:
-      s = primary_CarStatus_TS_ON;
+      s = primary_car_status_car_status_TS_ON;
       break;
     case VFSM_STATE_ENABLE_INV_DRIVE:
-      s = primary_CarStatus_POST_SETUP;
+      s = primary_car_status_car_status_POST_SETUP;
       break;
     case VFSM_STATE_DRIVE:
-      s = primary_CarStatus_DRIVE;
+      s = primary_car_status_car_status_DRIVE;
       break;
     case VFSM_STATE_DISABLE_INV_DRIVE:
     case VFSM_STATE_START_TS_DISCHARGE:
     case VFSM_STATE_WAIT_TS_DISCHARGE:
-      s = primary_CarStatus_TEARDOWN;
+      s = primary_car_status_car_status_TEARDOWN;
       break;
     case VFSM_STATE_FATAL_ERROR:
       ;
     default:
-      s = primary_CarStatus_IDLE;
+      s = primary_car_status_car_status_IDLE;
   }
 
   CANMSG_CarStatus.data.car_status = s;
@@ -140,7 +140,7 @@ VFSM_state_t VFSM_do_enable_inv_updates(VFSM_state_data_t *data) {
   // INV_power_off();
   
   /* Check if all updates are live */
-  uint32_t tout_ms = primary_watchdog_interval_from_id(primary_ID_INV_R_RESPONSE) * 1.5f;
+  uint32_t tout_ms = primary_watchdog_interval_from_id(PRIMARY_INV_R_RESPONSE_FRAME_ID) * 1.5f;
   bool status_on  = (HAL_GetTick() - CANMSG_InvL_Status.info.timestamp) < tout_ms;
        status_on &= (HAL_GetTick() - CANMSG_InvR_Status.info.timestamp) < tout_ms;
   bool ioinfo_on  = (HAL_GetTick() - CANMSG_InvL_IOInfo.info.timestamp) < tout_ms;
@@ -249,13 +249,13 @@ VFSM_state_t VFSM_do_idle(VFSM_state_data_t *data) {
 
   /* Ensure the TS is OFF */
   // TS_power_off();
-  CANMSG_SetInvConnStatus.data.status = primary_Toggle_OFF;
+  CANMSG_SetInvConnStatus.data.status = primary_ts_status_ts_status_OFF;
   CANMSG_SetInvConnStatus.info.is_new = true;
   // INV_R_set_torque_percent(0);
   // INV_L_set_torque_percent(0);
   
   /* Check for a TS-ON request */
-  if (CANMSG_SetCarStatus.data.car_status_set == primary_SetCarStatus_READY && CANMSG_SetCarStatus.info.is_new) {
+  if (CANMSG_SetCarStatus.data.car_status_set == primary_set_car_status_car_status_set_READY && CANMSG_SetCarStatus.info.is_new) {
     next_state = VFSM_STATE_START_TS_PRECHARGE;
     CANMSG_SetCarStatus.info.is_new = false;
   }
@@ -416,7 +416,7 @@ VFSM_state_t VFSM_do_wait_driver(VFSM_state_data_t *data) {
   // } else if (CANMSG_SetCarStatus.info.is_new) {
   //   primary_SetCarStatus s = CANMSG_SetCarStatus.data.car_status_set;
 
-  //   if (s == primary_SetCarStatus_IDLE) {
+  //   if (s == primary_set_car_status_car_status_set_IDLE) {
   //     /* New set IDLE message */
   //     next_state = VFSM_STATE_START_TS_DISCHARGE;
   //   } else if (s == primary_SetCarStatus_DRIVE && PED_get_brake_percent() >= 5.0f) {
@@ -495,7 +495,7 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_DRIVE);
 
-  if (CANMSG_SetCarStatus.data.car_status_set == primary_SetCarStatus_IDLE && CANMSG_SetCarStatus.info.is_new) {
+  if (CANMSG_SetCarStatus.data.car_status_set == primary_set_car_status_car_status_set_IDLE && CANMSG_SetCarStatus.info.is_new) {
     CANMSG_SetCarStatus.info.is_new = false;
     next_state = VFSM_STATE_DISABLE_INV_DRIVE;
   } else {

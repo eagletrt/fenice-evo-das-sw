@@ -41,6 +41,7 @@
 #include "time_base.h"
 #include "encoders.h"
 #include "can_messages.h"
+#include "pedals.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -165,6 +166,8 @@ int main(void)
   /* Initialize the ADC capture loop */
   ADC_StartMuxCapure();
 
+  PED_init();
+
   uint32_t last_enc_calc = 0;
 
   /* USER CODE END 2 */
@@ -177,7 +180,6 @@ int main(void)
   
   /* Close the shutdown circuit */
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
-
   while (1)
   {
     /* Step forward the FSM */

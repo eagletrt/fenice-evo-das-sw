@@ -48,8 +48,8 @@ CANMSG_SpeedTypeDef              CANMSG_Speed          = { {0U, false}, { .encod
 CANMSG_HVVoltageTypeDef          CANMSG_HVVoltage      = { {0U, false}, { 0U } };
 CANMSG_HVCurrentTypeDef          CANMSG_HVCurrent      = { {0U, false}, { 0U } };
 CANMSG_HVTemperatureTypeDef      CANMSG_HVTemperature  = { {0U, false}, { 0U } };
-CANMSG_HVErrorsTypeDef           CANMSG_HVErrors       = { {0U, false}, { .errors = 0U, .warnings = 0U } };
-CANMSG_HVFeedbacksTypeDef        CANMSG_HVFeedbacks    = { {0U, false}, { .feedbacks_status = 0U, .is_circuitry_error = 0U } };
+CANMSG_HVErrorsTypeDef           CANMSG_HVErrors       = { {0U, false}, {0U}};
+CANMSG_HVFeedbacksTypeDef        CANMSG_HVFeedbacks    = { {0U, false}, {0U} };
 CANMSG_TSStatusTypeDef           CANMSG_TSStatus       = { {0U, false}, { .ts_status = primary_ts_status_ts_status_OFF } };
 CANMSG_SetTSStatusTypeDef        CANMSG_SetTSStatus    = { {0U, false}, { .ts_status_set = primary_set_ts_status_ts_status_set_OFF } };
 CANMSG_LVCurrentTypeDef          CANMSG_LVCurrent      = { {0U, false}, { 0U } };
@@ -113,37 +113,37 @@ CAN_HandleTypeDef* _CANMSG_get_nwk_from_id(CAN_IdTypeDef id) {
 void _CANMSG_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
     switch (msg.id) {
         case PRIMARY_STEER_STATUS_FRAME_ID:
-            primary_deserialize_STEER_STATUS(&(CANMSG_SteerStatus.data), msg.data);
+            primary_steer_status_unpack(&(CANMSG_SteerStatus.data), msg.data, PRIMARY_STEER_STATUS_LENGTH);
             break;
         case PRIMARY_SET_CAR_STATUS_FRAME_ID:
-            primary_deserialize_SET_CAR_STATUS(&(CANMSG_SetCarStatus.data), msg.data);
+            primary_set_car_status_unpack(&(CANMSG_SetCarStatus.data), msg.data, PRIMARY_SET_CAR_STATUS_LENGTH);
             break;
         case PRIMARY_TS_STATUS_FRAME_ID:
-            primary_deserialize_TS_STATUS(&(CANMSG_TSStatus.data), msg.data);
+            primary_ts_status_unpack(&(CANMSG_TSStatus.data), msg.data, PRIMARY_TS_STATUS_LENGTH);
             break;
         case PRIMARY_HV_VOLTAGE_FRAME_ID:
-            primary_deserialize_HV_VOLTAGE(&(CANMSG_HVVoltage.data), msg.data);
+            primary_hv_voltage_unpack(&(CANMSG_HVVoltage.data), msg.data, PRIMARY_HV_VOLTAGE_LENGTH);
             break;
         case PRIMARY_HV_CURRENT_FRAME_ID:
-            primary_deserialize_HV_CURRENT(&(CANMSG_HVCurrent.data), msg.data);
+            primary_hv_current_unpack(&(CANMSG_HVCurrent.data), msg.data, PRIMARY_HV_CURRENT_LENGTH);
             break;
         case PRIMARY_HV_TEMP_FRAME_ID:
-            primary_deserialize_HV_TEMP(&(CANMSG_HVTemperature.data), msg.data);
+            primary_hv_temp_unpack(&(CANMSG_HVTemperature.data), msg.data, PRIMARY_HV_TEMP_LENGTH);
             break;
         case PRIMARY_HV_ERRORS_FRAME_ID:
-            primary_deserialize_HV_ERRORS(&(CANMSG_HVErrors.data), msg.data);
+            primary_hv_errors_unpack(&(CANMSG_HVErrors.data), msg.data, PRIMARY_HV_ERRORS_LENGTH);
             break;
         case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID:
-            primary_deserialize_HV_FEEDBACKS_STATUS(&(CANMSG_HVFeedbacks.data), msg.data);
+            primary_hv_feedbacks_status_unpack(&(CANMSG_HVFeedbacks.data), msg.data, PRIMARY_HV_FEEDBACKS_STATUS_LENGTH);
             break;
         case PRIMARY_SET_PEDALS_RANGE_FRAME_ID:
-            primary_deserialize_SET_PEDALS_RANGE(&(CANMSG_SetPedRange.data), msg.data);
+            primary_set_pedals_range_unpack(&(CANMSG_SetPedRange.data), msg.data, PRIMARY_SET_PEDALS_RANGE_LENGTH);
             break;
         case PRIMARY_SET_STEERING_ANGLE_RANGE_FRAME_ID:
-            primary_deserialize_SET_STEERING_ANGLE_RANGE(&(CANMSG_SetSteerRange.data), msg.data);
+            primary_set_steering_angle_range_unpack(&(CANMSG_SetSteerRange.data), msg.data, PRIMARY_SET_STEERING_ANGLE_RANGE_LENGTH);
             break;
         case PRIMARY_INVERTER_CONNECTION_STATUS_FRAME_ID:
-            primary_deserialize_INVERTER_CONNECTION_STATUS(&(CANMSG_InvConnStatus.data), msg.data);
+            primary_inverter_connection_status_unpack(&(CANMSG_InvConnStatus.data), msg.data, PRIMARY_INVERTER_CONNECTION_STATUS_LENGTH);
             break;
         case PRIMARY_INV_L_RESPONSE_FRAME_ID:
             _CANMSG_parse_INV_L_message(&msg);
@@ -152,16 +152,16 @@ void _CANMSG_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
             _CANMSG_parse_INV_R_message(&msg);
             break;
         case SECONDARY_IMU_ACCELERATION_FRAME_ID:
-            secondary_message_IMU_ACCELERATION raw_imu_acc;
-            secondary_deserialize_IMU_ACCELERATION(&raw_imu_acc, msg.data);
-            secondary_raw_to_conversion_struct_IMU_ACCELERATION(&(CANMSG_IMUAcc.data), &raw_imu_acc);
+            secondary_imu_acceleration_t raw_imu_acc;
+            secondary_imu_acceleration_unpack(&raw_imu_acc, msg.data, SECONDARY_IMU_ACCELERATION_LENGTH);
+            secondary_imu_acceleration_raw_to_conversion_struct(&(CANMSG_IMUAcc.data), &raw_imu_acc);
             CANMSG_AmbientTemperature.data.temp = CANMSG_IMUAcc.data.temperature;
             CANMSG_AmbientTemperature.info.is_new = true;
             break;
         case SECONDARY_IMU_ANGULAR_RATE_FRAME_ID:
-            secondary_message_IMU_ANGULAR_RATE raw_imu_ang;
-            secondary_deserialize_IMU_ANGULAR_RATE(&raw_imu_ang, msg.data);
-            secondary_raw_to_conversion_struct_IMU_ANGULAR_RATE(&(CANMSG_IMUAng.data), &raw_imu_ang);
+            secondary_imu_angular_rate_t raw_imu_ang;
+            secondary_imu_angular_rate_unpack(&raw_imu_ang, msg.data, SECONDARY_IMU_ANGULAR_RATE_LENGTH);
+            secondary_imu_angular_rate_raw_to_conversion_struct(&(CANMSG_IMUAng.data), &raw_imu_ang);
             break;
         default:
             // LOG_write(LOGLEVEL_ERR, "[CANMSG/Deserialize] Unknown message id: 0x%X", msg.id);
@@ -170,8 +170,8 @@ void _CANMSG_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
 }
 
 size_t _CANMSG_parse_INV_L_message(CAN_MessageTypeDef *msg) {
-    primary_message_INV_L_RESPONSE inv_response;
-    primary_deserialize_INV_L_RESPONSE(&inv_response, msg->data);
+    primary_inv_l_response_t inv_response;
+    primary_inv_l_response_unpack(&inv_response, msg->data, PRIMARY_INV_L_RESPONSE_LENGTH);
     CANMSG_MetadataTypeDef *info = NULL;
 
     // switch (inv_response.reg_id) {
@@ -221,8 +221,8 @@ size_t _CANMSG_parse_INV_L_message(CAN_MessageTypeDef *msg) {
 }
 
 size_t _CANMSG_parse_INV_R_message(CAN_MessageTypeDef *msg) {
-    primary_message_INV_R_RESPONSE inv_response;
-    primary_deserialize_INV_R_RESPONSE(&inv_response, msg->data);
+    primary_inv_r_response_t inv_response;
+    primary_inv_r_response_unpack(&inv_response, msg->data, PRIMARY_INV_R_RESPONSE_LENGTH);
     CANMSG_MetadataTypeDef *info = NULL;
 
     // switch (inv_response.reg_id) {
@@ -288,7 +288,7 @@ CANMSG_MetadataTypeDef* CANMSG_get_metadata_from_id(CAN_IdTypeDef id) {
             return &(CANMSG_SetCarStatus.info);
         case PRIMARY_SPEED_FRAME_ID:
             return &(CANMSG_Speed.info);
-        case PRIMARY_SET_TS_STATUS_DAS_FRAME_ID:
+        case PRIMARY_SET_TS_STATUS_FRAME_ID:
             return &(CANMSG_SetTSStatus.info);
         case PRIMARY_TS_STATUS_FRAME_ID:
             return &(CANMSG_TSStatus.info);
@@ -386,10 +386,11 @@ void CANMSG_flush_TX() {
  */
 bool _CANMSG_needs_to_be_sent(CAN_IdTypeDef id, CAN_HandleTypeDef* nwk) {
     CANMSG_MetadataTypeDef *info = CANMSG_get_metadata_from_id(id);
-    int32_t interval = (nwk == &CAN_PRIMARY_NETWORK) ? primary_watchdog_interval_from_id(id) : secondary_watchdog_interval_from_id(id);
-    int32_t elapsed = HAL_GetTick() - info->timestamp;
-    return (interval == primary_INTERVAL_ONCE && info->is_new) ||
-           (elapsed >= interval && interval != primary_INTERVAL_ONCE);
+    // int32_t interval = (nwk == &CAN_PRIMARY_NETWORK) ? primary_watchdog_interval_from_id(id) : secondary_watchdog_interval_from_id(id);
+    // int32_t elapsed = HAL_GetTick() - info->timestamp;
+    // return (interval == primary_INTERVAL_ONCE && info->is_new) ||
+    //        (elapsed >= interval && interval != primary_INTERVAL_ONCE);
+    return true;
 }
 
 bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
@@ -400,21 +401,21 @@ bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
         //     msg->size = primary_serialize_DAS_VERSION(msg->data, INT_COMPONENT_VERSION, can_BUILD_TIME);
         //     break;
         case PRIMARY_DAS_ERRORS_FRAME_ID:
-            msg->size = primary_serialize_DAS_ERRORS(msg->data, CANMSG_DASErrors.data.das_error);
+            msg->size = primary_das_errors_pack(msg->data, CANMSG_DASErrors.data.das_error, PRIMARY_DAS_ERRORS_LENGTH);
             break;
         case PRIMARY_CAR_STATUS_FRAME_ID:
-            msg->size = primary_serialize_struct_CAR_STATUS(msg->data, &(CANMSG_CarStatus.data));
+            msg->size = primary_car_status_pack(msg->data, &(CANMSG_CarStatus.data), PRIMARY_CAR_STATUS_LENGTH);
             break;
         case PRIMARY_SPEED_FRAME_ID:
-            primary_message_SPEED speed = { 0U };
-            primary_conversion_to_raw_struct_SPEED(&speed, &(CANMSG_Speed.data));
-            msg->size = primary_serialize_struct_SPEED(msg->data, &speed);
+            primary_speed_t speed = { 0U };
+            primary_speed_conversion_to_raw_struct(&speed, &(CANMSG_Speed.data));
+            msg->size = primary_speed_pack(msg->data, &speed, PRIMARY_SPEED_LENGTH);
             break;
         case PRIMARY_SET_TS_STATUS_FRAME_ID:
-            msg->size = primary_serialize_struct_SET_TS_STATUS(msg->data, &(CANMSG_SetTSStatus.data));
+            msg->size = primary_set_ts_status_pack(msg->data, &(CANMSG_SetTSStatus.data), PRIMARY_SET_TS_STATUS_LENGTH);
             break;
         case PRIMARY_SET_INVERTER_CONNECTION_STATUS_FRAME_ID:
-            msg->size = primary_serialize_SET_INVERTER_CONNECTION_STATUS(msg->data, CANMSG_SetInvConnStatus.data.status);
+            msg->size = primary_set_inverter_connection_status_pack(msg->data, CANMSG_SetInvConnStatus.data.status, PRIMARY_SET_INVERTER_CONNECTION_STATUS_LENGTH);
             break;
         case PRIMARY_INV_L_REQUEST_FRAME_ID:
             // msg->size = primary_serialize_INV_L_REQUEST(
@@ -443,17 +444,17 @@ bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
             );
             break;
         case SECONDARY_PEDALS_OUTPUT_FRAME_ID: ;
-            secondary_message_PEDALS_OUTPUT raw_ped;
-            secondary_conversion_to_raw_struct_PEDALS_OUTPUT(&raw_ped, &(CANMSG_PedVals.data));
-            msg->size = secondary_serialize_struct_PEDALS_OUTPUT(msg->data, &raw_ped);
+            secondary_pedals_output_t raw_ped;
+            secondary_pedals_output_conversion_to_raw_struct(&raw_ped, &(CANMSG_PedVals.data));
+            msg->size = secondary_pedals_output_pack(msg->data, &raw_ped, SECONDARY_PEDALS_OUTPUT_LENGTH);
             break;
         case PRIMARY_CONTROL_OUTPUT_FRAME_ID: ;
-            primary_message_CONTROL_OUTPUT raw_ctrl;
-            primary_conversion_to_raw_struct_CONTROL_OUTPUT(&raw_ctrl, &(CANMSG_CtrlOut.data));
-            msg->size = primary_serialize_struct_CONTROL_OUTPUT(msg->data, &raw_ctrl);
+            primary_control_output_t raw_ctrl;
+            primary_control_output_conversion_to_raw_struct(&raw_ctrl, &(CANMSG_CtrlOut.data));
+            msg->size = primary_control_output_pack(msg->data, &raw_ctrl, PRIMARY_CONTROL_OUTPUT_LENGTH);
             break;
         case SECONDARY_STEERING_ANGLE_FRAME_ID:
-            msg->size = secondary_serialize_STEERING_ANGLE(msg->data, CANMSG_SteerVal.data.angle);
+            msg->size = secondary_steering_angle_pack(msg->data, CANMSG_SteerVal.data.angle, SECONDARY_STEERING_ANGLE_LENGTH);
             break;
         default:
             LOG_write(LOGLEVEL_ERR, "[CANMSG/Serialize] Unknown message id: 0x%X", msg->id); 

@@ -1,6 +1,7 @@
 #include "can_user_functions.h"
 #include "can_messages.h"
 #include "logger.h"
+#include "string.h"
 
 
 float CAN_error_rate = 0.0f;

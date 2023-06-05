@@ -187,8 +187,8 @@ int main(void)
 
     /* Flush CAN TX queue */
     CANMSG_flush_TX();
-    
-    if(HAL_GetTick() - primary_INTERVAL_SPEED >= last_enc_calc) {
+    // TODO: rimettere primary_INTERVAL_SPEED al posto di 10
+    if(HAL_GetTick() - 10 >= last_enc_calc) {
       last_enc_calc = HAL_GetTick();
       ENC_send_vals_in_CAN();
     }

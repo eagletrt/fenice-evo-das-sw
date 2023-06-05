@@ -140,19 +140,20 @@ VFSM_state_t VFSM_do_enable_inv_updates(VFSM_state_data_t *data) {
   // INV_power_off();
   
   /* Check if all updates are live */
-  uint32_t tout_ms = primary_watchdog_interval_from_id(PRIMARY_INV_R_RESPONSE_FRAME_ID) * 1.5f;
-  bool status_on  = (HAL_GetTick() - CANMSG_InvL_Status.info.timestamp) < tout_ms;
-       status_on &= (HAL_GetTick() - CANMSG_InvR_Status.info.timestamp) < tout_ms;
-  bool ioinfo_on  = (HAL_GetTick() - CANMSG_InvL_IOInfo.info.timestamp) < tout_ms;
-       ioinfo_on &= (HAL_GetTick() - CANMSG_InvR_IOInfo.info.timestamp) < tout_ms;
-  bool errors_on  = (HAL_GetTick() - CANMSG_InvL_Errors.info.timestamp) < tout_ms;
-       errors_on &= (HAL_GetTick() - CANMSG_InvR_Errors.info.timestamp) < tout_ms;
-  bool speed_on   = (HAL_GetTick() - CANMSG_InvL_Speed.info.timestamp)  < tout_ms;
-       speed_on  &= (HAL_GetTick() - CANMSG_InvR_Speed.info.timestamp)  < tout_ms;
-  bool m_temp_on  = (HAL_GetTick() - CANMSG_InvL_MTemp.info.timestamp)  < tout_ms;
-       m_temp_on &= (HAL_GetTick() - CANMSG_InvR_MTemp.info.timestamp)  < tout_ms;
-  bool i_temp_on  = (HAL_GetTick() - CANMSG_InvL_ITemp.info.timestamp)  < tout_ms;
-       i_temp_on &= (HAL_GetTick() - CANMSG_InvR_ITemp.info.timestamp)  < tout_ms;
+  // TODO: scommentare queste righe
+  // uint32_t tout_ms = primary_watchdog_interval_from_id(PRIMARY_INV_R_RESPONSE_FRAME_ID) * 1.5f;
+  // bool status_on  = (HAL_GetTick() - CANMSG_InvL_Status.info.timestamp) < tout_ms;
+  //      status_on &= (HAL_GetTick() - CANMSG_InvR_Status.info.timestamp) < tout_ms;
+  // bool ioinfo_on  = (HAL_GetTick() - CANMSG_InvL_IOInfo.info.timestamp) < tout_ms;
+  //      ioinfo_on &= (HAL_GetTick() - CANMSG_InvR_IOInfo.info.timestamp) < tout_ms;
+  // bool errors_on  = (HAL_GetTick() - CANMSG_InvL_Errors.info.timestamp) < tout_ms;
+  //      errors_on &= (HAL_GetTick() - CANMSG_InvR_Errors.info.timestamp) < tout_ms;
+  // bool speed_on   = (HAL_GetTick() - CANMSG_InvL_Speed.info.timestamp)  < tout_ms;
+  //      speed_on  &= (HAL_GetTick() - CANMSG_InvR_Speed.info.timestamp)  < tout_ms;
+  // bool m_temp_on  = (HAL_GetTick() - CANMSG_InvL_MTemp.info.timestamp)  < tout_ms;
+  //      m_temp_on &= (HAL_GetTick() - CANMSG_InvR_MTemp.info.timestamp)  < tout_ms;
+  // bool i_temp_on  = (HAL_GetTick() - CANMSG_InvL_ITemp.info.timestamp)  < tout_ms;
+  //      i_temp_on &= (HAL_GetTick() - CANMSG_InvR_ITemp.info.timestamp)  < tout_ms;
 
   /* When enabling regular updates, introduce minor delays to unsync them */
   // if (!status_on) {
@@ -599,7 +600,7 @@ VFSM_state_t VFSM_do_wait_ts_discharge(VFSM_state_data_t *data) {
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
 
   /* Wait until the BMS-HV no longer reports more than 60 Volts */
-  if (!CANLIB_BITTEST_BITMASK(CANMSG_HVFeedbacks.data.feedbacks_status, primary_HvFeedbacks_FEEDBACK_TS_OVER_60V_STATUS)) {
+  if (!CANMSG_HVFeedbacks.data.feedbacks_status_feedback_ts_over_60v_status) {
     next_state = VFSM_NO_CHANGE;
   } else {
     /* Go to idle and close back the SD circuit */

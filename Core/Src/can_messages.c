@@ -48,8 +48,8 @@ CANMSG_SpeedTypeDef              CANMSG_Speed          = { {0U, false}, { .encod
 CANMSG_HVVoltageTypeDef          CANMSG_HVVoltage      = { {0U, false}, { 0U } };
 CANMSG_HVCurrentTypeDef          CANMSG_HVCurrent      = { {0U, false}, { 0U } };
 CANMSG_HVTemperatureTypeDef      CANMSG_HVTemperature  = { {0U, false}, { 0U } };
-CANMSG_HVErrorsTypeDef           CANMSG_HVErrors       = { {0U, false}, {0U}};
-CANMSG_HVFeedbacksTypeDef        CANMSG_HVFeedbacks    = { {0U, false}, {0U} };
+CANMSG_HVErrorsTypeDef           CANMSG_HVErrors       = { {0U, false}, { 0U } };
+CANMSG_HVFeedbacksTypeDef        CANMSG_HVFeedbacks    = { {0U, false}, { 0U } };
 CANMSG_TSStatusTypeDef           CANMSG_TSStatus       = { {0U, false}, { .ts_status = primary_ts_status_ts_status_OFF } };
 CANMSG_SetTSStatusTypeDef        CANMSG_SetTSStatus    = { {0U, false}, { .ts_status_set = primary_set_ts_status_ts_status_set_OFF } };
 CANMSG_LVCurrentTypeDef          CANMSG_LVCurrent      = { {0U, false}, { 0U } };
@@ -390,7 +390,7 @@ bool _CANMSG_needs_to_be_sent(CAN_IdTypeDef id, CAN_HandleTypeDef* nwk) {
     // int32_t elapsed = HAL_GetTick() - info->timestamp;
     // return (interval == primary_INTERVAL_ONCE && info->is_new) ||
     //        (elapsed >= interval && interval != primary_INTERVAL_ONCE);
-    return true;
+    return true; // FIXME: remove comments
 }
 
 bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
@@ -401,7 +401,7 @@ bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
         //     msg->size = primary_serialize_DAS_VERSION(msg->data, INT_COMPONENT_VERSION, can_BUILD_TIME);
         //     break;
         case PRIMARY_DAS_ERRORS_FRAME_ID:
-            msg->size = primary_das_errors_pack(msg->data, CANMSG_DASErrors.data.das_error, PRIMARY_DAS_ERRORS_LENGTH);
+            msg->size = primary_das_errors_pack(msg->data, &(CANMSG_DASErrors.data), PRIMARY_DAS_ERRORS_LENGTH);
             break;
         case PRIMARY_CAR_STATUS_FRAME_ID:
             msg->size = primary_car_status_pack(msg->data, &(CANMSG_CarStatus.data), PRIMARY_CAR_STATUS_LENGTH);
@@ -415,7 +415,7 @@ bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
             msg->size = primary_set_ts_status_pack(msg->data, &(CANMSG_SetTSStatus.data), PRIMARY_SET_TS_STATUS_LENGTH);
             break;
         case PRIMARY_SET_INVERTER_CONNECTION_STATUS_FRAME_ID:
-            msg->size = primary_set_inverter_connection_status_pack(msg->data, CANMSG_SetInvConnStatus.data.status, PRIMARY_SET_INVERTER_CONNECTION_STATUS_LENGTH);
+            msg->size = primary_set_inverter_connection_status_pack(msg->data, &(CANMSG_SetInvConnStatus.data), PRIMARY_SET_INVERTER_CONNECTION_STATUS_LENGTH);
             break;
         case PRIMARY_INV_L_REQUEST_FRAME_ID:
             // msg->size = primary_serialize_INV_L_REQUEST(
@@ -438,9 +438,10 @@ bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
             msg->size = 3;
             break;
         case PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID:
-            msg->size = primary_serialize_AMBIENT_TEMPERATURE(
+            msg->size = primary_ambient_temperature_pack(
                 msg->data,
-                CANMSG_AmbientTemperature.data.temp
+                &(CANMSG_AmbientTemperature.data),
+                PRIMARY_AMBIENT_TEMPERATURE_LENGTH
             );
             break;
         case SECONDARY_PEDALS_OUTPUT_FRAME_ID: ;
@@ -454,7 +455,7 @@ bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
             msg->size = primary_control_output_pack(msg->data, &raw_ctrl, PRIMARY_CONTROL_OUTPUT_LENGTH);
             break;
         case SECONDARY_STEERING_ANGLE_FRAME_ID:
-            msg->size = secondary_steering_angle_pack(msg->data, CANMSG_SteerVal.data.angle, SECONDARY_STEERING_ANGLE_LENGTH);
+            msg->size = secondary_steering_angle_pack(msg->data, &(CANMSG_SteerVal.data), SECONDARY_STEERING_ANGLE_LENGTH);
             break;
         default:
             LOG_write(LOGLEVEL_ERR, "[CANMSG/Serialize] Unknown message id: 0x%X", msg->id); 

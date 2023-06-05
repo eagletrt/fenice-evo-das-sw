@@ -23,7 +23,7 @@ typedef struct { CANMSG_MetadataTypeDef info; primary_speed_converted_t data; } 
 typedef struct { CANMSG_MetadataTypeDef info; primary_hv_voltage_t data;       } CANMSG_HVVoltageTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_hv_current_t data;       } CANMSG_HVCurrentTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_hv_temp_t data;          } CANMSG_HVTemperatureTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_hv_errors_converted_t data;        } CANMSG_HVErrorsTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_hv_errors_t data;        } CANMSG_HVErrorsTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_hv_feedbacks_status_t data; } CANMSG_HVFeedbacksTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_ts_status_t data;        } CANMSG_TSStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_set_ts_status_t data;    } CANMSG_SetTSStatusTypeDef;

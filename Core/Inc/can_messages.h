@@ -3,8 +3,8 @@
 
 #include "can.h"
 #include "stdbool.h"
-#include "../Lib/can/lib/primary/network.h"
-#include "../Lib/can/lib/secondary/network.h"
+#include "../Lib/can/lib/primary/primary_network.h"
+#include "../Lib/can/lib/secondary/secondary_network.h"
 
 
 typedef struct {
@@ -14,7 +14,7 @@ typedef struct {
 
 
 /* Primary Network */
-typedef struct { CANMSG_MetadataTypeDef info; primary_das_version_t data;      } CANMSG_DASVersionTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_das_version_converted_t data;      } CANMSG_DASVersionTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_das_errors_t data;       } CANMSG_DASErrorsTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_steer_status_t data;     } CANMSG_SteerStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_car_status_t data;       } CANMSG_CarStatusTypeDef;
@@ -26,7 +26,7 @@ typedef struct { CANMSG_MetadataTypeDef info; primary_hv_temp_t data;          }
 typedef struct { CANMSG_MetadataTypeDef info; primary_hv_errors_t data;        } CANMSG_HVErrorsTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_hv_feedbacks_status_t data; } CANMSG_HVFeedbacksTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_ts_status_t data;        } CANMSG_TSStatusTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_set_ts_status_t data;    } CANMSG_SetTSStatusTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_set_ts_status_das_t data;    } CANMSG_SetTSStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_lv_current_t data;       } CANMSG_LVCurrentTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_lv_voltage_t data;       } CANMSG_LVVoltageTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_lv_temperature_t data;   } CANMSG_LVTemperatureTypeDef;

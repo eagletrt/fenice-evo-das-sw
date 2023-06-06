@@ -42,6 +42,9 @@
 #include "encoders.h"
 #include "can_messages.h"
 #include "pedals.h"
+#include "das_version.h"
+#include "can_user_functions.h"
+#include "tractive_system.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,6 +66,11 @@
 /* USER CODE BEGIN PV */
 uint32_t _MAIN_last_loop_start_ms = 0;
 VFSM_state_t vfsm_current_state = VFSM_STATE_INIT;
+
+uint32_t _MAIN_avg_loop_duration_ms = 0;
+uint32_t _MAIN_last_ms_showed = 0;
+bool _MAIN_is_dbg_uart_free = true;
+uint16_t _MAIN_dbg_uart_line_idx = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,6 +81,7 @@ void _MAIN_print_dbg_line(char *title, char *txt);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void MAIN_print_dbg_info();
 
 /* Redefine the weak function in logger.c to use the UART as textual output */
 void _LOG_write_raw(char *txt) {
@@ -184,6 +193,10 @@ int main(void)
   {
     /* Step forward the FSM */
     vfsm_current_state = VFSM_run_state(vfsm_current_state, NULL);
+    /* Update debug information over UART */
+    // #if MAIN_DEBUG
+    //   MAIN_print_dbg_info();
+    // #endif
 
     /* Flush CAN TX queue */
     CANMSG_flush_TX();
@@ -196,16 +209,15 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-    LOG_write(LOGLEVEL_DEBUG, "APPS1: %d", ADC_get_APPS1());
-    LOG_write(LOGLEVEL_DEBUG, "APPS2: %d", ADC_get_APPS2());
-    LOG_write(LOGLEVEL_DEBUG, "BPPS1: %d", ADC_get_BPPS1());
-    LOG_write(LOGLEVEL_DEBUG, "BPPS2: %d", ADC_get_BPPS2());
-    LOG_write(LOGLEVEL_DEBUG, "BRK-F: %d", ADC_get_BRK_F());
-    LOG_write(LOGLEVEL_DEBUG, "BRK-R: %d", ADC_get_BRK_R());
+    // LOG_write(LOGLEVEL_DEBUG, "APPS1: %d", ADC_get_APPS1());
+    // LOG_write(LOGLEVEL_DEBUG, "APPS2: %d", ADC_get_APPS2());
+    // LOG_write(LOGLEVEL_DEBUG, "BPPS1: %d", ADC_get_BPPS1());
+    // LOG_write(LOGLEVEL_DEBUG, "BPPS2: %d", ADC_get_BPPS2());
+    // LOG_write(LOGLEVEL_DEBUG, "BRK-F: %d", ADC_get_BRK_F());
+    // LOG_write(LOGLEVEL_DEBUG, "BRK-R: %d", ADC_get_BRK_R());
 
     
     /* Record loop duration */
-    HAL_Delay(1000);
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
   }
   /* USER CODE END 3 */
@@ -285,6 +297,133 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
   } else if (htim == &htim13) {
       time_base_elapsed();
   } 
+}
+
+void _MAIN_print_dbg_line(char *title, char *txt) {
+  static char buf[MAIN_DBG_BUF_LEN];
+  uint16_t n_bytes = snprintf(buf, MAIN_DBG_BUF_LEN, "%10s | %s\033[K\r\n", title, txt);
+
+  _MAIN_is_dbg_uart_free = false;
+  HAL_UART_Transmit_IT(&huart2, buf, n_bytes);
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
+  if (huart == &huart2)
+    _MAIN_is_dbg_uart_free = true;
+}
+
+void MAIN_print_dbg_info() {
+  if (!_MAIN_is_dbg_uart_free)
+    return;
+  
+  if (_MAIN_dbg_uart_line_idx == 0 && (HAL_GetTick() - _MAIN_last_ms_showed < 200))
+    return;
+  _MAIN_last_ms_showed = HAL_GetTick();
+
+  uint8_t buf_len = 150;
+  char buf[buf_len];
+
+  switch (_MAIN_dbg_uart_line_idx) {
+    case 0:
+      LOG_print_fenice_logo("            -    D A S   f i r m w a r e   v 1 . 0   -            ");
+      break;
+    case 1:
+      snprintf(buf, buf_len, "%8s: %-6d %8s: %8s %8s: %12s", "Code", INT_COMPONENT_VERSION, "Time", __TIME__, "Date", __DATE__);
+      _MAIN_print_dbg_line("BUILD", buf);
+      break;
+    // case 2:
+    //   snprintf(buf, buf_len, "%8s: %-3ld ms %8s: 0x%06X", "Loop len", _MAIN_avg_loop_duration_ms, "Errors", CANMSG_DASErrors.data.das_error);
+    //   _MAIN_print_dbg_line("MAIN", buf);
+    //   break;
+    case 3:
+      snprintf(buf, buf_len, "%8s: %-4.1f%%", "Err rate", CAN_error_rate*100);
+      _MAIN_print_dbg_line("CAN", buf);
+      break;
+    case 4:
+      snprintf(buf, buf_len, "%8s: %-6s", "State", VFSM_state_names[vfsm_current_state]);
+      _MAIN_print_dbg_line("FSM", buf);
+      break;
+    // case 5:
+    //   snprintf(buf, buf_len, "%8s: %-6s %8s: 0x%06X %8s: 0x%06X",
+    //     "Status", TS_state_names[TS_get_status()], "Errors", CANMSG_HVErrors.data.errors, "Warns", CANMSG_HVErrors.data.warnings);
+    //   _MAIN_print_dbg_line("BMS-HV", buf);
+    //   break;
+    // case 6:
+    //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
+    //     "Online", INV_L_get_status()->online, "BTB/RDY", INV_L_get_status()->BTB_ready, "RFE", INV_L_get_status()->RFE_switch, "RUN", INV_L_get_status()->RUN_switch);
+    //   _MAIN_print_dbg_line("INV/L", buf);
+    //   break;
+    // case 7:
+    //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6.1f %8s: %-6.1f",
+    //     "DriveEna", INV_L_get_status()->drive_enabled, "RPM", INV_L_get_status()->rpm, "Mot T", INV_L_get_status()->motor_temp, "IGBT T", INV_L_get_status()->igbt_temp);
+    //   _MAIN_print_dbg_line("", buf);
+    //   break;
+    // case 8:
+    //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
+    //     "Online", INV_R_get_status()->online, "BTB/RDY", INV_R_get_status()->BTB_ready, "RFE", INV_R_get_status()->RFE_switch, "RUN", INV_R_get_status()->RUN_switch);
+    //   _MAIN_print_dbg_line("INV/R", buf);
+    //   break;
+    // case 9:
+    //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6.1f %8s: %-6.1f",
+    //     "DriveEna", INV_R_get_status()->drive_enabled, "RPM", INV_R_get_status()->rpm, "Mot T", INV_R_get_status()->motor_temp, "IGBT T", INV_R_get_status()->igbt_temp);
+    //   _MAIN_print_dbg_line("", buf);
+    //   break;
+    // case 10:
+    //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
+    //     "Encoder", INV_L_get_errors()->encoder_error, "No pwr v",  INV_L_get_errors()->no_pwr_voltage,
+    //     "Mot temp", INV_L_get_errors()->hi_motor_temp, "Dev temp",  INV_L_get_errors()->hi_device_temp);
+    //   _MAIN_print_dbg_line("INV/L Errs", buf);
+    //   break;
+    // case 11:
+    //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
+    //     "Encoder", INV_R_get_errors()->encoder_error, "No pwr v",  INV_R_get_errors()->no_pwr_voltage,
+    //     "Mot temp", INV_R_get_errors()->hi_motor_temp, "Dev temp",  INV_R_get_errors()->hi_device_temp);
+    //   _MAIN_print_dbg_line("INV/R Errs", buf);
+    //   break;
+    case 12:
+      #if PED_DEBUG
+        PED_log_dbg_info();
+      #endif
+      snprintf(buf, buf_len, "%8s: %-5.1f%% %8s: %-5.1f%% %8s: %-5.1f%%",
+        "APPS", PED_get_accelerator_percent(), "Brake/F", PED_get_brake_percent(), "Brake/R", 0.0f);
+      _MAIN_print_dbg_line("PED", buf);
+      break;
+    case 13:
+      snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
+        "ADC/HW", PED_errors.ADC_internal, "ADC/OVR", PED_errors.ADC_overrun, "ADC/DMA", PED_errors.ADC_DMA_error, "Impl", PED_errors.implausibility_err);
+      _MAIN_print_dbg_line("PED Errs", buf);
+      break;
+    case 14:
+      snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
+        "Steer", ENC_C_get_angle_deg(), "W/L", ENC_L_get_radsec(), "W/R", ENC_R_get_radsec());
+      _MAIN_print_dbg_line("ENC", buf);
+      break;
+    // case 15:
+    //   snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
+    //     "TTLL", CTRL_get_torque_L(), "TTRR", CTRL_get_torque_R(), "Est.V.", CTRL_get_vest(), "AvgDelay", CTRL_avg_wait_ms);
+    //   _MAIN_print_dbg_line("CTRL", buf);
+    //   break;
+    case 16:
+      snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
+        "X", CANMSG_IMUAcc.data.accel_x, "Y", CANMSG_IMUAcc.data.accel_y, "Z", CANMSG_IMUAcc.data.accel_z);
+      _MAIN_print_dbg_line("IMU/Acc", buf);
+      break;
+    case 17:
+      snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
+        "X", CANMSG_IMUAng.data.ang_rate_x, "Y", CANMSG_IMUAng.data.ang_rate_y, "Z", CANMSG_IMUAng.data.ang_rate_z);
+      _MAIN_print_dbg_line("IMU/Ang", buf);
+      break;
+    case 18:
+      snprintf(buf, buf_len, "%8s: %-6s %8s: %-6s %8s: %-6s",
+        "Tecs", "brao", "Caga", "sbura", "Simione", "bate");
+      _MAIN_print_dbg_line("TECS", buf);
+      break;
+    default:
+      LOG_write(LOGLEVEL_ERR, "Overrun in line index when printing debug info");
+      break;
+  }
+
+  _MAIN_dbg_uart_line_idx = (_MAIN_dbg_uart_line_idx + 1) % 18;
 }
 
 /* USER CODE END 4 */

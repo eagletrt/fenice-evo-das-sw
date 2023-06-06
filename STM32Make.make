@@ -36,6 +36,8 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
+Core/Lib/can/lib/primary/primary_network.c \
+Core/Lib/can/lib/secondary/secondary_network.c \
 Core/Lib/micro-libs/eeprom-config/eeprom-config.c \
 Core/Lib/micro-libs/logger/logger.c \
 Core/Lib/micro-libs/m95256/m95256.c \
@@ -60,6 +62,7 @@ Core/Src/stm32f4xx_it.c \
 Core/Src/system_stm32f4xx.c \
 Core/Src/tim.c \
 Core/Src/time_base.c \
+Core/Src/tractive_system.c \
 Core/Src/usart.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \
@@ -154,6 +157,8 @@ AS_INCLUDES = \
 # C includes
 C_INCLUDES =  \
 -ICore/Inc \
+-ICore/Lib/can/lib/primary \
+-ICore/Lib/can/lib/secondary \
 -ICore/Lib/micro-libs/eeprom-config \
 -ICore/Lib/micro-libs/logger \
 -ICore/Lib/micro-libs/m95256 \

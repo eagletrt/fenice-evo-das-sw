@@ -79,6 +79,8 @@ includeDirectories:
   - Core/Lib/micro-libs/timer-utils/**
   - Core/Lib/micro-libs/m95256/**
   - Core/Lib/micro-libs/eeprom-config/**
+  - Core/Lib/can/lib/primary/**
+  - Core/Lib/can/lib/secondary/**
 
 
 # Files that should be included in the compilation.
@@ -94,6 +96,8 @@ sourceFiles:
   - Core/Lib/micro-libs/timer-utils/**
   - Core/Lib/micro-libs/m95256/**
   - Core/Lib/micro-libs/eeprom-config/**
+  - Core/Lib/can/lib/primary/**
+  - Core/Lib/can/lib/secondary/**
 
 
 # When no makefile is present it will show a warning pop-up.

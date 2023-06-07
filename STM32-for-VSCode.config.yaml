@@ -74,6 +74,7 @@ includeDirectories:
   - Core/Inc/**
   - Src/**
   - Core/Src/**
+  - Core/Lib/can/lib/**
   - Core/Lib/micro-libs/logger/**
   - Core/Lib/micro-libs/pwm/**
   - Core/Lib/micro-libs/timer-utils/**
@@ -91,6 +92,7 @@ includeDirectories:
 sourceFiles:  
   - Src/**
   - Core/Src/**
+  - Core/Lib/can/lib/**
   - Core/Lib/micro-libs/logger/**
   - Core/Lib/micro-libs/pwm/**
   - Core/Lib/micro-libs/timer-utils/**

@@ -220,7 +220,6 @@ void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 /**
  * @brief   Callback invoked when a CAN message has arrived in the HW FIFO
  * */
-#define CAN_DEBUG 1
 void _CAN_process_incoming_rx(CAN_HandleTypeDef * hcan, uint32_t rx_fifo) {
     CAN_RxHeaderTypeDef header = {};
 	CAN_MessageTypeDef msg = {};
@@ -230,8 +229,6 @@ void _CAN_process_incoming_rx(CAN_HandleTypeDef * hcan, uint32_t rx_fifo) {
 	msg.id = header.StdId;
 	msg.size = header.DLC;
     
-    LOG_write(LOGLEVEL_DEBUG, "Hello World!");
-
     #if CAN_DEBUG
         char txt[70] = "[CAN] RX: ";
         int offset = strlen(txt);

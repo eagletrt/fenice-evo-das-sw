@@ -40,7 +40,7 @@ TS_StatusTypeDef TS_get_status() {
  * @brief     Send a TS-ON message to the BMS-HV
  */
 void TS_power_on() {
-    CANMSG_SetTSStatus.data.ts_status_set = primary_set_ts_status_handcart_ts_status_set_ON;
+    CANMSG_SetTSStatus.data.ts_status_set = primary_set_ts_status_das_ts_status_set_ON;
     CANMSG_SetTSStatus.info.is_new = true;
 }
 
@@ -48,6 +48,6 @@ void TS_power_on() {
  * @brief     Send a TS-OFF message to the BMS-HV
  */
 void TS_power_off() {
-    CANMSG_SetTSStatus.data.ts_status_set = primary_set_ts_status_handcart_ts_status_set_OFF;
+    CANMSG_SetTSStatus.data.ts_status_set = primary_set_ts_status_das_ts_status_set_OFF;
     CANMSG_SetTSStatus.info.is_new = true;
 }

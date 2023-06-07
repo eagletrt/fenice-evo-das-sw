@@ -113,37 +113,37 @@ CAN_HandleTypeDef* _CANMSG_get_nwk_from_id(CAN_IdTypeDef id) {
 void _CANMSG_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
     switch (msg.id) {
         case PRIMARY_STEER_STATUS_FRAME_ID:
-            primary_steer_status_unpack(&(CANMSG_SteerStatus.data), msg.data, PRIMARY_STEER_STATUS_BIT_SIZE);
+            primary_steer_system_status_unpack(&(CANMSG_SteerStatus.data), msg.data, PRIMARY_STEER_STATUS_BYTE_SIZE);
             break;
         case PRIMARY_SET_CAR_STATUS_FRAME_ID:
-            primary_set_car_status_unpack(&(CANMSG_SetCarStatus.data), msg.data, PRIMARY_SET_CAR_STATUS_BIT_SIZE);
+            primary_set_car_status_unpack(&(CANMSG_SetCarStatus.data), msg.data, PRIMARY_SET_CAR_STATUS_BYTE_SIZE);
             break;
         case PRIMARY_TS_STATUS_FRAME_ID:
-            primary_ts_status_unpack(&(CANMSG_TSStatus.data), msg.data, PRIMARY_TS_STATUS_BIT_SIZE);
+            primary_ts_status_unpack(&(CANMSG_TSStatus.data), msg.data, PRIMARY_TS_STATUS_BYTE_SIZE);
             break;
         case PRIMARY_HV_VOLTAGE_FRAME_ID:
-            primary_hv_voltage_unpack(&(CANMSG_HVVoltage.data), msg.data, PRIMARY_HV_VOLTAGE_BIT_SIZE);
+            primary_hv_voltage_unpack(&(CANMSG_HVVoltage.data), msg.data, PRIMARY_HV_VOLTAGE_BYTE_SIZE);
             break;
         case PRIMARY_HV_CURRENT_FRAME_ID:
-            primary_hv_current_unpack(&(CANMSG_HVCurrent.data), msg.data, PRIMARY_HV_CURRENT_BIT_SIZE);
+            primary_hv_current_unpack(&(CANMSG_HVCurrent.data), msg.data, PRIMARY_HV_CURRENT_BYTE_SIZE);
             break;
         case PRIMARY_HV_TEMP_FRAME_ID:
-            primary_hv_temp_unpack(&(CANMSG_HVTemperature.data), msg.data, PRIMARY_HV_TEMP_BIT_SIZE);
+            primary_hv_temp_unpack(&(CANMSG_HVTemperature.data), msg.data, PRIMARY_HV_TEMP_BYTE_SIZE);
             break;
         case PRIMARY_HV_ERRORS_FRAME_ID:
-            primary_hv_errors_unpack(&(CANMSG_HVErrors.data), msg.data, PRIMARY_HV_ERRORS_BIT_SIZE);
+            primary_hv_errors_unpack(&(CANMSG_HVErrors.data), msg.data, PRIMARY_HV_ERRORS_BYTE_SIZE);
             break;
         case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID:
-            primary_hv_feedbacks_status_unpack(&(CANMSG_HVFeedbacks.data), msg.data, PRIMARY_HV_FEEDBACKS_STATUS_BIT_SIZE);
+            primary_hv_feedbacks_status_unpack(&(CANMSG_HVFeedbacks.data), msg.data, PRIMARY_HV_FEEDBACKS_STATUS_BYTE_SIZE);
             break;
         case PRIMARY_SET_PEDALS_RANGE_FRAME_ID:
-            primary_set_pedals_range_unpack(&(CANMSG_SetPedRange.data), msg.data, PRIMARY_SET_PEDALS_RANGE_BIT_SIZE);
+            primary_set_pedals_range_unpack(&(CANMSG_SetPedRange.data), msg.data, PRIMARY_SET_PEDALS_RANGE_BYTE_SIZE);
             break;
         case PRIMARY_SET_STEERING_ANGLE_RANGE_FRAME_ID:
-            primary_set_steering_angle_range_unpack(&(CANMSG_SetSteerRange.data), msg.data, PRIMARY_SET_STEERING_ANGLE_RANGE_BIT_SIZE);
+            primary_set_steering_angle_range_unpack(&(CANMSG_SetSteerRange.data), msg.data, PRIMARY_SET_STEERING_ANGLE_RANGE_BYTE_SIZE);
             break;
         case PRIMARY_INVERTER_CONNECTION_STATUS_FRAME_ID:
-            primary_inverter_connection_status_unpack(&(CANMSG_InvConnStatus.data), msg.data, PRIMARY_INVERTER_CONNECTION_STATUS_BIT_SIZE);
+            primary_inverter_connection_status_unpack(&(CANMSG_InvConnStatus.data), msg.data, PRIMARY_INVERTER_CONNECTION_STATUS_BYTE_SIZE);
             break;
         case PRIMARY_INV_L_RESPONSE_FRAME_ID:
             _CANMSG_parse_INV_L_message(&msg);
@@ -171,7 +171,7 @@ void _CANMSG_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
 
 size_t _CANMSG_parse_INV_L_message(CAN_MessageTypeDef *msg) {
     primary_inv_l_response_t inv_response;
-    primary_inv_l_response_unpack(&inv_response, msg->data, PRIMARY_INV_L_RESPONSE_BIT_SIZE);
+    primary_inv_l_response_unpack(&inv_response, msg->data, PRIMARY_INV_L_RESPONSE_BYTE_SIZE);
     CANMSG_MetadataTypeDef *info = NULL;
 
     // switch (inv_response.reg_id) {
@@ -401,21 +401,21 @@ bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
         //     msg->size = primary_serialize_DAS_VERSION(msg->data, INT_COMPONENT_VERSION, can_BUILD_TIME);
         //     break;
         case PRIMARY_DAS_ERRORS_FRAME_ID:
-            msg->size = primary_das_errors_pack(msg->data, &(CANMSG_DASErrors.data), PRIMARY_DAS_ERRORS_BIT_SIZE);
+            msg->size = primary_das_errors_pack(msg->data, &(CANMSG_DASErrors.data), PRIMARY_DAS_ERRORS_BYTE_SIZE);
             break;
         case PRIMARY_CAR_STATUS_FRAME_ID:
-            msg->size = primary_car_status_pack(msg->data, &(CANMSG_CarStatus.data), PRIMARY_CAR_STATUS_BIT_SIZE);
+            msg->size = primary_car_status_pack(msg->data, &(CANMSG_CarStatus.data), PRIMARY_CAR_STATUS_BYTE_SIZE);
             break;
         case PRIMARY_SPEED_FRAME_ID:
             primary_speed_t speed = { 0U };
             primary_speed_conversion_to_raw_struct(&speed, &(CANMSG_Speed.data));
-            msg->size = primary_speed_pack(msg->data, &speed, PRIMARY_SPEED_BIT_SIZE);
+            msg->size = primary_speed_pack(msg->data, &speed, PRIMARY_SPEED_BYTE_SIZE);
             break;
         case PRIMARY_SET_TS_STATUS_DAS_FRAME_ID:
-            msg->size = primary_set_ts_status_das_pack(msg->data, &(CANMSG_SetTSStatus.data), PRIMARY_SET_TS_STATUS_DAS_BIT_SIZE);
+            msg->size = primary_set_ts_status_das_pack(msg->data, &(CANMSG_SetTSStatus.data), PRIMARY_SET_TS_STATUS_DAS_BYTE_SIZE);
             break;
         case PRIMARY_SET_INVERTER_CONNECTION_STATUS_FRAME_ID:
-            msg->size = primary_set_inverter_connection_status_pack(msg->data, &(CANMSG_SetInvConnStatus.data), PRIMARY_SET_INVERTER_CONNECTION_STATUS_BIT_SIZE);
+            msg->size = primary_set_inverter_connection_status_pack(msg->data, &(CANMSG_SetInvConnStatus.data), PRIMARY_SET_INVERTER_CONNECTION_STATUS_BYTE_SIZE);
             break;
         case PRIMARY_INV_L_REQUEST_FRAME_ID:
             // msg->size = primary_serialize_INV_L_REQUEST(
@@ -441,21 +441,21 @@ bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
             msg->size = primary_ambient_temperature_pack(
                 msg->data,
                 &(CANMSG_AmbientTemperature.data),
-                PRIMARY_AMBIENT_TEMPERATURE_BIT_SIZE
+                PRIMARY_AMBIENT_TEMPERATURE_BYTE_SIZE
             );
             break;
         case SECONDARY_PEDALS_OUTPUT_FRAME_ID: ;
             secondary_pedals_output_t raw_ped;
             secondary_pedals_output_conversion_to_raw_struct(&raw_ped, &(CANMSG_PedVals.data));
-            msg->size = secondary_pedals_output_pack(msg->data, &raw_ped, SECONDARY_PEDALS_OUTPUT_BIT_SIZE);
+            msg->size = secondary_pedals_output_pack(msg->data, &raw_ped, SECONDARY_PEDALS_OUTPUT_BYTE_SIZE);
             break;
         case PRIMARY_CONTROL_OUTPUT_FRAME_ID: ;
             primary_control_output_t raw_ctrl;
             primary_control_output_conversion_to_raw_struct(&raw_ctrl, &(CANMSG_CtrlOut.data));
-            msg->size = primary_control_output_pack(msg->data, &raw_ctrl, PRIMARY_CONTROL_OUTPUT_BIT_SIZE);
+            msg->size = primary_control_output_pack(msg->data, &raw_ctrl, PRIMARY_CONTROL_OUTPUT_BYTE_SIZE);
             break;
         case SECONDARY_STEERING_ANGLE_FRAME_ID:
-            msg->size = secondary_steering_angle_pack(msg->data, &(CANMSG_SteerVal.data), SECONDARY_STEERING_ANGLE_BIT_SIZE);
+            msg->size = secondary_steering_angle_pack(msg->data, &(CANMSG_SteerVal.data), SECONDARY_STEERING_ANGLE_BYTE_SIZE);
             break;
         default:
             LOG_write(LOGLEVEL_ERR, "[CANMSG/Serialize] Unknown message id: 0x%X", msg->id); 

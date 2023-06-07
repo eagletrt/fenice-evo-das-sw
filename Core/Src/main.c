@@ -208,14 +208,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-    // LOG_write(LOGLEVEL_DEBUG, "APPS1: %d", ADC_get_APPS1());
-    // LOG_write(LOGLEVEL_DEBUG, "APPS2: %d", ADC_get_APPS2());
-    // LOG_write(LOGLEVEL_DEBUG, "BPPS1: %d", ADC_get_BPPS1());
-    // LOG_write(LOGLEVEL_DEBUG, "BPPS2: %d", ADC_get_BPPS2());
-    // LOG_write(LOGLEVEL_DEBUG, "BRK-F: %d", ADC_get_BRK_F());
-    // LOG_write(LOGLEVEL_DEBUG, "BRK-R: %d", ADC_get_BRK_R());
-
     
     /* Record loop duration */
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;

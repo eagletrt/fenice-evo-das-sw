@@ -19,6 +19,7 @@ Functions and types have been generated with prefix "VFSM_"
 #include "logger.h"
 #include "can_messages.h"
 #include "pedals.h"
+#include "tractive_system.h"
 
 
 /* State human-readable names */
@@ -249,7 +250,7 @@ VFSM_state_t VFSM_do_idle(VFSM_state_data_t *data) {
   _VFSM_update_CarStatus(VFSM_STATE_IDLE);
 
   /* Ensure the TS is OFF */
-  // TS_power_off();
+  TS_power_off();
   CANMSG_SetInvConnStatus.data.status = primary_ts_status_ts_status_OFF;
   CANMSG_SetInvConnStatus.info.is_new = true;
   // INV_R_set_torque_percent(0);
@@ -316,22 +317,22 @@ VFSM_state_t VFSM_do_start_ts_precharge(VFSM_state_data_t *data) {
     state_entered_timestamp = HAL_GetTick();
   }
   
-  if (HAL_GetTick() - state_entered_timestamp > 15*1000) {
+  if (false) { // HAL_GetTick() - state_entered_timestamp > 15*1000) {
     /* We had a timeout, go back */
     state_entered_timestamp = 0U;
     next_state = VFSM_STATE_START_TS_DISCHARGE;
   } else {
     /* Check if precharge has started and go forward */
-    // TS_StatusTypeDef pork = TS_get_status();
+    TS_StatusTypeDef pork = TS_get_status();
 
-    // if (pork == TS_STATUS_PRECHARGE || pork == TS_STATUS_ON) {
-    //   next_state = VFSM_STATE_WAIT_TS_PRECHARGE;
-    // } else if (pork == TS_STATUS_OFF) {
-    //   TS_power_on();
-    //   next_state = VFSM_NO_CHANGE;
-    // } else {
-    //   next_state = VFSM_STATE_START_TS_DISCHARGE;
-    // }
+    if (pork == TS_STATUS_PRECHARGE || pork == TS_STATUS_ON) {
+      next_state = VFSM_STATE_WAIT_TS_PRECHARGE;
+    } else if (pork == TS_STATUS_OFF) {
+      TS_power_on();
+      next_state = VFSM_NO_CHANGE;
+    } else {
+      next_state = VFSM_STATE_START_TS_DISCHARGE;
+    }
   }
 
   switch (next_state) {
@@ -371,17 +372,17 @@ VFSM_state_t VFSM_do_wait_ts_precharge(VFSM_state_data_t *data) {
     next_state = VFSM_STATE_START_TS_DISCHARGE;
   } else {
     /* Check if precharge has finished and go forward */
-    // switch (TS_get_status()) {
-    //   case TS_STATUS_PRECHARGE:
-    //     next_state = VFSM_NO_CHANGE;
-    //     break;
-    //   case TS_STATUS_ON:
-    //     next_state = VFSM_STATE_WAIT_DRIVER;
-    //     break;
-    //   default:
-    //     next_state = VFSM_STATE_START_TS_DISCHARGE;
-    //     break;
-    // }
+    switch (TS_get_status()) {
+      case TS_STATUS_PRECHARGE:
+        next_state = VFSM_NO_CHANGE;
+        break;
+      case TS_STATUS_ON:
+        next_state = VFSM_STATE_WAIT_DRIVER;
+        break;
+      default:
+        next_state = VFSM_STATE_START_TS_DISCHARGE;
+        break;
+    }
   }
   
   switch (next_state) {
@@ -411,22 +412,22 @@ VFSM_state_t VFSM_do_wait_driver(VFSM_state_data_t *data) {
   _VFSM_update_CarStatus(VFSM_STATE_WAIT_DRIVER);
 
   /* Check for relevant events */
-  // if (TS_get_status() != TS_STATUS_ON) {
-  //   /* Abort sequence */
-  //   next_state = VFSM_STATE_START_TS_DISCHARGE;
-  // } else if (CANMSG_SetCarStatus.info.is_new) {
-  //   primary_SetCarStatus s = CANMSG_SetCarStatus.data.car_status_set;
+  if (TS_get_status() != TS_STATUS_ON) {
+    /* Abort sequence */
+    next_state = VFSM_STATE_START_TS_DISCHARGE;
+  } else if (CANMSG_SetCarStatus.info.is_new) {
+    primary_set_car_status_car_status_set s = CANMSG_SetCarStatus.data.car_status_set;
 
-  //   if (s == primary_set_car_status_car_status_set_IDLE) {
-  //     /* New set IDLE message */
-  //     next_state = VFSM_STATE_START_TS_DISCHARGE;
-  //   } else if (s == primary_SetCarStatus_DRIVE && PED_get_brake_percent() >= 5.0f) {
-  //     /* New set DRIVE message */
-  //     next_state = VFSM_STATE_ENABLE_INV_DRIVE;
-  //   }
+    if (s == primary_set_car_status_car_status_set_IDLE) {
+      /* New set IDLE message */
+      next_state = VFSM_STATE_START_TS_DISCHARGE;
+    } else if (s == primary_set_car_status_car_status_set_DRIVE && PED_get_brake_percent() >= 5.0f) {
+      /* New set DRIVE message */
+      next_state = VFSM_STATE_ENABLE_INV_DRIVE;
+    }
 
-  //   CANMSG_SetCarStatus.info.is_new = false;
-  // }
+    CANMSG_SetCarStatus.info.is_new = false;
+  }
 
   switch (next_state) {
     case VFSM_NO_CHANGE:
@@ -557,20 +558,20 @@ VFSM_state_t VFSM_do_start_ts_discharge(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_NO_CHANGE;
   
   #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state wait_ts_off");
+    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state start_ts_discharge");
   #endif
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_START_TS_DISCHARGE);
 
-  // TS_StatusTypeDef pork = TS_get_status();
-  // 
-  // if (pork == TS_STATUS_ON || pork == TS_STATUS_PRECHARGE) {
-  //   TS_power_off();
-  //   next_state = VFSM_NO_CHANGE;
-  // } else {
-  //   next_state = VFSM_STATE_WAIT_TS_DISCHARGE;
-  // }
+  TS_StatusTypeDef pork = TS_get_status();
+  
+  if (pork == TS_STATUS_ON || pork == TS_STATUS_PRECHARGE) {
+    TS_power_off();
+    next_state = VFSM_NO_CHANGE;
+  } else {
+    next_state = VFSM_STATE_WAIT_TS_DISCHARGE;
+  }
   
   switch (next_state) {
     case VFSM_NO_CHANGE:

@@ -13,6 +13,7 @@
         "network.h": "c",
         "can.h": "c",
         "secondary_network.h": "c",
-        "primary_network.h": "c"
+        "primary_network.h": "c",
+        "inverters_network.h": "c"
     }
 }

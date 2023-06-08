@@ -29,14 +29,16 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "adc_fsm.h"
-#include "string.h"
-#include "stdio.h"
-#include "usart.h"
 #include "brakelight.h"
-#include "fsm.h"
-#include "logger.h"
-#include "pwm.h"
 #include "buzzer.h"
+#include "can_messages.h"
+#include "encoders.h"
+#include "fsm.h"
+#include "inverters.h"
+#include "logger.h"
+#include "pedals.h"
+#include "pwm.h"
+#include "string.h"
 #include "timer_utils.h"
 #include "time_base.h"
 #include "encoders.h"
@@ -45,6 +47,8 @@
 #include "das_version.h"
 #include "can_user_functions.h"
 #include "tractive_system.h"
+#include "stdio.h"
+#include "usart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -189,6 +193,7 @@ int main(void)
   
   /* Close the shutdown circuit */
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
+  
   while (1)
   {
     /* Step forward the FSM */
@@ -197,6 +202,8 @@ int main(void)
     // #if MAIN_DEBUG
     //   MAIN_print_dbg_info();
     // #endif
+    INV_send_autoTX_req(INV_LEFT);
+    INV_send_autoTX_req(INV_RIGHT);
 
     /* Flush CAN TX queue */
     CANMSG_flush_TX();

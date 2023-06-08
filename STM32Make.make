@@ -36,6 +36,8 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
+Core/Lib/can/lib/bms/bms_network.c \
+Core/Lib/can/lib/inverters/inverters_network.c \
 Core/Lib/can/lib/primary/primary_network.c \
 Core/Lib/can/lib/secondary/secondary_network.c \
 Core/Lib/micro-libs/eeprom-config/eeprom-config.c \
@@ -54,6 +56,7 @@ Core/Src/dma.c \
 Core/Src/encoders.c \
 Core/Src/fsm.c \
 Core/Src/gpio.c \
+Core/Src/inverters.c \
 Core/Src/main.c \
 Core/Src/pedals.c \
 Core/Src/spi.c \
@@ -157,6 +160,8 @@ AS_INCLUDES = \
 # C includes
 C_INCLUDES =  \
 -ICore/Inc \
+-ICore/Lib/can/lib/bms \
+-ICore/Lib/can/lib/inverters \
 -ICore/Lib/can/lib/primary \
 -ICore/Lib/can/lib/secondary \
 -ICore/Lib/micro-libs/eeprom-config \

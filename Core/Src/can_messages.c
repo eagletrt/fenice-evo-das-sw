@@ -12,11 +12,12 @@
 #include "can.h"
 #include "can_user_functions.h"
 #include "stdlib.h"
-// #include "inverters.h"
+#include "inverters.h"
 #include "string.h"
 
 #include "../Lib/can/lib/primary/primary_network.h"
 #include "../Lib/can/lib/secondary/secondary_network.h"
+#include "../Lib/can/lib/inverters/inverters_network.h"
 
 #ifdef TESTING
     #include "../../tests/logger_stubs.h"
@@ -61,22 +62,6 @@ CANMSG_SetInvConnStatusTypeDef   CANMSG_SetInvConnStatus = { {0U, false}, { 0U }
 CANMSG_SetSteerRangeTypeDef      CANMSG_SetSteerRange  = { {0U, false}, { 0U } };
 CANMSG_AmbientTemperatureTypeDef CANMSG_AmbientTemperature  = { {0U, false}, { 0U } };
 
-/* Primary Network - Inverters */
-// CANMSG_Inv_SetTorqueTypeDef  CANMSG_InvL_SetTorque = { {0U, false}, { .data_0 = INV_REG_TORQUECMD, .data_1 = 0U, .data_2 = 0U } };
-// CANMSG_Inv_ResponseTypeDef   CANMSG_InvL_Status    = { {0U, false}, { 0U } };
-// CANMSG_Inv_ResponseTypeDef   CANMSG_InvL_IOInfo    = { {0U, false}, { 0U } };
-// CANMSG_Inv_ResponseTypeDef   CANMSG_InvL_Errors    = { {0U, false}, { 0U } };
-// CANMSG_Inv_ResponseTypeDef   CANMSG_InvL_Speed     = { {0U, false}, { 0U } };
-// CANMSG_Inv_ResponseTypeDef   CANMSG_InvL_MTemp     = { {0U, false}, { 0U } };
-// CANMSG_Inv_ResponseTypeDef   CANMSG_InvL_ITemp     = { {0U, false}, { 0U } };
-// CANMSG_Inv_SetTorqueTypeDef  CANMSG_InvR_SetTorque = { {0U, false}, { .data_0 = INV_REG_TORQUECMD, .data_1 = 0U, .data_2 = 0U } };
-// CANMSG_Inv_ResponseTypeDef   CANMSG_InvR_Status    = { {0U, false}, { 0U } };
-// CANMSG_Inv_ResponseTypeDef   CANMSG_InvR_IOInfo    = { {0U, false}, { 0U } };
-// CANMSG_Inv_ResponseTypeDef   CANMSG_InvR_Errors    = { {0U, false}, { 0U } };
-// CANMSG_Inv_ResponseTypeDef   CANMSG_InvR_Speed     = { {0U, false}, { 0U } };
-// CANMSG_Inv_ResponseTypeDef   CANMSG_InvR_MTemp     = { {0U, false}, { 0U } };
-// CANMSG_Inv_ResponseTypeDef   CANMSG_InvR_ITemp     = { {0U, false}, { 0U } };
-
 /* Secondary Network */
 CANMSG_PedValsTypeDef        CANMSG_PedVals        = { {0U, false}, { 0U } };
 CANMSG_CtrlOutTypeDef        CANMSG_CtrlOut        = { {0U, false}, { 0U } };
@@ -86,6 +71,7 @@ CANMSG_IMUAngTypeDef         CANMSG_IMUAng         = { {0U, false}, { 0U } };
 
 
 void CANMSG_process_RX(CAN_MessageTypeDef msg) {
+    LOG_write(LOGLEVEL_DEBUG, "[CANMSG] Received message with ID: 0x%02X (%d)", msg.id, msg.id);
     _CANMSG_deserialize_msg_by_id(msg);
 
     // if (msg.id != primary_ID_INV_L_RESPONSE && msg.id != primary_ID_INV_R_RESPONSE) {
@@ -113,7 +99,7 @@ CAN_HandleTypeDef* _CANMSG_get_nwk_from_id(CAN_IdTypeDef id) {
 void _CANMSG_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
     switch (msg.id) {
         case PRIMARY_STEER_STATUS_FRAME_ID:
-            primary_steer_system_status_unpack(&(CANMSG_SteerStatus.data), msg.data, PRIMARY_STEER_STATUS_BYTE_SIZE);
+            primary_steer_status_unpack(&(CANMSG_SteerStatus.data), msg.data, PRIMARY_STEER_STATUS_BYTE_SIZE);
             break;
         case PRIMARY_SET_CAR_STATUS_FRAME_ID:
             primary_set_car_status_unpack(&(CANMSG_SetCarStatus.data), msg.data, PRIMARY_SET_CAR_STATUS_BYTE_SIZE);
@@ -316,16 +302,16 @@ CANMSG_MetadataTypeDef* CANMSG_get_metadata_from_id(CAN_IdTypeDef id) {
             // return &(CANMSG_InvR_SetTorque.info);
         case PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID:
             return &(CANMSG_AmbientTemperature.info);
-        case SECONDARY_PEDALS_OUTPUT_FRAME_ID:
-            return &(CANMSG_PedVals.info);
         case PRIMARY_CONTROL_OUTPUT_FRAME_ID:
             return &(CANMSG_CtrlOut.info);
-        case SECONDARY_STEERING_ANGLE_FRAME_ID:
-            return &(CANMSG_SteerVal.info);
-        case SECONDARY_IMU_ACCELERATION_FRAME_ID:
-            return &(CANMSG_IMUAcc.info);
-        case SECONDARY_IMU_ANGULAR_RATE_FRAME_ID:
-            return &(CANMSG_IMUAng.info);
+        // case SECONDARY_PEDALS_OUTPUT_FRAME_ID:
+        //     return &(CANMSG_PedVals.info);
+        // case SECONDARY_STEERING_ANGLE_FRAME_ID:
+        //     return &(CANMSG_SteerVal.info);
+        // case SECONDARY_IMU_ACCELERATION_FRAME_ID:
+        //     return &(CANMSG_IMUAcc.info);
+        // case SECONDARY_IMU_ANGULAR_RATE_FRAME_ID:
+        //     return &(CANMSG_IMUAng.info);
         default:
             // LOG_write(LOGLEVEL_WARN, "[CANMSG/getMetadata] Unknown message id: 0x%X", id);
             return NULL;

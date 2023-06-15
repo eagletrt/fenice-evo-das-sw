@@ -27,9 +27,9 @@ typedef struct { CANMSG_MetadataTypeDef info; primary_hv_errors_t data;        }
 typedef struct { CANMSG_MetadataTypeDef info; primary_hv_feedbacks_status_t data; } CANMSG_HVFeedbacksTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_ts_status_t data;        } CANMSG_TSStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_set_ts_status_das_t data;    } CANMSG_SetTSStatusTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_lv_current_t data;       } CANMSG_LVCurrentTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_lv_voltage_t data;       } CANMSG_LVVoltageTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_lv_temperature_t data;   } CANMSG_LVTemperatureTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_lv_currents_converted_t data;       } CANMSG_LVCurrentTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_lv_cells_voltage_t data;       } CANMSG_LVVoltageTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_lv_cells_temp_t data;   } CANMSG_LVTemperatureTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_inverter_connection_status_t data;     } CANMSG_InvConnStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_set_inverter_connection_status_t data; } CANMSG_SetInvConnStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_set_pedals_range_t data; } CANMSG_SetPedRangeTypeDef;

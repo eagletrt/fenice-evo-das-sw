@@ -52,7 +52,7 @@ HAL_StatusTypeDef CAN_send(CAN_MessageTypeDef *msg, CAN_HandleTypeDef *nwk) {
     CAN_error_rate = (float)_CAN_err_count / (float)_CAN_tot_tx_count;
 
     #if CAN_DEBUG
-      LOG_write(LOGLEVEL_DEBUG, "[CAN] Sending [ID 0x%x]", msg->id);
+      LOG_write(LOGLEVEL_DEBUG, "[CAN] Sending 0x%02X", msg->id);
     #endif
 
     return HAL_CAN_AddTxMessage(nwk, &header, msg->data, NULL);
@@ -234,7 +234,7 @@ void _CAN_process_incoming_rx(CAN_HandleTypeDef * hcan, uint32_t rx_fifo) {
         int offset = strlen(txt);
         offset += sprintf(txt+offset, "[ID: 0x%x - DLC: %d] ", msg.id, msg.size);
         for (int i = 0; i < msg.size; i++)
-            offset += sprintf(txt+offset, "%x ", msg.data[i]);
+            offset += sprintf(txt+offset, "%02X ", msg.data[i]);
         LOG_write(LOGLEVEL_DEBUG, txt);
     #endif
 

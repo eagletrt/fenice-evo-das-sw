@@ -11,8 +11,8 @@ typedef enum {
 
 void INV_parse_CAN_msg(uint8_t *buf, uint8_t len);
 
-void INV_send_autoTX_req(INV_SideTypeDef side);
+void INV_read_next_register();
 
-float INV_get_motor_temp(INV_SideTypeDef side);
+float INV_get_inv_temp(INV_SideTypeDef side);
 
 #endif

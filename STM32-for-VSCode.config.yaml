@@ -38,6 +38,7 @@ cFlags:
   - -fdata-sections
   - -ffunction-sections
   - -DFSM_DEBUG
+#  - -DCAN_DEBUG
 
 cxxFlags: []
 assemblyFlags: 
@@ -66,6 +67,7 @@ excludes:
   - "**/Example/**"
   - "**/example/**"
   - "**_template.*"
+  - "**/test/**"
 
 
 # Include directories (directories containing .h or .hpp files)
@@ -81,6 +83,7 @@ includeDirectories:
   - Core/Lib/micro-libs/timer-utils/**
   - Core/Lib/micro-libs/m95256/**
   - Core/Lib/micro-libs/eeprom-config/**
+  - Core/Lib/micro-libs/can-fifo-queue/**
   - Core/Lib/can/lib/primary/**
   - Core/Lib/can/lib/secondary/**
 
@@ -99,6 +102,7 @@ sourceFiles:
   - Core/Lib/micro-libs/timer-utils/**
   - Core/Lib/micro-libs/m95256/**
   - Core/Lib/micro-libs/eeprom-config/**
+  - Core/Lib/micro-libs/can-fifo-queue/**
   - Core/Lib/can/lib/primary/**
   - Core/Lib/can/lib/secondary/**
 

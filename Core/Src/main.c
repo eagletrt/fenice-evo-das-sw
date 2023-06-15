@@ -179,7 +179,11 @@ int main(void)
   /* Initialize the ADC capture loop */
   ADC_StartMuxCapure();
 
+  /* Initialize pedals module */
   PED_init();
+
+  /* Initialize CAN queues */
+  CANMSG_init();
 
   uint32_t last_enc_calc = 0;
 
@@ -206,6 +210,10 @@ int main(void)
 
     /* Flush CAN TX queue */
     CANMSG_flush_TX();
+
+    /* Parse all RX'd messages */
+    CANMSG_process_RX_queue();
+
     // TODO: rimettere primary_INTERVAL_SPEED al posto di 10
     if(HAL_GetTick() - 10 >= last_enc_calc) {
       last_enc_calc = HAL_GetTick();

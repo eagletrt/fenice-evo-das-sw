@@ -238,6 +238,6 @@ void _CAN_process_incoming_rx(CAN_HandleTypeDef * hcan, uint32_t rx_fifo) {
         LOG_write(LOGLEVEL_DEBUG, txt);
     #endif
 
-    /* Process the message */
-    CANMSG_process_RX(msg);
+    /* Add th message to the SW queue */
+    CANMSG_add_msg_to_RX_queue(&msg);
 }

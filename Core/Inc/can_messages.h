@@ -37,10 +37,6 @@ typedef struct { CANMSG_MetadataTypeDef info; primary_set_steering_angle_range_t
 typedef struct { CANMSG_MetadataTypeDef info; primary_ambient_temperature_t data; } CANMSG_AmbientTemperatureTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_control_output_converted_t data; } CANMSG_CtrlOutTypeDef;
 
-/* Primary Network - Inverters */
-// typedef struct { CANMSG_MetadataTypeDef info; primary_message_INV_L_REQUEST data;    } CANMSG_Inv_SetTorqueTypeDef;
-// typedef struct { CANMSG_MetadataTypeDef info; primary_message_INV_L_RESPONSE data;   } CANMSG_Inv_ResponseTypeDef;
-
 /* Secondary Network */
 typedef struct { CANMSG_MetadataTypeDef info; secondary_pedals_output_converted_t data;  } CANMSG_PedValsTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; secondary_steering_angle_t data; } CANMSG_SteerValTypeDef;
@@ -69,11 +65,6 @@ extern CANMSG_SetInvConnStatusTypeDef CANMSG_SetInvConnStatus;
 extern CANMSG_SetPedRangeTypeDef      CANMSG_SetPedRange;
 extern CANMSG_SetSteerRangeTypeDef    CANMSG_SetSteerRange;
 
-// extern CANMSG_Inv_SetTorqueTypeDef    CANMSG_InvL_SetTorque;
-// extern CANMSG_Inv_SetTorqueTypeDef    CANMSG_InvR_SetTorque;
-// extern CANMSG_Inv_ResponseTypeDef     CANMSG_InvL_Status, CANMSG_InvL_IOInfo, CANMSG_InvL_Errors, CANMSG_InvL_Speed, CANMSG_InvL_MTemp, CANMSG_InvL_ITemp;
-// extern CANMSG_Inv_ResponseTypeDef     CANMSG_InvR_Status, CANMSG_InvR_IOInfo, CANMSG_InvR_Errors, CANMSG_InvR_Speed, CANMSG_InvR_MTemp, CANMSG_InvR_ITemp;
-
 extern CANMSG_PedValsTypeDef          CANMSG_PedVals;
 extern CANMSG_CtrlOutTypeDef          CANMSG_CtrlOut;
 extern CANMSG_SteerValTypeDef         CANMSG_SteerVal;
@@ -82,14 +73,37 @@ extern CANMSG_IMUAngTypeDef           CANMSG_IMUAng;
 
 
 /**
- * @brief Deserialize and save a new received message
+ * Implementation of CAN messages
+ * ==============================
+ * 
+ * When a new message arrives, call CANMSG_add_msg_to_RX_queue() which will add it to a SW FIFO queue
+ * without slowing down the IRQ. Then, in the main loop periodically call CANMSG_process_RX_queue() which
+ * will empty this queue and deserialize each message into the corresponding struct.
+ * 
+ * This approach allows each module to access the messages in which it is interested as global variables
+ * without having to read the whole queue.
+ * 
+*/
+
+/**
+ * @brief Initialize all queues
  */
-void CANMSG_process_RX(CAN_MessageTypeDef msg);
+void CANMSG_init();
+
+/**
+ * @brief Extract a new message from the peripheral and store it in the buffer
+ */
+void CANMSG_add_msg_to_RX_queue(CAN_MessageTypeDef *msg);
 
 /**
  * @brief Send all new/available messages
  */
 void CANMSG_flush_TX();
+
+/**
+ * @brief Read all new/available messages in the RX buffer
+ */
+void CANMSG_process_RX_queue();
 
 
 CANMSG_MetadataTypeDef* CANMSG_get_metadata_from_id(CAN_IdTypeDef id);

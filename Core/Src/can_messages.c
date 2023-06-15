@@ -14,6 +14,7 @@
 #include "stdlib.h"
 #include "inverters.h"
 #include "string.h"
+#include "can_fifo_queue.h"
 
 #include "../Lib/can/lib/primary/primary_network.h"
 #include "../Lib/can/lib/secondary/secondary_network.h"
@@ -67,17 +68,35 @@ CANMSG_SteerValTypeDef       CANMSG_SteerVal       = { {0U, false}, { 0U } };
 CANMSG_IMUAccTypeDef         CANMSG_IMUAcc         = { {0U, false}, { 0U } };
 CANMSG_IMUAngTypeDef         CANMSG_IMUAng         = { {0U, false}, { 0U } };
 
+CANFQ_QueueTypeDef _CANMSG_RX_queue = { 0U };
 
-void CANMSG_process_RX(CAN_MessageTypeDef msg) {
-    if (inverters_id_is_message(msg.id)) {
-        INV_parse_CAN_msg(msg.data, msg.size);
-    } else {
-        _CANMSG_deserialize_msg_by_id(msg);
 
-        CANMSG_MetadataTypeDef *msg_to_update = CANMSG_get_metadata_from_id(msg.id);
-        if (msg_to_update != NULL) {
-            msg_to_update->timestamp = HAL_GetTick();
-            msg_to_update->is_new = true;
+
+void CANMSG_init() {
+    CANFQ_init(&_CANMSG_RX_queue);
+}
+
+void CANMSG_add_msg_to_RX_queue(CAN_MessageTypeDef *msg) {
+    if (!CANFQ_is_full(_CANMSG_RX_queue))
+        CANFQ_push(_CANMSG_RX_queue, msg);
+}
+
+void CANMSG_process_RX_queue() {
+    CAN_MessageTypeDef msg;
+    
+    while (CANFQ_pop(_CANMSG_RX_queue, &msg)) {
+        LOG_write(LOGLEVEL_DEBUG, "[CANMSG] Popped to deserialize: 0x%02X", msg.id);
+        
+        if (inverters_id_is_message(msg.id)) {
+            INV_parse_CAN_msg(msg.data, msg.size);
+        } else {
+            _CANMSG_deserialize_msg_by_id(msg);
+
+            CANMSG_MetadataTypeDef *msg_to_update = CANMSG_get_metadata_from_id(msg.id);
+            if (msg_to_update != NULL) {
+                msg_to_update->timestamp = HAL_GetTick();
+                msg_to_update->is_new = true;
+            }
         }
     }
 }

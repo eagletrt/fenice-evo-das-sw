@@ -40,6 +40,7 @@ Core/Lib/can/lib/bms/bms_network.c \
 Core/Lib/can/lib/inverters/inverters_network.c \
 Core/Lib/can/lib/primary/primary_network.c \
 Core/Lib/can/lib/secondary/secondary_network.c \
+Core/Lib/micro-libs/can-fifo-queue/can_fifo_queue.c \
 Core/Lib/micro-libs/eeprom-config/eeprom-config.c \
 Core/Lib/micro-libs/logger/logger.c \
 Core/Lib/micro-libs/m95256/m95256.c \
@@ -164,6 +165,7 @@ C_INCLUDES =  \
 -ICore/Lib/can/lib/inverters \
 -ICore/Lib/can/lib/primary \
 -ICore/Lib/can/lib/secondary \
+-ICore/Lib/micro-libs/can-fifo-queue \
 -ICore/Lib/micro-libs/eeprom-config \
 -ICore/Lib/micro-libs/logger \
 -ICore/Lib/micro-libs/m95256 \

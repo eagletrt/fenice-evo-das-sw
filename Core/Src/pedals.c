@@ -41,6 +41,8 @@ typedef struct {
 #define _PED_CALIB_BPPS2_MIN (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->BPPS2_MIN)
 #define _PED_CALIB_BPPS2_MAX (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->BPPS2_MAX)
 
+#define _PEDALS_CONFIG_BRKF_MIN 
+
 EEPROM_ConfigTypeDef pedals_config = {};
 
 /* Prototypes --------------------------------------------------------------- */
@@ -68,6 +70,13 @@ void PED_init() {
     calib.BPPS2_MAX = 0;
 
     EEPROM_config_init(&pedals_config, &EEPROM_SPI, CS_EEPROM_GPIO_Port, CS_EEPROM_Pin, 0x0, 0x3, &calib, sizeof(calib));
+    
+    EEPROM_config_read(&pedals_config);
+    _PED_CALIB* getted_data = (_PED_CALIB*)EEPROM_config_get(&pedals_config);
+    getted_data->BRKF_MIN = 32;
+    LOG_write(LOGLEVEL_DEBUG, "BRKF_MIN PRIMA: %u", getted_data->BRKF_MIN);
+    EEPROM_config_set(&pedals_config, getted_data);
+    EEPROM_config_write(&pedals_config);
 }
 
 float PED_get_accelerator_percent() {

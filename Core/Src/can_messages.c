@@ -85,7 +85,7 @@ void CANMSG_process_RX_queue() {
     CAN_MessageTypeDef msg;
     
     while (CANFQ_pop(_CANMSG_RX_queue, &msg)) {
-        LOG_write(LOGLEVEL_DEBUG, "[CANMSG] Popped to deserialize: 0x%02X", msg.id);
+        // LOG_write(LOGLEVEL_DEBUG, "[CANMSG] Popped to deserialize: 0x%02X", msg.id);
         
         if (inverters_id_is_message(msg.id)) {
             INV_parse_CAN_msg(msg.data, msg.size);

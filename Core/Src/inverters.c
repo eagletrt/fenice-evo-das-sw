@@ -56,9 +56,9 @@ void INV_read_next_register() {
     msg.size = inverters_inv_l_send_pack(msg.data, &tmp_l, 8);
     msg.id = INVERTERS_INV_L_SEND_FRAME_ID;
     
-    LOG_write(LOGLEVEL_DEBUG, "[INV] Sending: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
-        msg.data[0], msg.data[1], msg.data[2], msg.data[3], msg.data[4]
-    );
+    // LOG_write(LOGLEVEL_DEBUG, "[INV] Sending: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+    //     msg.data[0], msg.data[1], msg.data[2], msg.data[3], msg.data[4]
+    // );
 
     CAN_send(&msg, &hcan1);
 
@@ -70,9 +70,9 @@ void INV_read_next_register() {
     msg.size = inverters_inv_r_send_pack(msg.data, &tmp_r, 8);
     msg.id = INVERTERS_INV_R_SEND_FRAME_ID;
 
-    LOG_write(LOGLEVEL_DEBUG, "[INV] Sending: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
-        msg.data[0], msg.data[1], msg.data[2], msg.data[3], msg.data[4]
-    );
+    // LOG_write(LOGLEVEL_DEBUG, "[INV] Sending: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+    //     msg.data[0], msg.data[1], msg.data[2], msg.data[3], msg.data[4]
+    // );
 
     CAN_send(&msg, &hcan1);
 }

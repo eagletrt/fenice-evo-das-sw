@@ -1,6 +1,6 @@
 {
-    "cortex-debug.armToolchainPath": "/Users/riccardobenevelli/Library/Application Support/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-none-eabi-gcc/11.3.1-1.1.2/.content/bin",
-    "cortex-debug.openocdPath": "/Users/riccardobenevelli/Library/Application Support/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.11.0-5.1/.content/bin/openocd",
+    "cortex-debug.armToolchainPath": "/home/alex/Software/ARM-toolchain/bin",
+    "cortex-debug.openocdPath": "/usr/bin/openocd",
     "files.associations": {
         "*.css": "tailwindcss",
         "main.h": "c",

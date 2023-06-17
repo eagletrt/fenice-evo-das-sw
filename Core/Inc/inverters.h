@@ -13,6 +13,11 @@ void INV_parse_CAN_msg(uint8_t *buf, uint8_t len);
 
 void INV_read_next_register();
 
-float INV_get_inv_temp(INV_SideTypeDef side);
+float INV_get_IGBT_temp(INV_SideTypeDef side);
+float INV_get_motor_temp(INV_SideTypeDef side);
+int16_t INV_get_RPM(INV_SideTypeDef side);
+bool INV_is_drive_enabled(INV_SideTypeDef side);
+bool INV_get_RFE_state(INV_SideTypeDef side);
+bool INV_get_FRG_state(INV_SideTypeDef side);
 
 #endif

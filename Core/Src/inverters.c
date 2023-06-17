@@ -12,8 +12,11 @@ inverters_inv_r_rcv_converted_t _INV_r_recv;
 inverters_inv_l_rcv_converted_t _INV_l_recv;
 
 
-/** Note: Only left-side registers are listed. Right-side IDs are equal, send to both! */
+/** Note: Only left-side registers are listed. Right-side IDs are equal, but remember to send to both! */
 uint8_t _INV_READ_REG_QUEUE[] = {
+    INVERTERS_INV_L_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE,
+    INVERTERS_INV_L_SEND_READ_ID_26H_I_CMD_CHOICE,
+    INVERTERS_INV_L_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE,
     INVERTERS_INV_L_SEND_READ_ID_40H_STATUS_MAP_CHOICE,
     INVERTERS_INV_L_SEND_READ_ID_49H_T_MOTOR_CHOICE,
     INVERTERS_INV_L_SEND_READ_ID_4AH_T_IGBT_CHOICE,
@@ -77,7 +80,29 @@ void INV_read_next_register() {
     CAN_send(&msg, &hcan1);
 }
 
-float INV_get_inv_temp(INV_SideTypeDef side) {
+float INV_get_IGBT_temp(INV_SideTypeDef side) {
     uint16_t raw_temp = (side == INV_LEFT) ? _INV_l_recv.t_igbt : _INV_r_recv.t_igbt;
     return 0.005f * raw_temp - 38.0f;
+}
+
+float INV_get_motor_temp(INV_SideTypeDef side) {
+    uint16_t raw_temp = (side == INV_LEFT) ? _INV_l_recv.t_motor : _INV_r_recv.t_motor;
+    return (raw_temp - 9393.9f) / 55.1f;
+}
+
+int16_t INV_get_RPM(INV_SideTypeDef side) {
+    float raw_rpm = (side == INV_LEFT) ? _INV_l_recv.n_actual : _INV_r_recv.n_actual;
+    return (float)raw_rpm; // TODO: Probably needs conversion!
+}
+
+bool INV_is_drive_enabled(INV_SideTypeDef side) {
+    return (side == INV_LEFT) ? _INV_l_recv.ena82 : _INV_r_recv.ena82;
+}
+
+bool INV_get_RFE_state(INV_SideTypeDef side) {
+    return (side == INV_LEFT) ? _INV_l_recv.rfe216 : _INV_r_recv.rfe216;
+}
+
+bool INV_get_FRG_state(INV_SideTypeDef side) {
+    return (side == INV_LEFT) ? _INV_l_recv.frgrun : _INV_r_recv.frgrun;
 }

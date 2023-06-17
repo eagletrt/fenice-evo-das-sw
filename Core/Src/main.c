@@ -220,8 +220,8 @@ int main(void)
       ENC_send_vals_in_CAN();
     }
 
-    // LOG_write(LOGLEVEL_DEBUG, "[MAIN]: L IGBT temp: %f", INV_get_inv_temp(INV_LEFT));
-    // LOG_write(LOGLEVEL_DEBUG, "[MAIN]: R IGBT temp: %f", INV_get_inv_temp(INV_RIGHT));
+    // LOG_write(LOGLEVEL_DEBUG, "[MAIN]: L IGBT temp: %f", INV_get_IGBT_temp(INV_LEFT));
+    // LOG_write(LOGLEVEL_DEBUG, "[MAIN]: R IGBT temp: %f", INV_get_IGBT_temp(INV_RIGHT));
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

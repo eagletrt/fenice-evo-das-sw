@@ -88,7 +88,7 @@ void CANMSG_process_RX_queue() {
         // LOG_write(LOGLEVEL_DEBUG, "[CANMSG] Popped to deserialize: 0x%02X", msg.id);
         
         if (inverters_id_is_message(msg.id)) {
-            INV_parse_CAN_msg(msg.data, msg.size);
+            INV_parse_CAN_msg(msg.id, msg.data, msg.size);
         } else {
             _CANMSG_deserialize_msg_by_id(msg);
 
@@ -162,7 +162,7 @@ void _CANMSG_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
             secondary_imu_angular_rate_raw_to_conversion_struct(&(CANMSG_IMUAng.data), &raw_imu_ang);
             break;
         default:
-            LOG_write(LOGLEVEL_ERR, "[CANMSG/Deserialize] Unknown message id: 0x%X", msg.id);
+            // LOG_write(LOGLEVEL_ERR, "[CANMSG/Deserialize] Unknown message id: 0x%X", msg.id);
             break;
     }
 }
@@ -238,12 +238,12 @@ void CANMSG_flush_TX() {
         PRIMARY_CAR_STATUS_FRAME_ID,
         PRIMARY_SET_TS_STATUS_DAS_FRAME_ID,
         PRIMARY_SPEED_FRAME_ID,
-        PRIMARY_SET_INVERTER_CONNECTION_STATUS_FRAME_ID,
-        PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID,
+        // PRIMARY_SET_INVERTER_CONNECTION_STATUS_FRAME_ID,
+        // PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID,
 
-        SECONDARY_PEDALS_OUTPUT_FRAME_ID,
-        PRIMARY_CONTROL_OUTPUT_FRAME_ID,
-        SECONDARY_STEERING_ANGLE_FRAME_ID
+        // SECONDARY_PEDALS_OUTPUT_FRAME_ID,
+        // PRIMARY_CONTROL_OUTPUT_FRAME_ID,
+        // SECONDARY_STEERING_ANGLE_FRAME_ID
     };
     static uint8_t ids_loop_idx = 0;
     uint8_t ids_loop_len = sizeof(ids_to_send)/sizeof(ids_to_send[0]);
@@ -258,11 +258,15 @@ void CANMSG_flush_TX() {
         if (info != NULL && _CANMSG_needs_to_be_sent(id, nwk)) {
             CAN_MessageTypeDef msg;
             
-            if (_CANMSG_serialize_msg_by_id(id, &msg))
-                CAN_send(&msg, nwk);
-            else
+            if (_CANMSG_serialize_msg_by_id(id, &msg)){
+                if(CAN_send(&msg, nwk) != HAL_OK){
+                    LOG_write(LOGLEVEL_ERR, "CAN SEND ERROR");
+                }
+                LOG_write(LOGLEVEL_ERR, "Serializing message 0x%X", id);
+            }
+            else {
                 LOG_write(LOGLEVEL_WARN, "[CANMSG/flushTX] Failed to serialize message 0x%X", id);
-
+            }
             info->timestamp = HAL_GetTick();
             info->is_new = false;
         }
@@ -279,10 +283,10 @@ bool _CANMSG_needs_to_be_sent(CAN_IdTypeDef id, CAN_HandleTypeDef* nwk) {
     CANMSG_MetadataTypeDef *info = CANMSG_get_metadata_from_id(id);
     // int32_t interval = (nwk == &CAN_PRIMARY_NETWORK) ? primary_watchdog_interval_from_id(id) : secondary_watchdog_interval_from_id(id);
     // int32_t elapsed = HAL_GetTick() - info->timestamp;
-    // return (interval == primary_INTERVAL_ONCE && info->is_new) ||
-    //        (elapsed >= interval && interval != primary_INTERVAL_ONCE);
-    return true; // FIXME: remove comments
-}
+    // return (interval == -1 && info->is_new) ||
+    //        (elapsed >= interval && interval != -1);
+    return true;
+} // FIXME: remove -1 and replace with #define primary_INTERVAL_ONCE -1
 
 bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
     msg->id = id;

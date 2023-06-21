@@ -9,7 +9,7 @@ typedef enum {
 } INV_SideTypeDef;
 
 
-void INV_parse_CAN_msg(uint8_t *buf, uint8_t len);
+void INV_parse_CAN_msg(CAN_IdTypeDef id, uint8_t *buf, uint8_t len);
 
 void INV_read_next_register();
 

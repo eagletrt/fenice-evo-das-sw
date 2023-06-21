@@ -73,6 +73,8 @@ VFSM_state_t vfsm_current_state = VFSM_STATE_INIT;
 
 uint32_t _MAIN_avg_loop_duration_ms = 0;
 uint32_t _MAIN_last_ms_showed = 0;
+
+uint8_t _MAIN_dbg_uart_buf[MAIN_DBG_BUF_LEN];
 bool _MAIN_is_dbg_uart_free = true;
 uint16_t _MAIN_dbg_uart_line_idx = 0;
 /* USER CODE END PV */
@@ -202,10 +204,11 @@ int main(void)
   {
     /* Step forward the FSM */
     vfsm_current_state = VFSM_run_state(vfsm_current_state, NULL);
+    
     /* Update debug information over UART */
-    // #if MAIN_DEBUG
-    //   MAIN_print_dbg_info();
-    // #endif
+    MAIN_print_dbg_info();
+    
+    /* Iterate over inverter registers */
     INV_read_next_register();
 
     /* Flush CAN TX queue */
@@ -228,7 +231,6 @@ int main(void)
     
     /* Record loop duration */
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
-    HAL_Delay(500);
   }
   /* USER CODE END 3 */
 }
@@ -310,11 +312,10 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 }
 
 void _MAIN_print_dbg_line(char *title, char *txt) {
-  static char buf[MAIN_DBG_BUF_LEN];
-  uint16_t n_bytes = snprintf(buf, MAIN_DBG_BUF_LEN, "%10s | %s\033[K\r\n", title, txt);
+  uint16_t n_bytes = snprintf(_MAIN_dbg_uart_buf, MAIN_DBG_BUF_LEN, "%10s | %s\033[K\r\n", title, txt);
 
   _MAIN_is_dbg_uart_free = false;
-  HAL_UART_Transmit_IT(&huart2, buf, n_bytes);
+  HAL_UART_Transmit_IT(&huart2, _MAIN_dbg_uart_buf, n_bytes);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
@@ -335,16 +336,16 @@ void MAIN_print_dbg_info() {
 
   switch (_MAIN_dbg_uart_line_idx) {
     case 0:
-      LOG_print_fenice_logo("            -    D A S   f i r m w a r e   v 1 . 0   -            ");
+      LOG_print_fenice_logo("            -    D A S   f i r m w a r e   v 2 . 0   -            ");
       break;
     case 1:
       snprintf(buf, buf_len, "%8s: %-6d %8s: %8s %8s: %12s", "Code", INT_COMPONENT_VERSION, "Time", __TIME__, "Date", __DATE__);
       _MAIN_print_dbg_line("BUILD", buf);
       break;
-    // case 2:
-    //   snprintf(buf, buf_len, "%8s: %-3ld ms %8s: 0x%06X", "Loop len", _MAIN_avg_loop_duration_ms, "Errors", CANMSG_DASErrors.data.das_error);
-    //   _MAIN_print_dbg_line("MAIN", buf);
-    //   break;
+    case 2:
+      // snprintf(buf, buf_len, "%8s: %-3ld ms %8s: 0x%06X", "Loop len", _MAIN_avg_loop_duration_ms, "Errors", CANMSG_DASErrors.data.das_error);
+      // _MAIN_print_dbg_line("MAIN", buf);
+      break;
     case 3:
       snprintf(buf, buf_len, "%8s: %-4.1f%%", "Err rate", CAN_error_rate*100);
       _MAIN_print_dbg_line("CAN", buf);
@@ -353,43 +354,45 @@ void MAIN_print_dbg_info() {
       snprintf(buf, buf_len, "%8s: %-6s", "State", VFSM_state_names[vfsm_current_state]);
       _MAIN_print_dbg_line("FSM", buf);
       break;
-    // case 5:
-    //   snprintf(buf, buf_len, "%8s: %-6s %8s: 0x%06X %8s: 0x%06X",
-    //     "Status", TS_state_names[TS_get_status()], "Errors", CANMSG_HVErrors.data.errors, "Warns", CANMSG_HVErrors.data.warnings);
-    //   _MAIN_print_dbg_line("BMS-HV", buf);
-    //   break;
-    // case 6:
+    case 5:
+      // snprintf(buf, buf_len, "%8s: %-6s %8s: 0x%06X %8s: 0x%06X",
+      //   "Status", TS_state_names[TS_get_status()], "Errors", CANMSG_HVErrors.data.errors, "Warns", CANMSG_HVErrors.data.warnings);
+      // _MAIN_print_dbg_line("BMS-HV", buf);
+      break;
+    case 6:
     //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
     //     "Online", INV_L_get_status()->online, "BTB/RDY", INV_L_get_status()->BTB_ready, "RFE", INV_L_get_status()->RFE_switch, "RUN", INV_L_get_status()->RUN_switch);
     //   _MAIN_print_dbg_line("INV/L", buf);
     //   break;
-    // case 7:
+    case 7:
     //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6.1f %8s: %-6.1f",
     //     "DriveEna", INV_L_get_status()->drive_enabled, "RPM", INV_L_get_status()->rpm, "Mot T", INV_L_get_status()->motor_temp, "IGBT T", INV_L_get_status()->igbt_temp);
     //   _MAIN_print_dbg_line("", buf);
     //   break;
-    // case 8:
+    case 8:
     //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
     //     "Online", INV_R_get_status()->online, "BTB/RDY", INV_R_get_status()->BTB_ready, "RFE", INV_R_get_status()->RFE_switch, "RUN", INV_R_get_status()->RUN_switch);
     //   _MAIN_print_dbg_line("INV/R", buf);
     //   break;
-    // case 9:
+    case 9:
     //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6.1f %8s: %-6.1f",
     //     "DriveEna", INV_R_get_status()->drive_enabled, "RPM", INV_R_get_status()->rpm, "Mot T", INV_R_get_status()->motor_temp, "IGBT T", INV_R_get_status()->igbt_temp);
     //   _MAIN_print_dbg_line("", buf);
     //   break;
-    // case 10:
+    case 10:
     //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
     //     "Encoder", INV_L_get_errors()->encoder_error, "No pwr v",  INV_L_get_errors()->no_pwr_voltage,
     //     "Mot temp", INV_L_get_errors()->hi_motor_temp, "Dev temp",  INV_L_get_errors()->hi_device_temp);
     //   _MAIN_print_dbg_line("INV/L Errs", buf);
     //   break;
-    // case 11:
+    case 11:
     //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
     //     "Encoder", INV_R_get_errors()->encoder_error, "No pwr v",  INV_R_get_errors()->no_pwr_voltage,
     //     "Mot temp", INV_R_get_errors()->hi_motor_temp, "Dev temp",  INV_R_get_errors()->hi_device_temp);
     //   _MAIN_print_dbg_line("INV/R Errs", buf);
     //   break;
+    //   _MAIN_print_dbg_line("---", "----------------------------------------");
+      break;
     case 12:
       #if PED_DEBUG
         PED_log_dbg_info();
@@ -408,20 +411,20 @@ void MAIN_print_dbg_info() {
         "Steer", ENC_C_get_angle_deg(), "W/L", ENC_L_get_radsec(), "W/R", ENC_R_get_radsec());
       _MAIN_print_dbg_line("ENC", buf);
       break;
-    // case 15:
+    case 15:
     //   snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
     //     "TTLL", CTRL_get_torque_L(), "TTRR", CTRL_get_torque_R(), "Est.V.", CTRL_get_vest(), "AvgDelay", CTRL_avg_wait_ms);
     //   _MAIN_print_dbg_line("CTRL", buf);
-    //   break;
+      break;
     case 16:
-      snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
-        "X", CANMSG_IMUAcc.data.accel_x, "Y", CANMSG_IMUAcc.data.accel_y, "Z", CANMSG_IMUAcc.data.accel_z);
-      _MAIN_print_dbg_line("IMU/Acc", buf);
+      // snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
+      //   "X", CANMSG_IMUAcc.data.accel_x, "Y", CANMSG_IMUAcc.data.accel_y, "Z", CANMSG_IMUAcc.data.accel_z);
+      // _MAIN_print_dbg_line("IMU/Acc", buf);
       break;
     case 17:
-      snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
-        "X", CANMSG_IMUAng.data.ang_rate_x, "Y", CANMSG_IMUAng.data.ang_rate_y, "Z", CANMSG_IMUAng.data.ang_rate_z);
-      _MAIN_print_dbg_line("IMU/Ang", buf);
+      // snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
+      //   "X", CANMSG_IMUAng.data.ang_rate_x, "Y", CANMSG_IMUAng.data.ang_rate_y, "Z", CANMSG_IMUAng.data.ang_rate_z);
+      // _MAIN_print_dbg_line("IMU/Ang", buf);
       break;
     case 18:
       snprintf(buf, buf_len, "%8s: %-6s %8s: %-6s %8s: %-6s",

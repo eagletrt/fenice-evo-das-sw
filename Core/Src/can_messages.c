@@ -17,7 +17,9 @@
 #include "can_fifo_queue.h"
 
 #include "../Lib/can/lib/primary/primary_network.h"
+#include "../Lib/can/lib/primary/primary_watchdog.h"
 #include "../Lib/can/lib/secondary/secondary_network.h"
+#include "../Lib/can/lib/secondary/secondary_watchdog.h"
 #include "../Lib/can/lib/inverters/inverters_network.h"
 
 #ifdef TESTING
@@ -84,9 +86,7 @@ void CANMSG_add_msg_to_RX_queue(CAN_MessageTypeDef *msg) {
 void CANMSG_process_RX_queue() {
     CAN_MessageTypeDef msg;
     
-    while (CANFQ_pop(_CANMSG_RX_queue, &msg)) {
-        // LOG_write(LOGLEVEL_DEBUG, "[CANMSG] Popped to deserialize: 0x%02X", msg.id);
-        
+    while (CANFQ_pop(_CANMSG_RX_queue, &msg)) {        
         if (inverters_id_is_message(msg.id)) {
             INV_parse_CAN_msg(msg.id, msg.data, msg.size);
         } else {
@@ -219,8 +219,25 @@ CANMSG_MetadataTypeDef* CANMSG_get_metadata_from_id(CAN_IdTypeDef id) {
         //     return &(CANMSG_IMUAcc.info);
         // case SECONDARY_IMU_ANGULAR_RATE_FRAME_ID:
         //     return &(CANMSG_IMUAng.info);
+        case PRIMARY_SET_CELL_BALANCING_STATUS_FRAME_ID:
+        case PRIMARY_HANDCART_SETTINGS_SET_FRAME_ID:
+        case PRIMARY_TLM_VERSION_FRAME_ID:
+        case PRIMARY_TLM_STATUS_FRAME_ID:
+            return NULL;
         default:
             // LOG_write(LOGLEVEL_WARN, "[CANMSG/getMetadata] Unknown message id: 0x%X", id);
+
+            // uint8_t* name[30] = { 0U };
+            // primary_message_name_from_id(id, name);
+            // LOG_write(LOGLEVEL_WARN, "[CANMSG/getMetadata]     > primary nwk decoding: [%s]", name);
+            // 
+            // name[0] = '\0';
+            // secondary_message_name_from_id(id, name);
+            // LOG_write(LOGLEVEL_WARN, "[CANMSG/getMetadata]     > secondary nwk decoding: [%s]", name);
+            // 
+            // name[0] = '\0';
+            // inverters_message_name_from_id(id, name);
+            // LOG_write(LOGLEVEL_WARN, "[CANMSG/getMetadata]     > inverters nwk decoding: [%s]", name);
             return NULL;
     }
 }
@@ -262,7 +279,6 @@ void CANMSG_flush_TX() {
                 if(CAN_send(&msg, nwk) != HAL_OK){
                     LOG_write(LOGLEVEL_ERR, "CAN SEND ERROR");
                 }
-                LOG_write(LOGLEVEL_ERR, "Serializing message 0x%X", id);
             }
             else {
                 LOG_write(LOGLEVEL_WARN, "[CANMSG/flushTX] Failed to serialize message 0x%X", id);
@@ -281,12 +297,11 @@ void CANMSG_flush_TX() {
  */
 bool _CANMSG_needs_to_be_sent(CAN_IdTypeDef id, CAN_HandleTypeDef* nwk) {
     CANMSG_MetadataTypeDef *info = CANMSG_get_metadata_from_id(id);
-    // int32_t interval = (nwk == &CAN_PRIMARY_NETWORK) ? primary_watchdog_interval_from_id(id) : secondary_watchdog_interval_from_id(id);
-    // int32_t elapsed = HAL_GetTick() - info->timestamp;
-    // return (interval == -1 && info->is_new) ||
-    //        (elapsed >= interval && interval != -1);
-    return true;
-} // FIXME: remove -1 and replace with #define primary_INTERVAL_ONCE -1
+    int32_t interval = (nwk == &CAN_PRIMARY_NETWORK) ? primary_watchdog_interval_from_id(id) : secondary_watchdog_interval_from_id(id);
+    int32_t elapsed = HAL_GetTick() - info->timestamp;
+    return (interval == -1 && info->is_new) ||
+           (elapsed >= interval && interval != -1);
+}
 
 bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
     msg->id = id;
@@ -329,13 +344,24 @@ bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
             primary_control_output_conversion_to_raw_struct(&raw_ctrl, &(CANMSG_CtrlOut.data));
             msg->size = primary_control_output_pack(msg->data, &raw_ctrl, PRIMARY_CONTROL_OUTPUT_BYTE_SIZE);
             break;
-        case SECONDARY_STEERING_ANGLE_FRAME_ID:
-            msg->size = secondary_steering_angle_pack(msg->data, &(CANMSG_SteerVal.data), SECONDARY_STEERING_ANGLE_BYTE_SIZE);
-            break;
+        // case SECONDARY_STEERING_ANGLE_FRAME_ID:
+            // msg->size = secondary_steering_angle_pack(msg->data, &(CANMSG_SteerVal.data), SECONDARY_STEERING_ANGLE_BYTE_SIZE);
+            // break;
         default:
             LOG_write(LOGLEVEL_ERR, "[CANMSG/Serialize] Unknown message id: 0x%X", msg->id); 
+
+            uint8_t* name[30] = { 0U };
+            primary_message_name_from_id(id, name);
+            LOG_write(LOGLEVEL_WARN, "[CANMSG/Serialize]     > primary nwk decoding: [%s]", name);
+            
+            name[0] = '\0';
+            secondary_message_name_from_id(id, name);
+            LOG_write(LOGLEVEL_WARN, "[CANMSG/Serialize]     > secondary nwk decoding: [%s]", name);
+            
+            name[0] = '\0';
+            inverters_message_name_from_id(id, name);
+            LOG_write(LOGLEVEL_WARN, "[CANMSG/Serialize]     > inverters nwk decoding: [%s]", name);
             return false;
-            break;
     }
 
     return true;

@@ -88,6 +88,7 @@ void _MAIN_print_dbg_line(char *title, char *txt);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void MAIN_print_dbg_info();
+void _MAIN_process_ped_calib_msg();
 
 /* Redefine the weak function in logger.c to use the UART as textual output */
 void _LOG_write_raw(char *txt) {
@@ -228,6 +229,28 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+    /* Check if we have push to talk messages to process */
+    if (CANMSG_SetPTTStatus.info.is_new){
+      if (CANMSG_SetPTTStatus.data.status == primary_set_ptt_status_status_ON){
+        HAL_GPIO_WritePin(PTT_GPIO_Port, PTT_Pin, GPIO_PIN_SET);
+        CANMSG_PTTStatus.data.status = primary_ptt_status_status_ON;
+        CANMSG_PTTStatus.info.is_new = true;
+      } else if (CANMSG_SetPTTStatus.data.status == primary_set_ptt_status_status_OFF){
+        HAL_GPIO_WritePin(PTT_GPIO_Port, PTT_Pin, GPIO_PIN_RESET);
+        CANMSG_PTTStatus.data.status = primary_ptt_status_status_OFF;
+        CANMSG_PTTStatus.info.is_new = true;
+      }
+      CANMSG_SetPTTStatus.info.is_new = false;
+    }
+    
+
+    /* Check if we have calibration messages to process */
+    if (CANMSG_SetPedRange.info.is_new) {
+      LOG_write(LOGLEVEL_DEBUG, "[MAIN] Processing pedal calibration message");
+      _MAIN_process_ped_calib_msg();
+      CANMSG_SetPedRange.info.is_new = false;
+    }
     
     /* Record loop duration */
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
@@ -289,6 +312,28 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/**
+ * @brief     Read the CAN calibration message and call the PED module
+ */
+void _MAIN_process_ped_calib_msg() {
+  PED_CalibTypeDef calib = 0U;
+  primary_set_pedals_range_converted_t *msg = &(CANMSG_SetPedRange.data);
+
+  if (msg->pedal == primary_set_pedals_range_pedal_ACCELERATOR)
+    if (msg->bound == primary_set_pedals_range_bound_SET_MAX)
+      calib = PED_CALIB_APPS_MAX;
+    else
+      calib = PED_CALIB_APPS_MIN;
+  else
+    if (msg->bound == primary_set_pedals_range_bound_SET_MAX)
+      calib = PED_CALIB_BSE_MAX;
+    else
+      calib = PED_CALIB_BSE_MIN;
+
+  PED_calibrate(calib);
+}
+
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
   static uint64_t last_speed_sample = 0, last_angle_sample = 0;
   // if (htim == &htim1) {

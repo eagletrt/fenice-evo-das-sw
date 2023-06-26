@@ -59,6 +59,8 @@ CANMSG_LVVoltageTypeDef          CANMSG_LVVoltage      = { {0U, false}, { 0U } }
 CANMSG_LVTemperatureTypeDef      CANMSG_LVTemperature  = { {0U, false}, { 0U } };
 CANMSG_SetPedRangeTypeDef        CANMSG_SetPedRange    = { {0U, false}, { 0U } };
 CANMSG_InvConnStatusTypeDef      CANMSG_InvConnStatus  = { {0U, false}, { 0U } };
+CANMSG_SetPTTStatusTypeDef       CANMSG_SetPTTStatus   = { {0U, false}, { 0U } };
+CANMSG_PTTStatusTypeDef          CANMSG_PTTStatus      = { {0U, false}, { .status = primary_ptt_status_status_OFF } };
 CANMSG_SetInvConnStatusTypeDef   CANMSG_SetInvConnStatus = { {0U, false}, { 0U } };
 CANMSG_SetSteerRangeTypeDef      CANMSG_SetSteerRange  = { {0U, false}, { 0U } };
 CANMSG_AmbientTemperatureTypeDef CANMSG_AmbientTemperature  = { {0U, false}, { 0U } };
@@ -149,6 +151,9 @@ void _CANMSG_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
         case PRIMARY_INVERTER_CONNECTION_STATUS_FRAME_ID:
             primary_inverter_connection_status_unpack(&(CANMSG_InvConnStatus.data), msg.data, PRIMARY_INVERTER_CONNECTION_STATUS_BYTE_SIZE);
             break;
+        case PRIMARY_SET_PTT_STATUS_FRAME_ID:
+            primary_set_ptt_status_unpack(&(CANMSG_SetPTTStatus.data), msg.data, PRIMARY_SET_PTT_STATUS_BYTE_SIZE);
+            break;
         case SECONDARY_IMU_ACCELERATION_FRAME_ID:
             secondary_imu_acceleration_t raw_imu_acc;
             secondary_imu_acceleration_unpack(&raw_imu_acc, msg.data, SECONDARY_IMU_ACCELERATION_BYTE_SIZE);
@@ -205,6 +210,10 @@ CANMSG_MetadataTypeDef* CANMSG_get_metadata_from_id(CAN_IdTypeDef id) {
             return &(CANMSG_SetSteerRange.info);
         case PRIMARY_INVERTER_CONNECTION_STATUS_FRAME_ID:
             return &(CANMSG_InvConnStatus.info);
+        case PRIMARY_SET_PTT_STATUS_FRAME_ID:
+            return &(CANMSG_SetPTTStatus.info);
+        case PRIMARY_PTT_STATUS_FRAME_ID:
+            return &(CANMSG_PTTStatus.info);
         case PRIMARY_SET_INVERTER_CONNECTION_STATUS_FRAME_ID:
             return &(CANMSG_SetInvConnStatus.info);
         case PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID:
@@ -257,6 +266,7 @@ void CANMSG_flush_TX() {
         PRIMARY_SPEED_FRAME_ID,
         // PRIMARY_SET_INVERTER_CONNECTION_STATUS_FRAME_ID,
         // PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID,
+        PRIMARY_PTT_STATUS_FRAME_ID,
 
         // SECONDARY_PEDALS_OUTPUT_FRAME_ID,
         // PRIMARY_CONTROL_OUTPUT_FRAME_ID,
@@ -333,6 +343,9 @@ bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
                 &(CANMSG_AmbientTemperature.data),
                 PRIMARY_AMBIENT_TEMPERATURE_BYTE_SIZE
             );
+            break;
+        case PRIMARY_PTT_STATUS_FRAME_ID:
+            msg->size = primary_ptt_status_pack(msg->data, &(CANMSG_PTTStatus.data), PRIMARY_PTT_STATUS_BYTE_SIZE);
             break;
         case SECONDARY_PEDALS_OUTPUT_FRAME_ID: ;
             secondary_pedals_output_t raw_ped;

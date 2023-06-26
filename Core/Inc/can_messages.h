@@ -31,8 +31,10 @@ typedef struct { CANMSG_MetadataTypeDef info; primary_lv_currents_converted_t da
 typedef struct { CANMSG_MetadataTypeDef info; primary_lv_cells_voltage_t data;       } CANMSG_LVVoltageTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_lv_cells_temp_t data;   } CANMSG_LVTemperatureTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_inverter_connection_status_t data;     } CANMSG_InvConnStatusTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_set_ptt_status_t data; } CANMSG_SetPTTStatusTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_ptt_status_t data; } CANMSG_PTTStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_set_inverter_connection_status_t data; } CANMSG_SetInvConnStatusTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_set_pedals_range_t data; } CANMSG_SetPedRangeTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_set_pedals_range_converted_t data; } CANMSG_SetPedRangeTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_set_steering_angle_range_t data; } CANMSG_SetSteerRangeTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_ambient_temperature_t data; } CANMSG_AmbientTemperatureTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_control_output_converted_t data; } CANMSG_CtrlOutTypeDef;
@@ -64,6 +66,8 @@ extern CANMSG_InvConnStatusTypeDef    CANMSG_InvConnStatus;
 extern CANMSG_SetInvConnStatusTypeDef CANMSG_SetInvConnStatus;
 extern CANMSG_SetPedRangeTypeDef      CANMSG_SetPedRange;
 extern CANMSG_SetSteerRangeTypeDef    CANMSG_SetSteerRange;
+extern CANMSG_SetPTTStatusTypeDef     CANMSG_SetPTTStatus;
+extern CANMSG_PTTStatusTypeDef        CANMSG_PTTStatus;
 
 extern CANMSG_PedValsTypeDef          CANMSG_PedVals;
 extern CANMSG_CtrlOutTypeDef          CANMSG_CtrlOut;

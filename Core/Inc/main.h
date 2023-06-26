@@ -69,6 +69,8 @@ void Error_Handler(void);
 #define CS_EEPROM_GPIO_Port GPIOC
 #define SD_CLOSE_Pin GPIO_PIN_1
 #define SD_CLOSE_GPIO_Port GPIOB
+#define PTT_Pin GPIO_PIN_2
+#define PTT_GPIO_Port GPIOB
 #define BRAKE_LIGHT_CH1_Pin GPIO_PIN_6
 #define BRAKE_LIGHT_CH1_GPIO_Port GPIOC
 #define BRAKE_LIGHT_CH2_Pin GPIO_PIN_7

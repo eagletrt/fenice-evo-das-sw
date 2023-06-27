@@ -172,20 +172,20 @@ void PED_send_vals_in_CAN() {
     CANMSG_PedVals.info.is_new = true;
 }
 
-void PED_calibrate(PED_CalibTypeDef calib) {
+void PED_calibrate(SENSOR_CalibTypeDef calib) {
     switch (calib) {
-        case PED_CALIB_APPS_MIN:
+        case SENSOR_CALIB_APPS_MIN:
             _PED_CALIB_APPS1_MIN = ADC_get_APPS1();
             _PED_CALIB_APPS2_MIN = ADC_get_APPS2();
             break;
-        case PED_CALIB_APPS_MAX:
+        case SENSOR_CALIB_APPS_MAX:
             _PED_CALIB_APPS1_MAX = ADC_get_APPS1();
             _PED_CALIB_APPS2_MAX = ADC_get_APPS2();
             break;
-        case PED_CALIB_BSE_MIN:
+        case SENSOR_CALIB_BSE_MIN:
             LOG_write(LOGLEVEL_WARN, "[PED] Brake calibration not implemented");
             break;
-        case PED_CALIB_BSE_MAX:
+        case SENSOR_CALIB_BSE_MAX:
             LOG_write(LOGLEVEL_WARN, "[PED] Brake calibration not implemented");
             break;
     }

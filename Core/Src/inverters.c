@@ -56,12 +56,12 @@ void _INV_send_CAN_msg(INV_SideTypeDef side) {
     if (side == INV_LEFT) {
         inverters_inv_l_send_t tmp_l;
         inverters_inv_l_send_conversion_to_raw_struct(&tmp_l, &_INV_l_send);
-        msg.size = inverters_inv_l_send_pack(msg.data, &tmp_l, 8);
+        msg.size = inverters_inv_l_send_pack(msg.data, &tmp_l, INVERTERS_INV_L_SEND_BYTE_SIZE);
         msg.id = INVERTERS_INV_L_SEND_FRAME_ID;
     } else {
         inverters_inv_r_send_t tmp_r;
         inverters_inv_r_send_conversion_to_raw_struct(&tmp_r, &_INV_r_send);
-        msg.size = inverters_inv_r_send_pack(msg.data, &tmp_r, 8);
+        msg.size = inverters_inv_r_send_pack(msg.data, &tmp_r, INVERTERS_INV_R_SEND_BYTE_SIZE);
         msg.id = INVERTERS_INV_R_SEND_FRAME_ID;
     }
 

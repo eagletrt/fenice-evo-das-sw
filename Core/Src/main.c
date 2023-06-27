@@ -320,14 +320,14 @@ void _MAIN_process_ped_calib_msg() {
   PED_CalibTypeDef calib = 0U;
   primary_set_pedals_calibration_t *msg = &(CANMSG_SetPedalsCalibration.data);
 
-  if (msg->sensor == primary_set_pedals_calibration_sensor_ACCELERATOR){
+  if (msg->pedals == primary_set_pedals_calibration_pedals_ACCELERATOR){
     if (msg->bound == primary_set_pedals_calibration_bound_SET_MAX)
       calib = PED_CALIB_APPS_MAX;
     else
       calib = PED_CALIB_APPS_MIN;
   }
   else {
-    if (msg->sensor == primary_set_pedals_calibration_bound_SET_MAX)
+    if (msg->pedals == primary_set_pedals_calibration_pedals_BRAKE)
       calib = PED_CALIB_BSE_MAX;
     else
       calib = PED_CALIB_BSE_MIN;  

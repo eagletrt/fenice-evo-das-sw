@@ -34,8 +34,8 @@ typedef struct { CANMSG_MetadataTypeDef info; primary_inverter_connection_status
 typedef struct { CANMSG_MetadataTypeDef info; primary_set_ptt_status_t data; } CANMSG_SetPTTStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_ptt_status_t data; } CANMSG_PTTStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_set_inverter_connection_status_t data; } CANMSG_SetInvConnStatusTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_set_sensor_calibration_t data; } CANMSG_SetSensorCalibrationTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_sensor_calibration_ack_t data; } CANMSG_SensorCalibrationAckTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_set_pedals_calibration_t data; } CANMSG_SetPedalsCalibrationTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_pedals_calibration_ack_t data; } CANMSG_PedalsCalibrationAckTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_ambient_temperature_t data; } CANMSG_AmbientTemperatureTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_control_output_converted_t data; } CANMSG_CtrlOutTypeDef;
 
@@ -66,8 +66,8 @@ extern CANMSG_InvConnStatusTypeDef    CANMSG_InvConnStatus;
 extern CANMSG_SetInvConnStatusTypeDef CANMSG_SetInvConnStatus;
 extern CANMSG_SetPTTStatusTypeDef     CANMSG_SetPTTStatus;
 extern CANMSG_PTTStatusTypeDef        CANMSG_PTTStatus;
-extern CANMSG_SetSensorCalibrationTypeDef CANMSG_SetSensorCalibration;
-extern CANMSG_SensorCalibrationAckTypeDef CANMSG_SensorCalibrationAck;
+extern CANMSG_SetPedalsCalibrationTypeDef CANMSG_SetPedalsCalibration;
+extern CANMSG_PedalsCalibrationAckTypeDef CANMSG_PedalsCalibrationAck;
 
 extern CANMSG_PedValsTypeDef          CANMSG_PedVals;
 extern CANMSG_CtrlOutTypeDef          CANMSG_CtrlOut;

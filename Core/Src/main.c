@@ -246,10 +246,10 @@ int main(void)
     
 
     /* Check if we have calibration messages to process */
-    if (CANMSG_SetSensorCalibration.info.is_new) {
+    if (CANMSG_SetPedalsCalibration.info.is_new) {
       LOG_write(LOGLEVEL_DEBUG, "[MAIN] Processing pedal calibration message");
       _MAIN_process_ped_calib_msg();
-      CANMSG_SetSensorCalibration.info.is_new = false;
+      CANMSG_SetPedalsCalibration.info.is_new = false;
     }
     
     /* Record loop duration */
@@ -317,32 +317,22 @@ void SystemClock_Config(void)
  * @brief     Read the CAN calibration message and call the PED module
  */
 void _MAIN_process_ped_calib_msg() {
-  SENSOR_CalibTypeDef calib = 0U;
-  primary_set_sensor_calibration_t *msg = &(CANMSG_SetSensorCalibration.data);
+  PED_CalibTypeDef calib = 0U;
+  primary_set_pedals_calibration_t *msg = &(CANMSG_SetPedalsCalibration.data);
 
-  if(msg->sensor == primary_set_sensor_calibration_sensor_STEERING_ANGLE){
-    if (msg->bound == primary_set_sensor_calibration_bound_SET_MAX)
-      calib = SENSOR_CALIB_STEER_MAX;
+  if (msg->sensor == primary_set_pedals_calibration_sensor_ACCELERATOR){
+    if (msg->bound == primary_set_pedals_calibration_bound_SET_MAX)
+      calib = PED_CALIB_APPS_MAX;
     else
-      calib = SENSOR_CALIB_STEER_MIN;
-  } 
-  
-  else if (msg->sensor == primary_set_sensor_calibration_sensor_ACCELERATOR){
-    if (msg->bound == primary_set_sensor_calibration_bound_SET_MAX)
-      calib = SENSOR_CALIB_APPS_MAX;
-    else
-      calib = SENSOR_CALIB_APPS_MIN;
-    
-    PED_calibrate(calib);
+      calib = PED_CALIB_APPS_MIN;
   }
   else {
-    if (msg->bound == primary_set_sensor_calibration_bound_SET_MAX)
-      calib = SENSOR_CALIB_BSE_MAX;
+    if (msg->sensor == primary_set_pedals_calibration_bound_SET_MAX)
+      calib = PED_CALIB_BSE_MAX;
     else
-      calib = SENSOR_CALIB_BSE_MIN;
-    
-    PED_calibrate(calib);
+      calib = PED_CALIB_BSE_MIN;  
   }
+  PED_calibrate(calib);
 
 }
 

@@ -26,13 +26,11 @@ typedef struct {
 } PED_PedalErrors;
 
 typedef enum {
-    SENSOR_CALIB_STEER_MIN,
-    SENSOR_CALIB_STEER_MAX,
-    SENSOR_CALIB_APPS_MIN,
-    SENSOR_CALIB_APPS_MAX,
-    SENSOR_CALIB_BSE_MIN,
-    SENSOR_CALIB_BSE_MAX,
-} SENSOR_CalibTypeDef;
+    PED_CALIB_APPS_MIN,
+    PED_CALIB_APPS_MAX,
+    PED_CALIB_BSE_MIN,
+    PED_CALIB_BSE_MAX
+} PED_CalibTypeDef;
 
 extern PED_PedalErrors PED_errors; /*< Pedal errors active */
 
@@ -60,7 +58,7 @@ void PED_send_vals_in_CAN();
 /**
  * @brief     Set the specified pedal bound (e.g., APPS_MAX) at the current level being read
  */
-void PED_calibrate(SENSOR_CalibTypeDef);
+void PED_calibrate(PED_CalibTypeDef);
 
 void PED_update_plausibility_check();
 

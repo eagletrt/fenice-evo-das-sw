@@ -60,8 +60,8 @@ CANMSG_LVTemperatureTypeDef         CANMSG_LVTemperature  = { {0U, false}, { 0U 
 CANMSG_InvConnStatusTypeDef         CANMSG_InvConnStatus  = { {0U, false}, { 0U } };
 CANMSG_SetPTTStatusTypeDef          CANMSG_SetPTTStatus   = { {0U, false}, { 0U } };
 CANMSG_PTTStatusTypeDef             CANMSG_PTTStatus      = { {0U, false}, { .status = primary_ptt_status_status_OFF } };
-CANMSG_SetSensorCalibrationTypeDef  CANMSG_SetSensorCalibration  = { {0U, false}, { 0U } };
-CANMSG_SensorCalibrationAckTypeDef  CANMSG_SensorCalibrationAck  = { {0U, false}, { 0U } };
+CANMSG_SetPedalsCalibrationTypeDef  CANMSG_SetPedalsCalibration  = { {0U, false}, { 0U } };
+CANMSG_PedalsCalibrationAckTypeDef  CANMSG_PedalsCalibrationAck  = { {0U, false}, { 0U } };
 CANMSG_SetInvConnStatusTypeDef      CANMSG_SetInvConnStatus = { {0U, false}, { 0U } };
 
 CANMSG_AmbientTemperatureTypeDef CANMSG_AmbientTemperature  = { {0U, false}, { 0U } };
@@ -142,8 +142,8 @@ void _CANMSG_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
         case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID:
             primary_hv_feedbacks_status_unpack(&(CANMSG_HVFeedbacks.data), msg.data, PRIMARY_HV_FEEDBACKS_STATUS_BYTE_SIZE);
             break;
-        case PRIMARY_SET_SENSOR_CALIBRATION_FRAME_ID:
-            primary_set_sensor_calibration_unpack(&(CANMSG_SetSensorCalibration.data), msg.data, PRIMARY_SET_SENSOR_CALIBRATION_BYTE_SIZE);
+        case PRIMARY_SET_PEDALS_CALIBRATION_FRAME_ID:
+            primary_set_pedals_calibration_unpack(&(CANMSG_SetPedalsCalibration.data), msg.data, PRIMARY_SET_PEDALS_CALIBRATION_BYTE_SIZE);
             break;
         case PRIMARY_INVERTER_CONNECTION_STATUS_FRAME_ID:
             primary_inverter_connection_status_unpack(&(CANMSG_InvConnStatus.data), msg.data, PRIMARY_INVERTER_CONNECTION_STATUS_BYTE_SIZE);
@@ -203,10 +203,10 @@ CANMSG_MetadataTypeDef* CANMSG_get_metadata_from_id(CAN_IdTypeDef id) {
             return &(CANMSG_HVErrors.info);
         case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID:
             return &(CANMSG_HVFeedbacks.info);
-        case PRIMARY_SET_SENSOR_CALIBRATION_FRAME_ID:
-            return &(CANMSG_SetSensorCalibration.info);
-        case PRIMARY_SENSOR_CALIBRATION_ACK_FRAME_ID:
-            return &(CANMSG_SensorCalibrationAck.info);
+        case PRIMARY_SET_PEDALS_CALIBRATION_FRAME_ID:
+            return &(CANMSG_SetPedalsCalibration.info);
+        case PRIMARY_PEDALS_CALIBRATION_ACK_FRAME_ID:
+            return &(CANMSG_PedalsCalibrationAck.info);
         case PRIMARY_INVERTER_CONNECTION_STATUS_FRAME_ID:
             return &(CANMSG_InvConnStatus.info);
         case PRIMARY_SET_PTT_STATUS_FRAME_ID:
@@ -356,12 +356,12 @@ bool _CANMSG_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {
             primary_control_output_conversion_to_raw_struct(&raw_ctrl, &(CANMSG_CtrlOut.data));
             msg->size = primary_control_output_pack(msg->data, &raw_ctrl, PRIMARY_CONTROL_OUTPUT_BYTE_SIZE);
             break;
-        case PRIMARY_SENSOR_CALIBRATION_ACK_FRAME_ID:
-            msg->size = primary_sensor_calibration_ack_pack(msg->data, &(CANMSG_SensorCalibrationAck.data), PRIMARY_SENSOR_CALIBRATION_ACK_BYTE_SIZE);
+        case PRIMARY_PEDALS_CALIBRATION_ACK_FRAME_ID:
+            msg->size = primary_pedals_calibration_ack_pack(msg->data, &(CANMSG_PedalsCalibrationAck.data), PRIMARY_PEDALS_CALIBRATION_ACK_BYTE_SIZE);
             break;
         // case SECONDARY_STEERING_ANGLE_FRAME_ID:
-            // msg->size = secondary_steering_angle_pack(msg->data, &(CANMSG_SteerVal.data), SECONDARY_STEERING_ANGLE_BYTE_SIZE);
-            // break;
+        //     msg->size = secondary_steering_angle_pack(msg->data, &(CANMSG_SteerVal.data), SECONDARY_STEERING_ANGLE_BYTE_SIZE);
+        //     break;
         default:
             LOG_write(LOGLEVEL_ERR, "[CANMSG/Serialize] Unknown message id: 0x%X", msg->id); 
 

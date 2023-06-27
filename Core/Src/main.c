@@ -401,7 +401,7 @@ void MAIN_print_dbg_info() {
       break;
     case 5:
       // snprintf(buf, buf_len, "%8s: %-6s %8s: 0x%06X %8s: 0x%06X",
-      //   "Status", TS_state_names[TS_get_status()], "Errors", CANMSG_HVErrors.data.errors, "Warns", CANMSG_HVErrors.data.warnings);
+      //   "Status", TS_state_names[TS_get_status()], "Errors", CANMSG_HVErrors.data.errors_can, "Warns", CANMSG_HVErrors.data.errors_can);
       // _MAIN_print_dbg_line("BMS-HV", buf);
       break;
     case 6:

@@ -47,11 +47,32 @@ uint8_t _INV_READ_REG_QUEUE_LEN = sizeof(_INV_READ_REG_QUEUE) / sizeof(_INV_READ
 uint8_t _INV_last_read_reg_idx = 0;
 
 
-void INV_parse_CAN_msg(CAN_IdTypeDef id, uint8_t *buf, uint8_t len) {
-    // LOG_write(LOGLEVEL_DEBUG, "[INV] Received: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
-    //     id, buf[0], buf[1], buf[2], buf[3], buf[4]
-    // );
+/**
+ * Serialize the `inverters_inv_*_send_converted_t` struct and send it in CAN
+*/
+void _INV_send_CAN_msg(INV_SideTypeDef side) {
+    CAN_MessageTypeDef msg = { 0U };
 
+    if (side == INV_LEFT) {
+        inverters_inv_l_send_t tmp_l;
+        inverters_inv_l_send_conversion_to_raw_struct(&tmp_l, &_INV_l_send);
+        msg.size = inverters_inv_l_send_pack(msg.data, &tmp_l, 8);
+        msg.id = INVERTERS_INV_L_SEND_FRAME_ID;
+    } else {
+        inverters_inv_r_send_t tmp_r;
+        inverters_inv_r_send_conversion_to_raw_struct(&tmp_r, &_INV_r_send);
+        msg.size = inverters_inv_r_send_pack(msg.data, &tmp_r, 8);
+        msg.id = INVERTERS_INV_R_SEND_FRAME_ID;
+    }
+
+    CAN_send(&msg, &hcan1);
+}
+
+
+/**
+ * Deserialize the gieven CAN message into the `inverters_inv_*_rcv_converted_t` struct
+*/
+void INV_parse_CAN_msg(CAN_IdTypeDef id, uint8_t *buf, uint8_t len) {
     if (id == INVERTERS_INV_L_RCV_FRAME_ID) {
         inverters_inv_l_rcv_t tmp;
         inverters_inv_l_rcv_unpack(&tmp, buf, len);
@@ -63,6 +84,10 @@ void INV_parse_CAN_msg(CAN_IdTypeDef id, uint8_t *buf, uint8_t len) {
     }
 }
 
+/**
+ * Ierate over the registers queue and find the next one to read, starting from where the function
+ * left at the last call.
+*/
 void INV_read_next_register() {
     INV_RegMetadataTypeDef *reg_to_update;
     bool found = false;
@@ -83,27 +108,15 @@ void INV_read_next_register() {
         return; // No updates needed
     }
 
-    CAN_MessageTypeDef msg = { 0U };
-
     if (reg_to_update->side == INV_LEFT) {
         _INV_l_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_3D_READ_CMD_CHOICE;
         _INV_l_send.read_id = reg_to_update->id;
-
-        inverters_inv_l_send_t tmp_l;
-        inverters_inv_l_send_conversion_to_raw_struct(&tmp_l, &_INV_l_send);
-        msg.size = inverters_inv_l_send_pack(msg.data, &tmp_l, 8);
-        msg.id = INVERTERS_INV_L_SEND_FRAME_ID;
+        _INV_send_CAN_msg(INV_LEFT);
     } else {
         _INV_r_send.send_mux = INVERTERS_INV_R_SEND_SEND_MUX_ID_3D_READ_CMD_CHOICE;
         _INV_r_send.read_id = reg_to_update->id;
-
-        inverters_inv_r_send_t tmp_r;
-        inverters_inv_r_send_conversion_to_raw_struct(&tmp_r, &_INV_r_send);
-        msg.size = inverters_inv_r_send_pack(msg.data, &tmp_r, 8);
-        msg.id = INVERTERS_INV_R_SEND_FRAME_ID;
+        _INV_send_CAN_msg(INV_RIGHT);
     }
-
-    CAN_send(&msg, &hcan1);
 }
 
 float INV_get_IGBT_temp(INV_SideTypeDef side) {
@@ -131,4 +144,40 @@ bool INV_get_RFE_state(INV_SideTypeDef side) {
 
 bool INV_get_FRG_state(INV_SideTypeDef side) {
     return (side == INV_LEFT) ? _INV_l_recv.frgrun : _INV_r_recv.frgrun;
+}
+
+void INV_enable_drive(INV_SideTypeDef side) {
+    if (side == INV_LEFT) {
+        _INV_l_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
+        _INV_l_send.km_frg_off = 0;
+        _INV_send_CAN_msg(INV_LEFT);
+    } else {
+        _INV_r_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
+        _INV_r_send.km_frg_off = 0;
+        _INV_send_CAN_msg(INV_RIGHT);
+    }
+}
+
+void INV_disable_drive(INV_SideTypeDef side) {
+    if (side == INV_LEFT) {
+        _INV_l_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
+        _INV_l_send.km_frg_off = 1;
+        _INV_send_CAN_msg(INV_LEFT);
+    } else {
+        _INV_r_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
+        _INV_r_send.km_frg_off = 1;
+        _INV_send_CAN_msg(INV_RIGHT);
+    }
+}
+
+void INV_set_torque_Nm(INV_SideTypeDef side, int16_t torque) {
+    if (side == INV_LEFT) {
+        _INV_l_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_90_M_SETDIG_CHOICE;
+        _INV_l_send.m_setdig__iq = torque / 0; // Just to remeber this has to be converted to A_rms :)
+        _INV_send_CAN_msg(INV_LEFT);
+    } else {
+        _INV_r_send.send_mux = INVERTERS_INV_R_SEND_SEND_MUX_ID_90_M_SETDIG_CHOICE;
+        _INV_r_send.m_setdig__iq = torque / 0;
+        _INV_send_CAN_msg(INV_RIGHT);
+    }
 }

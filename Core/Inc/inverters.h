@@ -20,4 +20,8 @@ bool INV_is_drive_enabled(INV_SideTypeDef side);
 bool INV_get_RFE_state(INV_SideTypeDef side);
 bool INV_get_FRG_state(INV_SideTypeDef side);
 
+void INV_enable_drive(INV_SideTypeDef side);
+void INV_disable_drive(INV_SideTypeDef side);
+void INV_set_torque_Nm(INV_SideTypeDef side, int16_t torque);
+
 #endif

@@ -89,7 +89,7 @@ void MX_CAN2_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN CAN2_Init 2 */
-  CAN_user_init(&hcan1);
+  CAN_user_init(&hcan2);
   /* USER CODE END CAN2_Init 2 */
 
 }

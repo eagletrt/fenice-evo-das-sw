@@ -170,6 +170,7 @@ void PED_send_vals_in_CAN() {
     CANMSG_PedVals.data.bse_front = _PED_from_raw_to_percent(ADC_get_BRK_F(), _PED_CALIB_BRKF_MIN, _PED_CALIB_BRKF_MAX);
     CANMSG_PedVals.data.bse_rear = _PED_from_raw_to_percent(ADC_get_BRK_R(), _PED_CALIB_BRKR_MIN, _PED_CALIB_BRKR_MAX);
     CANMSG_PedVals.info.is_new = true;
+    // LOG_write(LOGLEVEL_DEBUG, "[PED] Updating Pedals values");
 }
 
 void PED_calibrate(PED_CalibTypeDef calib) {

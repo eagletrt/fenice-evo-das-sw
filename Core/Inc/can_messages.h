@@ -8,8 +8,9 @@
 
 
 typedef struct {
-    uint32_t timestamp;     /*< Timestamp of when the message was received/sent */
-    bool is_new;            /*< If the message data has yet to be processed     */
+    uint32_t timestamp;      /*< Timestamp of when the message was received/sent */
+    bool is_new;             /*< If the message data has yet to be processed     */
+    CAN_HandleTypeDef *hcan; /*< CAN peripheral used to send/receive the message */
 } CANMSG_MetadataTypeDef;
 
 
@@ -41,7 +42,7 @@ typedef struct { CANMSG_MetadataTypeDef info; primary_control_output_converted_t
 
 /* Secondary Network */
 typedef struct { CANMSG_MetadataTypeDef info; secondary_pedals_output_converted_t data;  } CANMSG_PedValsTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; secondary_steering_angle_t data; } CANMSG_SteerValTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; secondary_steering_angle_converted_t data; } CANMSG_SteerValTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; secondary_imu_acceleration_converted_t data; } CANMSG_IMUAccTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; secondary_imu_angular_rate_converted_t data; } CANMSG_IMUAngTypeDef;
 
@@ -110,6 +111,7 @@ void CANMSG_flush_TX();
 void CANMSG_process_RX_queue();
 
 
-CANMSG_MetadataTypeDef* CANMSG_get_metadata_from_id(CAN_IdTypeDef id);
+CANMSG_MetadataTypeDef* CANMSG_get_primary_metadata_from_id(CAN_IdTypeDef id);
+CANMSG_MetadataTypeDef* CANMSG_get_secondary_metadata_from_id(CAN_IdTypeDef id);
 
 #endif

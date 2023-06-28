@@ -224,13 +224,14 @@ int main(void)
       ENC_send_vals_in_CAN();
     }
 
-    // LOG_write(LOGLEVEL_DEBUG, "[MAIN]: L IGBT temp: %f", INV_get_IGBT_temp(INV_LEFT));
-    // LOG_write(LOGLEVEL_DEBUG, "[MAIN]: R IGBT temp: %f", INV_get_IGBT_temp(INV_RIGHT));
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 
-    /* Check if we have push to talk messages to process */
+    /* Send pedal and steer values to the steering wheel for visualization */
+    PED_send_vals_in_CAN();
+
+    /* Check if we have PUSH TO TALK messages to process */
     if (CANMSG_SetPTTStatus.info.is_new){
       if (CANMSG_SetPTTStatus.data.status == primary_set_ptt_status_status_ON){
         HAL_GPIO_WritePin(PTT_GPIO_Port, PTT_Pin, GPIO_PIN_SET);

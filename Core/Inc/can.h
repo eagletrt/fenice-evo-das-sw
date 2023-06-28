@@ -50,6 +50,7 @@ typedef uint16_t CAN_IdTypeDef;
 
 typedef struct {
     CAN_IdTypeDef id;
+    CAN_HandleTypeDef *hcan;
     uint8_t size;
     uint8_t data[8];
 } CAN_MessageTypeDef;

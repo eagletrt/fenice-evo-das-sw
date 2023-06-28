@@ -18,6 +18,7 @@
         "can_fifo_queue.h": "c",
         "array": "c",
         "vector": "c",
-        "secondary_watchdog.h": "c"
+        "secondary_watchdog.h": "c",
+        "primary_watchdog.h": "c"
     }
 }

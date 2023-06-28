@@ -77,6 +77,7 @@ uint32_t _MAIN_last_ms_showed = 0;
 uint8_t _MAIN_dbg_uart_buf[MAIN_DBG_BUF_LEN];
 bool _MAIN_is_dbg_uart_free = true;
 uint16_t _MAIN_dbg_uart_line_idx = 0;
+bool _MAIN_update_watchdog = false;   /* Every 10ms TIM1 sets this variable to true */
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -218,18 +219,38 @@ int main(void)
     /* Parse all RX'd messages */
     CANMSG_process_RX_queue();
 
-    // TODO: rimettere primary_INTERVAL_SPEED al posto di 10
-    if(HAL_GetTick() - 10 >= last_enc_calc) {
-      last_enc_calc = HAL_GetTick();
-      ENC_send_vals_in_CAN();
-    }
+    
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 
+    /* Update watchdog timers every 10ms and after 1s of settling time */
+    if (_MAIN_update_watchdog && HAL_GetTick() > 1000)
+      // WDG_update_and_check_timestamps();
+
+    /* Check for fatal errors and open the shutdown circuit */
+    PED_update_plausibility_check();
+    if (PED_errors.implausibility_err) {
+      HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
+      // CANLIB_BITSET_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_PEDAL_IMPLAUSIBILITY);
+    }
+    if (PED_errors.ADC_DMA_error || PED_errors.ADC_internal || PED_errors.ADC_overrun) {
+      HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
+      // CANLIB_BITSET_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_PEDAL_ADC);
+    }
+    if (!PED_is_brake_ok()) {
+      HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
+      // CANLIB_BITSET_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_PEDAL_IMPLAUSIBILITY);
+    }
+
     /* Send pedal and steer values to the steering wheel for visualization */
     PED_send_vals_in_CAN();
+
+    if(HAL_GetTick() - PRIMARY_SPEED_CYCLE_TIME_MS >= last_enc_calc) {
+      last_enc_calc = HAL_GetTick();
+      ENC_send_vals_in_CAN();
+    }
 
     /* Check if we have PUSH TO TALK messages to process */
     if (CANMSG_SetPTTStatus.info.is_new){

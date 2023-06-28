@@ -52,33 +52,44 @@ void _VFSM_update_CarStatus(VFSM_state_t curr_state) {
 
   switch (curr_state) {
     case VFSM_STATE_INIT:
+      s = primary_car_status_car_status_INIT;
+      break;
     case VFSM_STATE_ENABLE_INV_UPDATES:
+      s = primary_car_status_car_status_ENABLE_INV_UPDATES;
+      break;
     case VFSM_STATE_CHECK_INV_SETTINGS:
-      s = primary_car_status_car_status_PRE_SETUP;
+      s = primary_car_status_car_status_CHECK_INV_SETTINGS;
       break;
     case VFSM_STATE_IDLE:
       s = primary_car_status_car_status_IDLE;
       break;
     case VFSM_STATE_START_TS_PRECHARGE:
+      s = primary_car_status_car_status_START_TS_PRECHARGE;
+      break;
     case VFSM_STATE_WAIT_TS_PRECHARGE:
-      s = primary_car_status_car_status_POST_SETUP;
+      s = primary_car_status_car_status_WAIT_TS_PRECHARGE;
       break;
     case VFSM_STATE_WAIT_DRIVER:
-      s = primary_car_status_car_status_TS_ON;
+      s = primary_car_status_car_status_WAIT_DRIVER;
       break;
     case VFSM_STATE_ENABLE_INV_DRIVE:
-      s = primary_car_status_car_status_POST_SETUP;
+      s = primary_car_status_car_status_ENABLE_INV_DRIVE;
       break;
     case VFSM_STATE_DRIVE:
       s = primary_car_status_car_status_DRIVE;
       break;
     case VFSM_STATE_DISABLE_INV_DRIVE:
+      s = primary_car_status_car_status_DISABLE_INV_DRIVE;
+      break;
     case VFSM_STATE_START_TS_DISCHARGE:
+      s = primary_car_status_car_status_START_TS_DISCHARGE;
+      break;
     case VFSM_STATE_WAIT_TS_DISCHARGE:
-      s = primary_car_status_car_status_TEARDOWN;
+      s = primary_car_status_car_status_WAIT_TS_DISCHARGE;
       break;
     case VFSM_STATE_FATAL_ERROR:
-      ;
+      s = primary_car_status_car_status_FATAL_ERROR;
+      break;
     default:
       s = primary_car_status_car_status_IDLE;
   }

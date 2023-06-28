@@ -423,7 +423,7 @@ VFSM_state_t VFSM_do_wait_driver(VFSM_state_data_t *data) {
   _VFSM_update_CarStatus(VFSM_STATE_WAIT_DRIVER);
 
   /* Check for relevant events */
-  if (true) { // TS_get_status() != TS_STATUS_ON) {
+  if (TS_get_status() != TS_STATUS_ON) {
     /* Abort sequence */
     next_state = VFSM_STATE_START_TS_DISCHARGE;
   } else if (CANMSG_SetCarStatus.info.is_new) {

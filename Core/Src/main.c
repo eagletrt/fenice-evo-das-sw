@@ -236,11 +236,11 @@ int main(void)
       // CANLIB_BITSET_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_PEDAL_IMPLAUSIBILITY);
     }
     if (PED_errors.ADC_DMA_error || PED_errors.ADC_internal || PED_errors.ADC_overrun) {
-      HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
+      // HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
       // CANLIB_BITSET_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_PEDAL_ADC);
     }
     if (!PED_is_brake_ok()) {
-      HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
+      // HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
       // CANLIB_BITSET_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_PEDAL_IMPLAUSIBILITY);
     }
 
@@ -340,16 +340,16 @@ void SystemClock_Config(void)
  */
 void _MAIN_process_ped_calib_msg() {
   PED_CalibTypeDef calib = 0U;
-  primary_set_pedals_calibration_t *msg = &(CANMSG_SetPedalsCalibration.data);
+  primary_set_pedal_calibration_t *msg = &(CANMSG_SetPedalsCalibration.data);
 
-  if (msg->pedals == primary_set_pedals_calibration_pedals_ACCELERATOR){
-    if (msg->bound == primary_set_pedals_calibration_bound_SET_MAX)
+  if (msg->pedal == primary_set_pedal_calibration_pedal_ACCELERATOR){
+    if (msg->bound == primary_set_pedal_calibration_bound_SET_MAX)
       calib = PED_CALIB_APPS_MAX;
     else
       calib = PED_CALIB_APPS_MIN;
   }
   else {
-    if (msg->pedals == primary_set_pedals_calibration_pedals_BRAKE)
+    if (msg->pedal == primary_set_pedal_calibration_pedal_BRAKE)
       calib = PED_CALIB_BSE_MAX;
     else
       calib = PED_CALIB_BSE_MIN;  
@@ -412,8 +412,8 @@ void MAIN_print_dbg_info() {
       _MAIN_print_dbg_line("BUILD", buf);
       break;
     case 2:
-      // snprintf(buf, buf_len, "%8s: %-3ld ms %8s: 0x%06X", "Loop len", _MAIN_avg_loop_duration_ms, "Errors", CANMSG_DASErrors.data.das_error);
-      // _MAIN_print_dbg_line("MAIN", buf);
+      snprintf(buf, buf_len, "%8s: %-3ld ms %8s: %d", "Loop len", _MAIN_avg_loop_duration_ms, "S/D", HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin));// "Errors", CANMSG_DASErrors.data.das_error);
+      _MAIN_print_dbg_line("MAIN", buf);
       break;
     case 3:
       snprintf(buf, buf_len, "%8s: %-4.1f%%", "Err rate", CAN_error_rate*100);
@@ -429,25 +429,25 @@ void MAIN_print_dbg_info() {
       // _MAIN_print_dbg_line("BMS-HV", buf);
       break;
     case 6:
-    //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
-    //     "Online", INV_L_get_status()->online, "BTB/RDY", INV_L_get_status()->BTB_ready, "RFE", INV_L_get_status()->RFE_switch, "RUN", INV_L_get_status()->RUN_switch);
-    //   _MAIN_print_dbg_line("INV/L", buf);
-    //   break;
+       snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6s",
+         "-", 0, "FRG", INV_get_FRG_state(INV_LEFT), "RFE", INV_get_RFE_state(INV_LEFT), "RUN", "N/A");
+       _MAIN_print_dbg_line("INV/L", buf);
+       break;
     case 7:
-    //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6.1f %8s: %-6.1f",
-    //     "DriveEna", INV_L_get_status()->drive_enabled, "RPM", INV_L_get_status()->rpm, "Mot T", INV_L_get_status()->motor_temp, "IGBT T", INV_L_get_status()->igbt_temp);
-    //   _MAIN_print_dbg_line("", buf);
-    //   break;
+       snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6.1f %8s: %-6.1f",
+         "DriveEna", INV_is_drive_enabled(INV_LEFT), "RPM", INV_get_RPM(INV_LEFT), "Mot T", INV_get_motor_temp(INV_LEFT), "IGBT T", INV_get_IGBT_temp(INV_LEFT));
+       _MAIN_print_dbg_line("", buf);
+       break;
     case 8:
-    //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
-    //     "Online", INV_R_get_status()->online, "BTB/RDY", INV_R_get_status()->BTB_ready, "RFE", INV_R_get_status()->RFE_switch, "RUN", INV_R_get_status()->RUN_switch);
-    //   _MAIN_print_dbg_line("INV/R", buf);
-    //   break;
+       snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6s",
+         "-", 0, "FRG", INV_get_FRG_state(INV_RIGHT), "RFE", INV_get_RFE_state(INV_RIGHT), "RUN", "N/A");
+       _MAIN_print_dbg_line("INV/R", buf);
+       break;
     case 9:
-    //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6.1f %8s: %-6.1f",
-    //     "DriveEna", INV_R_get_status()->drive_enabled, "RPM", INV_R_get_status()->rpm, "Mot T", INV_R_get_status()->motor_temp, "IGBT T", INV_R_get_status()->igbt_temp);
-    //   _MAIN_print_dbg_line("", buf);
-    //   break;
+       snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6.1f %8s: %-6.1f",
+         "DriveEna", INV_is_drive_enabled(INV_RIGHT), "RPM", INV_get_RPM(INV_RIGHT), "Mot T", INV_get_motor_temp(INV_RIGHT), "IGBT T", INV_get_IGBT_temp(INV_RIGHT));
+       _MAIN_print_dbg_line("", buf);
+       break;
     case 10:
     //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
     //     "Encoder", INV_L_get_errors()->encoder_error, "No pwr v",  INV_L_get_errors()->no_pwr_voltage,

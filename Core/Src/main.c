@@ -496,9 +496,10 @@ void MAIN_print_dbg_info() {
       // _MAIN_print_dbg_line("IMU/Ang", buf);
       break;
     case 18:
-      snprintf(buf, buf_len, "%8s: %-6s %8s: %-6s %8s: %-6s",
-        "Tecs", "brao", "Caga", "sbura", "Simione", "bate");
-      _MAIN_print_dbg_line("TECS", buf);
+      HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin) 
+          ? snprintf(buf, buf_len, "%8s: %-6s", "SD_CLOSE", "CLOSED") 
+          : snprintf(buf, buf_len, "%8s: %-6s", "SD_CLOSE", "OPEN");
+      _MAIN_print_dbg_line("SD_CLOSE", buf);
       break;
     default:
       LOG_write(LOGLEVEL_ERR, "Overrun in line index when printing debug info");

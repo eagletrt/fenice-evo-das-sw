@@ -49,6 +49,7 @@
 #include "tractive_system.h"
 #include "stdio.h"
 #include "usart.h"
+#include "time_constraints.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -146,6 +147,7 @@ int main(void)
   MX_SPI1_Init();
   MX_SPI2_Init();
   MX_ADC1_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
   /* Initialize logger */
@@ -172,6 +174,10 @@ int main(void)
   if (HAL_TIM_Encoder_Start(&ENC_L_TIM, TIM_CHANNEL_ALL) != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2");
   if (HAL_TIM_Encoder_Start(&ENC_R_TIM, TIM_CHANNEL_ALL) != HAL_OK) LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5");
 
+  /* Initialize the general purpose timer TIM1 to trigger every 10ms on CH2 */
+  __HAL_TIM_SetAutoreload(&htim1, TIM_MS_TO_TICKS(&htim1, 10));
+  HAL_TIM_OC_Start_IT(&htim1, TIM_CHANNEL_2);
+
   /* Initialize Brakelight */
   BKL_Init();
 
@@ -188,6 +194,9 @@ int main(void)
 
   /* Initialize CAN queues */
   CANMSG_init();
+  
+  /* Initialize watchdogs */
+  WDG_init();
 
   uint32_t last_enc_calc = 0;
 
@@ -227,21 +236,21 @@ int main(void)
 
     /* Update watchdog timers every 10ms and after 1s of settling time */
     if (_MAIN_update_watchdog && HAL_GetTick() > 1000)
-      // WDG_update_and_check_timestamps();
+      WDG_update_and_check_timestamps();
 
     /* Check for fatal errors and open the shutdown circuit */
     PED_update_plausibility_check();
     if (PED_errors.implausibility_err) {
       HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
-      // CANLIB_BITSET_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_PEDAL_IMPLAUSIBILITY);
+      // CANMSG_DASErrors.data.das_error_pedal_implausibility = 1;
     }
     if (PED_errors.ADC_DMA_error || PED_errors.ADC_internal || PED_errors.ADC_overrun) {
       // HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
-      // CANLIB_BITSET_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_PEDAL_ADC);
+      // CANMSG_DASErrors.data.das_error_pedal_adc = 1;
     }
     if (!PED_is_brake_ok()) {
       // HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
-      // CANLIB_BITSET_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_PEDAL_IMPLAUSIBILITY);
+      // CANMSG_DASErrors.data.das_error_pedal_implausibility = 1;
     }
 
     /* Send pedal and steer values to the steering wheel for visualization */
@@ -360,11 +369,10 @@ void _MAIN_process_ped_calib_msg() {
 
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
   static uint64_t last_speed_sample = 0, last_angle_sample = 0;
-  // if (htim == &htim1) {
-  //   _MAIN_update_watchdog = true;
-  //   BUZ_timer_callback();
-  // } else 
-  if(htim == &htim10){
+  if (htim == &htim1) {
+    _MAIN_update_watchdog = true;
+    BUZ_timer_callback();
+  } else if(htim == &htim10){
       if ((true) && (get_time() - last_speed_sample > ENC_SPEED_PERIOD_MS)){
         ENC_R_push_speed_rads();
         ENC_L_push_speed_rads();
@@ -412,7 +420,7 @@ void MAIN_print_dbg_info() {
       _MAIN_print_dbg_line("BUILD", buf);
       break;
     case 2:
-      snprintf(buf, buf_len, "%8s: %-3ld ms %8s: %d", "Loop len", _MAIN_avg_loop_duration_ms, "S/D", HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin));// "Errors", CANMSG_DASErrors.data.das_error);
+      snprintf(buf, buf_len, "%8s: %-3ld ms %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d", "Loop len", _MAIN_avg_loop_duration_ms, "fsm", CANMSG_DASErrors.data.das_error_fsm, "imu", CANMSG_DASErrors.data.das_error_imu_tout, "invl", CANMSG_DASErrors.data.das_error_invl_tout, "invr", CANMSG_DASErrors.data.das_error_invr_tout, "irts",  CANMSG_DASErrors.data.das_error_irts_tout, "ped adc", CANMSG_DASErrors.data.das_error_pedal_adc, "ped imp", CANMSG_DASErrors.data.das_error_pedal_implausibility, "steer", CANMSG_DASErrors.data.das_error_steer_tout, "ts err", CANMSG_DASErrors.data.das_error_ts_tout, "S/D", HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin));// "Errors", CANMSG_DASErrors.data.das_error);
       _MAIN_print_dbg_line("MAIN", buf);
       break;
     case 3:
@@ -494,12 +502,6 @@ void MAIN_print_dbg_info() {
       // snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
       //   "X", CANMSG_IMUAng.data.ang_rate_x, "Y", CANMSG_IMUAng.data.ang_rate_y, "Z", CANMSG_IMUAng.data.ang_rate_z);
       // _MAIN_print_dbg_line("IMU/Ang", buf);
-      
-    case 18:
-      HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin) == GPIO_PIN_SET
-          ? snprintf(buf, buf_len, "%8s: %-6s", "SD_CLOSE", "CLOSED") 
-          : snprintf(buf, buf_len, "%8s: %-6s", "SD_CLOSE", "OPEN");
-      _MAIN_print_dbg_line("SD_CLOSE", buf);
       break;
     default:
       LOG_write(LOGLEVEL_ERR, "Overrun in line index when printing debug info");

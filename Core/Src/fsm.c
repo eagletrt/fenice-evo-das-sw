@@ -20,7 +20,7 @@ Functions and types have been generated with prefix "VFSM_"
 #include "can_messages.h"
 #include "pedals.h"
 #include "tractive_system.h"
-// #include "inverters.h"
+#include "inverters.h"
 
 
 /* State human-readable names */
@@ -467,22 +467,23 @@ VFSM_state_t VFSM_do_enable_inv_drive(VFSM_state_data_t *data) {
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_ENABLE_INV_DRIVE);
   
-  // bool RFE_on = INV_L_get_status()->RFE_switch && INV_R_get_status()->RFE_switch;
-  // bool RUN_on = INV_L_get_status()->RUN_switch && INV_R_get_status()->RUN_switch;
-  // bool DRV_on = INV_L_get_status()->drive_enabled && INV_R_get_status()->drive_enabled;
-// 
-  // if (!RFE_on || !RUN_on) {
-  //   CANMSG_SetInvConnStatus.data.status = primary_Toggle_ON;
-  //   CANMSG_SetInvConnStatus.info.is_new = true;
-  // } else if (!DRV_on) {
-  //   INV_power_on();
-  // } else { /* RFE_on && RUN_on && DRV_on */
-  //   BUZ_beep_ms_async(1500);
-  //   next_state = VFSM_STATE_DRIVE;
-  // }
-  // 
-  // if (TS_get_status() != TS_STATUS_ON)
-  //   next_state = VFSM_STATE_DISABLE_INV_DRIVE;
+  bool RFE_on = INV_get_RFE_state(INV_LEFT) && INV_get_RFE_state(INV_RIGHT);
+  bool RUN_on = INV_get_FRG_state(INV_LEFT) && INV_get_FRG_state(INV_RIGHT);
+  bool DRV_on = INV_is_drive_enabled(INV_LEFT) && INV_is_drive_enabled(INV_RIGHT);
+
+  if (!RFE_on || !RUN_on) {
+    CANMSG_SetInvConnStatus.data.status = primary_set_inverter_connection_status_status_ON;
+    CANMSG_SetInvConnStatus.info.is_new = true;
+  } else if (!DRV_on) {
+    INV_enable_drive(INV_LEFT);
+    INV_enable_drive(INV_RIGHT);
+  } else { /* RFE_on && RUN_on && DRV_on */
+    BUZ_beep_ms_async(1500);
+    next_state = VFSM_STATE_DRIVE;
+  }
+  
+  if (TS_get_status() != TS_STATUS_ON)
+    next_state = VFSM_STATE_DISABLE_INV_DRIVE;
   
   switch (next_state) {
     case VFSM_NO_CHANGE:
@@ -516,8 +517,8 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
     // DAS_do_drive_routine();
     
     if (TS_get_status() != TS_STATUS_ON) {
-      // INV_set_torque_Nm(INV_LEFT, 0);
-      // INV_set_torque_Nm(INV_RIGHT, 0);
+      INV_set_torque_Nm(INV_LEFT, 0);
+      INV_set_torque_Nm(INV_RIGHT, 0);
       next_state = VFSM_STATE_DISABLE_INV_DRIVE;
     }
   }

@@ -91,7 +91,7 @@ void CANMSG_process_RX_queue() {
     CAN_MessageTypeDef msg;
     
     while (CANFQ_pop(_CANMSG_RX_queue, &msg)) {   
-
+        
         if (msg.hcan == &CAN_PRIMARY_NETWORK) {
             if (inverters_id_is_message(msg.id)) {
                 INV_parse_CAN_msg(msg.id, msg.data, msg.size);

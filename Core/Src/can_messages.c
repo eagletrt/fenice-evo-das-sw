@@ -121,10 +121,13 @@ void CANMSG_process_RX_queue() {
 
 void _CANMSG_primary_deserialize_msg_by_id(CAN_MessageTypeDef msg){
     switch (msg.id) {
-        case PRIMARY_STEER_STATUS_FRAME_ID:
-            primary_steer_status_unpack(&(CANMSG_SteerStatus.data), msg.data, PRIMARY_STEER_STATUS_BYTE_SIZE);
+        case PRIMARY_STEER_STATUS_FRAME_ID:{
+            primary_steer_status_t raw_steer_status;
+            primary_steer_status_unpack(&raw_steer_status, msg.data, PRIMARY_STEER_STATUS_BYTE_SIZE);
+            primary_steer_status_raw_to_conversion_struct(&(CANMSG_SteerStatus.data), &raw_steer_status);
             CANMSG_SteerStatus.info.hcan = msg.hcan;
             break;
+            }
         case PRIMARY_SET_CAR_STATUS_FRAME_ID:
             primary_set_car_status_unpack(&(CANMSG_SetCarStatus.data), msg.data, PRIMARY_SET_CAR_STATUS_BYTE_SIZE);
             CANMSG_SetCarStatus.info.hcan = msg.hcan;

@@ -23,8 +23,8 @@ typedef struct {
 
 INV_RegMetadataTypeDef _INV_READ_REG_QUEUE[] = {
     { INVERTERS_INV_L_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE,          INV_LEFT,  20,  0  },
-    { INVERTERS_INV_R_SEND_READ_ID_26H_I_CMD_CHOICE,               INV_RIGHT, 20,  1  },
-    { INVERTERS_INV_L_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE,          INV_LEFT,  20,  2  },
+    { INVERTERS_INV_R_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE,          INV_RIGHT, 20,  1  },
+    { INVERTERS_INV_L_SEND_READ_ID_26H_I_CMD_CHOICE,               INV_LEFT,  20,  2  }, 
     { INVERTERS_INV_R_SEND_READ_ID_26H_I_CMD_CHOICE,               INV_RIGHT, 20,  3  },
     { INVERTERS_INV_L_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE,           INV_LEFT,  20,  4  },
     { INVERTERS_INV_R_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE,           INV_RIGHT, 20,  5  },
@@ -119,6 +119,37 @@ void INV_read_next_register() {
     }
 }
 
+/**
+ * Convert the torque in Nm to the current in A_rms
+*/
+float INV_torque_to_current(float torque){
+    return torque / MOT_TORQUE_COEFF;
+}
+
+/**
+ * @brief     Ensure that power doesn't exceed 40kW per motor by damping the current request with RPMs
+ * @param[in] request The requested current in Nm
+ * @param[in] rpm     The motor RPMs
+ * @return    The current in Nm after the power limit has been applied
+ */
+float INV_cutoff_torque(float request, float rpm) {
+    if (rpm < INV_RPM_CUTOFF)
+        return request;
+    
+    /* See Mattia Piccini's report for details */
+    float lim_current = (float)INV_CUTOFF_COEFF / ((float)rpm);
+
+    return (request > lim_current) ? lim_current : request;
+}
+
+int16_t INV_current_to_num(float current) {
+    /* Check Inverter datasheet */
+    //A maximum value of 32.768 equals to 169.9A max absorbed
+    int16_t max_current = INT16_MAX;
+    int16_t num = max_current * (current / INV_CURR_PEAK_REAL);
+    return num; 
+}
+
 float INV_get_IGBT_temp(INV_SideTypeDef side) {
     uint16_t raw_temp = (side == INV_LEFT) ? _INV_l_recv.t_igbt : _INV_r_recv.t_igbt;
     return 0.005f * raw_temp - 38.0f;
@@ -170,14 +201,16 @@ void INV_disable_drive(INV_SideTypeDef side) {
     }
 }
 
-void INV_set_torque_Nm(INV_SideTypeDef side, int16_t torque) {
+void INV_set_torque_Nm(INV_SideTypeDef side, float torque) {
+    float current = INV_torque_to_current(torque);
+    int16_t num = INV_current_to_num(current);
     if (side == INV_LEFT) {
         _INV_l_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_90_M_SETDIG_CHOICE;
-        _INV_l_send.m_setdig__iq = torque / 0; // Just to remeber this has to be converted to A_rms :)
+        _INV_l_send.m_setdig__iq = num;
         _INV_send_CAN_msg(INV_LEFT);
     } else {
         _INV_r_send.send_mux = INVERTERS_INV_R_SEND_SEND_MUX_ID_90_M_SETDIG_CHOICE;
-        _INV_r_send.m_setdig__iq = torque / 0;
+        _INV_r_send.m_setdig__iq = num;
         _INV_send_CAN_msg(INV_RIGHT);
     }
 }

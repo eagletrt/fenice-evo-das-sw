@@ -17,7 +17,7 @@ typedef struct {
 /* Primary Network */
 typedef struct { CANMSG_MetadataTypeDef info; primary_das_version_converted_t data;      } CANMSG_DASVersionTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_das_errors_t data;       } CANMSG_DASErrorsTypeDef;
-typedef struct { CANMSG_MetadataTypeDef info; primary_steer_status_t data;     } CANMSG_SteerStatusTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_steer_status_converted_t data;     } CANMSG_SteerStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_car_status_t data;       } CANMSG_CarStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_set_car_status_t data;   } CANMSG_SetCarStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_speed_converted_t data; } CANMSG_SpeedTypeDef;

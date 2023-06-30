@@ -90,6 +90,11 @@ float PED_get_accelerator_percent() {
     return acc_no_deadzone;
 }
 
+float PED_get_accelerator_torque(float acc_percent){
+    float torque = (55.0f * acc_percent / 100.0f)*(CANMSG_SteerStatus.data.map_pw);
+    return torque;
+}
+
 float PED_get_brake_percent() {
     float bf_percent = _PED_from_raw_to_percent(
         ADC_get_BPPS1(),

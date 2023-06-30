@@ -20,6 +20,7 @@ Functions and types have been generated with prefix "VFSM_"
 #include "can_messages.h"
 #include "pedals.h"
 #include "tractive_system.h"
+// #include "inverters.h"
 
 
 /* State human-readable names */
@@ -264,8 +265,8 @@ VFSM_state_t VFSM_do_idle(VFSM_state_data_t *data) {
   TS_power_off();
   CANMSG_SetInvConnStatus.data.status = primary_ts_status_ts_status_OFF;
   CANMSG_SetInvConnStatus.info.is_new = true;
-  // INV_R_set_torque_percent(0);
-  // INV_L_set_torque_percent(0);
+  // INV_set_torque_Nm(INV_RIGHT, 0);
+  // INV_set_torque_Nm(INV_LEFT, 0);
   
   /* Check for a TS-ON request */
   if (CANMSG_SetCarStatus.data.car_status_set == primary_set_car_status_car_status_set_READY && CANMSG_SetCarStatus.info.is_new) {
@@ -514,11 +515,11 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
   } else {
     // DAS_do_drive_routine();
     
-    // if (TS_get_status() != TS_STATUS_ON) {
-    //   INV_L_set_torque_percent(0);
-    //   INV_R_set_torque_percent(0);
-    //   next_state = VFSM_STATE_DISABLE_INV_DRIVE;
-    // }
+    if (TS_get_status() != TS_STATUS_ON) {
+      // INV_set_torque_Nm(INV_LEFT, 0);
+      // INV_set_torque_Nm(INV_RIGHT, 0);
+      next_state = VFSM_STATE_DISABLE_INV_DRIVE;
+    }
   }
 
   switch (next_state) {

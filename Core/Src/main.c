@@ -494,9 +494,9 @@ void MAIN_print_dbg_info() {
       // snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
       //   "X", CANMSG_IMUAng.data.ang_rate_x, "Y", CANMSG_IMUAng.data.ang_rate_y, "Z", CANMSG_IMUAng.data.ang_rate_z);
       // _MAIN_print_dbg_line("IMU/Ang", buf);
-      break;
+      
     case 18:
-      HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin) 
+      HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin) == GPIO_PIN_SET
           ? snprintf(buf, buf_len, "%8s: %-6s", "SD_CLOSE", "CLOSED") 
           : snprintf(buf, buf_len, "%8s: %-6s", "SD_CLOSE", "OPEN");
       _MAIN_print_dbg_line("SD_CLOSE", buf);

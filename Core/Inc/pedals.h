@@ -46,6 +46,11 @@ void PED_init();
 float PED_get_accelerator_percent();
 
 /**
+ *  @brief     Return the torque requested by the accelerator pedal in Nm in the range 0.0f - 55.0f Nm
+ */
+float PED_get_accelerator_torque(float acc_percent);
+
+/**
  * @brief     Return the value of the brake pedal in the range 0.0f - 100.0f
  */
 float PED_get_brake_percent();

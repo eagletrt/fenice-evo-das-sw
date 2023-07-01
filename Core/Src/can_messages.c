@@ -100,8 +100,8 @@ void CANMSG_process_RX_queue() {
 
                 CANMSG_MetadataTypeDef *msg_to_update = CANMSG_get_primary_metadata_from_id(msg.id);
                 if (msg_to_update != NULL) {
-                    msg_to_update->timestamp = HAL_GetTick();
                     msg_to_update->is_new = true;
+                    msg_to_update->timestamp = HAL_GetTick();
                 }
             }
         } else if (msg.hcan == &CAN_SECONDARY_NETWORK){

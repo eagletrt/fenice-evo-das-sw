@@ -50,6 +50,7 @@
 #include "stdio.h"
 #include "usart.h"
 #include "time_constraints.h"
+#include <inttypes.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -241,7 +242,7 @@ int main(void)
     /* Check for fatal errors and open the shutdown circuit */
     PED_update_plausibility_check();
     if (PED_errors.implausibility_err) {
-      HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
+      // HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
       // CANMSG_DASErrors.data.das_error_pedal_implausibility = 1;
     }
     if (PED_errors.ADC_DMA_error || PED_errors.ADC_internal || PED_errors.ADC_overrun) {
@@ -420,49 +421,66 @@ void MAIN_print_dbg_info() {
       _MAIN_print_dbg_line("BUILD", buf);
       break;
     case 2:
-      snprintf(buf, buf_len, "%8s: %-3ld ms %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d", "Loop len", _MAIN_avg_loop_duration_ms, "fsm", CANMSG_DASErrors.data.das_error_fsm, "imu", CANMSG_DASErrors.data.das_error_imu_tout, "invl", CANMSG_DASErrors.data.das_error_invl_tout, "invr", CANMSG_DASErrors.data.das_error_invr_tout, "irts",  CANMSG_DASErrors.data.das_error_irts_tout, "ped adc", CANMSG_DASErrors.data.das_error_pedal_adc, "ped imp", CANMSG_DASErrors.data.das_error_pedal_implausibility, "steer", CANMSG_DASErrors.data.das_error_steer_tout, "ts err", CANMSG_DASErrors.data.das_error_ts_tout, "S/D", HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin));// "Errors", CANMSG_DASErrors.data.das_error);
+      snprintf(buf, buf_len, "%8s: %-3ld ms", "Loop len", _MAIN_avg_loop_duration_ms);
       _MAIN_print_dbg_line("MAIN", buf);
       break;
     case 3:
+      snprintf(buf, buf_len, " %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d ", "fsm", CANMSG_DASErrors.data.das_error_fsm, "imu", CANMSG_DASErrors.data.das_error_imu_tout, "invl", CANMSG_DASErrors.data.das_error_invl_tout, "invr", CANMSG_DASErrors.data.das_error_invr_tout, "irts",  CANMSG_DASErrors.data.das_error_irts_tout);
+      _MAIN_print_dbg_line("", buf);
+      break;
+    case 4:
+      snprintf(buf, buf_len, " %8s: %d %8s: %d %8s: %d %8s: %d", "ped adc", CANMSG_DASErrors.data.das_error_pedal_adc, "ped imp", CANMSG_DASErrors.data.das_error_pedal_implausibility, "steer", CANMSG_DASErrors.data.das_error_steer_tout, "ts err", CANMSG_DASErrors.data.das_error_ts_tout);
+      _MAIN_print_dbg_line("", buf);
+      break;
+    
+    case 5:
+      snprintf(buf, buf_len, "%8s: %-3.1fV %10s: %-3.1fV %10s: %-3.1fV %10s: %-3.1fV", "SD_FB0", ADC_to_voltage(ADC_get_SD_FB0()), "SD_FB1", ADC_to_voltage(ADC_get_SD_FB1()), "SD_FB2", ADC_to_voltage(ADC_get_SD_FB2()), "SD_FB3", ADC_to_voltage(ADC_get_SD_FB3()));
+      _MAIN_print_dbg_line("SD", buf);
+      break;
+    case 6:
+      snprintf(buf, buf_len, "%8s: %-3.1fV %10s: %-3.1fV %10s: %-3.1fV %8s: %d", "SD_FB4", ADC_to_voltage(ADC_get_SD_FB4()), "SD_IN", ADC_to_voltage(ADC_get_SD_IN()), "SD_OUT", ADC_to_voltage(ADC_get_SD_OUT()), "S/D", HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin));
+      _MAIN_print_dbg_line("", buf);
+      break;
+    case 7:
       snprintf(buf, buf_len, "%8s: %-4.1f%%", "Err rate", CAN_error_rate*100);
       _MAIN_print_dbg_line("CAN", buf);
       break;
-    case 4:
+    case 8:
       snprintf(buf, buf_len, "%8s: %-6s", "State", VFSM_state_names[vfsm_current_state]);
       _MAIN_print_dbg_line("FSM", buf);
       break;
-    case 5:
-      // snprintf(buf, buf_len, "%8s: %-6s %8s: 0x%06X %8s: 0x%06X",
-      //   "Status", TS_state_names[TS_get_status()], "Errors", CANMSG_HVErrors.data.errors_can, "Warns", CANMSG_HVErrors.data.errors_can);
-      // _MAIN_print_dbg_line("BMS-HV", buf);
+    case 9:
+    //   snprintf(buf, buf_len, "%8s: %-6s %8s: 0x%06X %8s: 0x%06X",
+    //     "Status", TS_state_names[TS_get_status()], "Errors", CANMSG_HVErrors.data.errors_can, "Warns", CANMSG_HVErrors.data.errors_can);
+    //   _MAIN_print_dbg_line("BMS-HV", buf);
       break;
-    case 6:
+    case 10:
        snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6s",
          "-", 0, "FRG", INV_get_FRG_state(INV_LEFT), "RFE", INV_get_RFE_state(INV_LEFT), "RUN", "N/A");
        _MAIN_print_dbg_line("INV/L", buf);
        break;
-    case 7:
+    case 11:
        snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6.1f %8s: %-6.1f",
          "DriveEna", INV_is_drive_enabled(INV_LEFT), "RPM", INV_get_RPM(INV_LEFT), "Mot T", INV_get_motor_temp(INV_LEFT), "IGBT T", INV_get_IGBT_temp(INV_LEFT));
        _MAIN_print_dbg_line("", buf);
        break;
-    case 8:
+    case 12:
        snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6s",
          "-", 0, "FRG", INV_get_FRG_state(INV_RIGHT), "RFE", INV_get_RFE_state(INV_RIGHT), "RUN", "N/A");
        _MAIN_print_dbg_line("INV/R", buf);
        break;
-    case 9:
+    case 13:
        snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6.1f %8s: %-6.1f",
          "DriveEna", INV_is_drive_enabled(INV_RIGHT), "RPM", INV_get_RPM(INV_RIGHT), "Mot T", INV_get_motor_temp(INV_RIGHT), "IGBT T", INV_get_IGBT_temp(INV_RIGHT));
        _MAIN_print_dbg_line("", buf);
        break;
-    case 10:
+    case 14:
     //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
     //     "Encoder", INV_L_get_errors()->encoder_error, "No pwr v",  INV_L_get_errors()->no_pwr_voltage,
     //     "Mot temp", INV_L_get_errors()->hi_motor_temp, "Dev temp",  INV_L_get_errors()->hi_device_temp);
     //   _MAIN_print_dbg_line("INV/L Errs", buf);
     //   break;
-    case 11:
+    case 15:
     //   snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
     //     "Encoder", INV_R_get_errors()->encoder_error, "No pwr v",  INV_R_get_errors()->no_pwr_voltage,
     //     "Mot temp", INV_R_get_errors()->hi_motor_temp, "Dev temp",  INV_R_get_errors()->hi_device_temp);
@@ -470,7 +488,7 @@ void MAIN_print_dbg_info() {
     //   break;
     //   _MAIN_print_dbg_line("---", "----------------------------------------");
       break;
-    case 12:
+    case 16:
       #if PED_DEBUG
         PED_log_dbg_info();
       #endif
@@ -478,27 +496,27 @@ void MAIN_print_dbg_info() {
         "APPS", PED_get_accelerator_percent(), "Brake/F", PED_get_brake_percent(), "Brake/R", 0.0f);
       _MAIN_print_dbg_line("PED", buf);
       break;
-    case 13:
+    case 17:
       snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
         "ADC/HW", PED_errors.ADC_internal, "ADC/OVR", PED_errors.ADC_overrun, "ADC/DMA", PED_errors.ADC_DMA_error, "Impl", PED_errors.implausibility_err);
       _MAIN_print_dbg_line("PED Errs", buf);
       break;
-    case 14:
+    case 18:
       snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
         "Steer", ENC_C_get_angle_deg(), "W/L", ENC_L_get_radsec(), "W/R", ENC_R_get_radsec());
       _MAIN_print_dbg_line("ENC", buf);
       break;
-    case 15:
+    case 19:
     //   snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
     //     "TTLL", CTRL_get_torque_L(), "TTRR", CTRL_get_torque_R(), "Est.V.", CTRL_get_vest(), "AvgDelay", CTRL_avg_wait_ms);
     //   _MAIN_print_dbg_line("CTRL", buf);
       break;
-    case 16:
+    case 20:
       // snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
       //   "X", CANMSG_IMUAcc.data.accel_x, "Y", CANMSG_IMUAcc.data.accel_y, "Z", CANMSG_IMUAcc.data.accel_z);
       // _MAIN_print_dbg_line("IMU/Acc", buf);
       break;
-    case 17:
+    case 21:
       // snprintf(buf, buf_len, "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
       //   "X", CANMSG_IMUAng.data.ang_rate_x, "Y", CANMSG_IMUAng.data.ang_rate_y, "Z", CANMSG_IMUAng.data.ang_rate_z);
       // _MAIN_print_dbg_line("IMU/Ang", buf);
@@ -508,7 +526,7 @@ void MAIN_print_dbg_info() {
       break;
   }
 
-  _MAIN_dbg_uart_line_idx = (_MAIN_dbg_uart_line_idx + 1) % 18;
+  _MAIN_dbg_uart_line_idx = (_MAIN_dbg_uart_line_idx + 1) % 21;
 }
 
 /* USER CODE END 4 */

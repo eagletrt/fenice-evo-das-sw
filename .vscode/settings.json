@@ -20,6 +20,8 @@
         "vector": "c",
         "secondary_watchdog.h": "c",
         "primary_watchdog.h": "c",
-        "inverters.h": "c"
+        "inverters.h": "c",
+        "race_control.h": "c",
+        "adc_fsm.h": "c"
     }
 }

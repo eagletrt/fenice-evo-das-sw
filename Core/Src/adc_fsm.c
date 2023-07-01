@@ -4,6 +4,11 @@
 
 
 /** Mux channels. Encoded as LSB! */
+/** SD is close when raw value is grater then 1700
+ *  voltage on mux = raw * alimentation_voltage (3.3V) / 4095
+ *  due to voltage divider, voltage on mux = raw * alimentation_voltage (3.3V) / 4095 * 9
+ *  AD is on 12 bits, so 4095 is the max value
+*/
 typedef enum {
     ADC_CH_PITOT = 0, /*< 0000 */
     ADC_CH_APPS2,     /*< 1000 */
@@ -12,6 +17,15 @@ typedef enum {
     ADC_CH_BPPS1,     /*< 0010 */
     ADC_CH_BRK_F,     /*< 0001 */
     ADC_CH_BRK_R,     /*< 1001 */
+    ADC_CH_SEVEN,
+    ADC_CH_EIGHT,
+    ADC_CH_SD_FB4,
+    ADC_CH_SD_FB0,
+    ADC_CH_SD_FB1,
+    ADC_CH_SD_FB3,
+    ADC_CH_SD_FB2,
+    ADC_CH_SD_OUT,
+    ADC_CH_SD_IN,
     ADC_NUM_CHANNELS
 } _ADC_ChannelTypeDef;
 
@@ -72,4 +86,40 @@ uint32_t ADC_get_BRK_F() {
 
 uint32_t ADC_get_BRK_R() {
     return _ADC_raw_reads[ADC_CH_BRK_R];
+}
+
+uint32_t ADC_get_SD_FB4() {
+    return _ADC_raw_reads[ADC_CH_SD_FB4];
+}
+
+uint32_t ADC_get_SD_FB0() {
+    return _ADC_raw_reads[ADC_CH_SD_FB0];
+}
+
+uint32_t ADC_get_SD_FB1() {
+    return _ADC_raw_reads[ADC_CH_SD_FB1];
+}
+
+uint32_t ADC_get_SD_FB3() {
+    return _ADC_raw_reads[ADC_CH_SD_FB3];
+}
+
+uint32_t ADC_get_SD_FB2() {
+    return _ADC_raw_reads[ADC_CH_SD_FB2];
+}
+
+uint32_t ADC_get_SD_OUT() {
+    return _ADC_raw_reads[ADC_CH_SD_OUT];
+}
+
+uint32_t ADC_get_SD_IN() {
+    return _ADC_raw_reads[ADC_CH_SD_IN];
+}
+
+uint32_t ADC_get_PITOT() {
+    return _ADC_raw_reads[ADC_CH_PITOT];
+}
+
+float ADC_to_voltage(uint32_t raw) {
+    return ((raw * 3.3) / (float)4095)*(9.0);
 }

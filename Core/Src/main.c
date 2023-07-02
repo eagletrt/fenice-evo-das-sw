@@ -70,9 +70,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t _MAIN_last_loop_start_ms = 0;
 VFSM_state_t vfsm_current_state = VFSM_STATE_INIT;
 
+uint32_t _MAIN_last_loop_start_ms = 0;
 uint32_t _MAIN_avg_loop_duration_ms = 0;
 uint32_t _MAIN_last_ms_showed = 0;
 
@@ -214,6 +214,7 @@ int main(void)
   
   while (1)
   {
+    _MAIN_last_loop_start_ms = HAL_GetTick();
     /* Step forward the FSM */
     vfsm_current_state = VFSM_run_state(vfsm_current_state, NULL);
     
@@ -284,8 +285,10 @@ int main(void)
       CANMSG_SetPedalsCalibration.info.is_new = false;
     }
     
-    /* Record loop duration */
+     /* Record loop duration */
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
+    float alpha = 0.7;
+    _MAIN_avg_loop_duration_ms = loop_duration;
   }
   /* USER CODE END 3 */
 }
@@ -434,11 +437,11 @@ void MAIN_print_dbg_info() {
       break;
     
     case 5:
-      snprintf(buf, buf_len, "%8s: %-3.1fV %10s: %-3.1fV %10s: %-3.1fV %10s: %-3.1fV", "SD_FB0", ADC_to_voltage(ADC_get_SD_FB0()), "SD_FB1", ADC_to_voltage(ADC_get_SD_FB1()), "SD_FB2", ADC_to_voltage(ADC_get_SD_FB2()), "SD_FB3", ADC_to_voltage(ADC_get_SD_FB3()));
+      snprintf(buf, buf_len, "%26s: %-3.1fV %10s: %-3.1fV %14s: %-3.1fV %25s: %-3.1fV", "SD_FB0 (Cockpit Mushroom)", ADC_to_voltage(ADC_get_SD_FB0()), "SD_FB1", ADC_to_voltage(ADC_get_SD_FB1()), "SD_FB2 (BOTS)", ADC_to_voltage(ADC_get_SD_FB2()), "SD_FB3 (Inertial switch)", ADC_to_voltage(ADC_get_SD_FB3()));
       _MAIN_print_dbg_line("SD", buf);
       break;
     case 6:
-      snprintf(buf, buf_len, "%8s: %-3.1fV %10s: %-3.1fV %10s: %-3.1fV %8s: %d", "SD_FB4", ADC_to_voltage(ADC_get_SD_FB4()), "SD_IN", ADC_to_voltage(ADC_get_SD_IN()), "SD_OUT", ADC_to_voltage(ADC_get_SD_OUT()), "S/D", HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin));
+      snprintf(buf, buf_len, "%8s: %-3.1fV %10s: %-3.1fV %10s: %-3.1fV %12s: %d", "SD_FB4", ADC_to_voltage(ADC_get_SD_FB4()), "SD_IN", ADC_to_voltage(ADC_get_SD_IN()), "SD_OUT", ADC_to_voltage(ADC_get_SD_OUT()), "SD CTRL PIN", HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin));
       _MAIN_print_dbg_line("", buf);
       break;
     case 7:

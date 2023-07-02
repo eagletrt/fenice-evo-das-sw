@@ -22,6 +22,7 @@
         "primary_watchdog.h": "c",
         "inverters.h": "c",
         "race_control.h": "c",
-        "adc_fsm.h": "c"
+        "adc_fsm.h": "c",
+        "tractive_system.h": "c"
     }
 }

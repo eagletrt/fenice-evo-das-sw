@@ -20,10 +20,10 @@ typedef enum {
     ADC_CH_SEVEN,
     ADC_CH_EIGHT,
     ADC_CH_SD_FB4,
-    ADC_CH_SD_FB0,
+    ADC_CH_SD_FB0,    /* Cockpit Mushroom */
     ADC_CH_SD_FB1,
-    ADC_CH_SD_FB3,
-    ADC_CH_SD_FB2,
+    ADC_CH_SD_FB3,    /* Inertial switch */
+    ADC_CH_SD_FB2,    /* BOTS */
     ADC_CH_SD_OUT,
     ADC_CH_SD_IN,
     ADC_NUM_CHANNELS

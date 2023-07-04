@@ -17,31 +17,35 @@ inverters_inv_l_rcv_converted_t _INV_l_recv;
 typedef struct {
     uint8_t id;
     INV_SideTypeDef side;
-    uint16_t interval_ms;
+    uint32_t interval_ms;
     uint32_t last_read_ms;
 } INV_RegMetadataTypeDef;
 
 INV_RegMetadataTypeDef _INV_READ_REG_QUEUE[] = {
-    { INVERTERS_INV_L_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE,          INV_LEFT,  20,  0  },
-    { INVERTERS_INV_R_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE,          INV_RIGHT, 20,  1  },
-    { INVERTERS_INV_L_SEND_READ_ID_26H_I_CMD_CHOICE,               INV_LEFT,  20,  2  }, 
-    { INVERTERS_INV_R_SEND_READ_ID_26H_I_CMD_CHOICE,               INV_RIGHT, 20,  3  },
-    { INVERTERS_INV_L_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE,           INV_LEFT,  20,  4  },
-    { INVERTERS_INV_R_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE,           INV_RIGHT, 20,  5  },
-    { INVERTERS_INV_L_SEND_READ_ID_40H_STATUS_MAP_CHOICE,          INV_LEFT,  20,  6  },
-    { INVERTERS_INV_R_SEND_READ_ID_40H_STATUS_MAP_CHOICE,          INV_RIGHT, 20,  7  },
-    { INVERTERS_INV_L_SEND_READ_ID_49H_T_MOTOR_CHOICE,             INV_LEFT,  100, 8  },
-    { INVERTERS_INV_R_SEND_READ_ID_49H_T_MOTOR_CHOICE,             INV_RIGHT, 100, 9  },
-    { INVERTERS_INV_L_SEND_READ_ID_4AH_T_IGBT_CHOICE,              INV_LEFT,  100, 10 },
-    { INVERTERS_INV_R_SEND_READ_ID_4AH_T_IGBT_CHOICE,              INV_RIGHT, 100, 11 },
-    { INVERTERS_INV_L_SEND_READ_ID_51H_KERN_MODE_STATE_CHOICE,     INV_LEFT,  100, 12 },
-    { INVERTERS_INV_R_SEND_READ_ID_51H_KERN_MODE_STATE_CHOICE,     INV_RIGHT, 100, 13 },
-    { INVERTERS_INV_L_SEND_READ_ID_8FH_ERRORWARNING_MAP_CHOICE,    INV_LEFT,  100, 14 },
-    { INVERTERS_INV_R_SEND_READ_ID_8FH_ERRORWARNING_MAP_CHOICE,    INV_RIGHT, 100, 15 },
-    { INVERTERS_INV_L_SEND_READ_ID_A8H_N_ACTUAL_FILT_CHOICE,       INV_LEFT,  20,  16 },
-    { INVERTERS_INV_R_SEND_READ_ID_A8H_N_ACTUAL_FILT_CHOICE,       INV_RIGHT, 20,  17 },
-    { INVERTERS_INV_L_SEND_READ_ID_D8H_LOGICREADBITSIN_OUT_CHOICE, INV_LEFT,  20,  18 },
-    { INVERTERS_INV_R_SEND_READ_ID_D8H_LOGICREADBITSIN_OUT_CHOICE, INV_RIGHT, 20,  19 },
+    { INVERTERS_INV_L_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE,          INV_LEFT,  50,  0  * 2},
+    { INVERTERS_INV_R_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE,          INV_RIGHT, 50,  1  * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_26H_I_CMD_CHOICE,               INV_LEFT,  50,  2  * 2}, 
+    { INVERTERS_INV_R_SEND_READ_ID_26H_I_CMD_CHOICE,               INV_RIGHT, 50,  3  * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE,           INV_LEFT,  50,  4  * 2},
+    { INVERTERS_INV_R_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE,           INV_RIGHT, 50,  5  * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_40H_STATUS_MAP_CHOICE,          INV_LEFT,  50,  6  * 2},
+    { INVERTERS_INV_R_SEND_READ_ID_40H_STATUS_MAP_CHOICE,          INV_RIGHT, 50,  7  * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_49H_T_MOTOR_CHOICE,             INV_LEFT,  100, 8  * 2},
+    { INVERTERS_INV_R_SEND_READ_ID_49H_T_MOTOR_CHOICE,             INV_RIGHT, 100, 9  * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_4AH_T_IGBT_CHOICE,              INV_LEFT,  100, 10 * 2},
+    { INVERTERS_INV_R_SEND_READ_ID_4AH_T_IGBT_CHOICE,              INV_RIGHT, 100, 11 * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_51H_KERN_MODE_STATE_CHOICE,     INV_LEFT,  100, 12 * 2},
+    { INVERTERS_INV_R_SEND_READ_ID_51H_KERN_MODE_STATE_CHOICE,     INV_RIGHT, 100, 13 * 2},
+
+    { INVERTERS_INV_L_SEND_READ_ID_52H_STATUS_MASK_CHOICE,         INV_LEFT,  100, 14 * 2},
+    { INVERTERS_INV_R_SEND_READ_ID_52H_STATUS_MASK_CHOICE,         INV_RIGHT, 100, 15 * 2},
+
+    { INVERTERS_INV_L_SEND_READ_ID_8FH_ERRORWARNING_MAP_CHOICE,    INV_LEFT,  100, 16 * 2},
+    { INVERTERS_INV_R_SEND_READ_ID_8FH_ERRORWARNING_MAP_CHOICE,    INV_RIGHT, 100, 17 * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_A8H_N_ACTUAL_FILT_CHOICE,       INV_LEFT,  50,  18 * 2},
+    { INVERTERS_INV_R_SEND_READ_ID_A8H_N_ACTUAL_FILT_CHOICE,       INV_RIGHT, 50,  19 * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_D8H_LOGICREADBITSIN_OUT_CHOICE, INV_LEFT,  50,  20 * 2},
+    { INVERTERS_INV_R_SEND_READ_ID_D8H_LOGICREADBITSIN_OUT_CHOICE, INV_RIGHT, 50,  21 * 2},
 };
 uint8_t _INV_READ_REG_QUEUE_LEN = sizeof(_INV_READ_REG_QUEUE) / sizeof(_INV_READ_REG_QUEUE[0]);
 uint8_t _INV_last_read_reg_idx = 0;
@@ -92,8 +96,8 @@ void INV_read_next_register() {
     INV_RegMetadataTypeDef *reg_to_update;
     bool found = false;
 
-    for (uint8_t i = 0; i < _INV_READ_REG_QUEUE_LEN && !found; i++) {
-        uint8_t tmp_idx = (_INV_last_read_reg_idx + i + 1) % _INV_READ_REG_QUEUE_LEN;
+    for (int i = 0; i < _INV_READ_REG_QUEUE_LEN; i++) {
+        int tmp_idx = (_INV_last_read_reg_idx + i + 1) % _INV_READ_REG_QUEUE_LEN;
         INV_RegMetadataTypeDef *tmp_reg = &(_INV_READ_REG_QUEUE[tmp_idx]);
 
         if (HAL_GetTick() - tmp_reg->last_read_ms > tmp_reg->interval_ms) {
@@ -101,6 +105,7 @@ void INV_read_next_register() {
             reg_to_update->last_read_ms = HAL_GetTick();
             _INV_last_read_reg_idx = tmp_idx;
             found = true;
+            break;
         }
     }
 
@@ -137,17 +142,17 @@ float INV_cutoff_torque(float request, float rpm) {
         return request;
     
     /* See Mattia Piccini's report for details */
-    float lim_current = (float)INV_CUTOFF_COEFF / ((float)rpm);
-
-    return (request > lim_current) ? lim_current : request;
+    float lim_current = (float)INV_CUTOFF_COEFF_TORQUE / (float)rpm;
+    
+    return (request > lim_current && lim_current > 0) ? lim_current : request;
 }
 
 int16_t INV_current_to_num(float current) {
     /* Check Inverter datasheet */
     //A maximum value of 32.768 equals to 169.9A max absorbed
     int16_t max_current = INT16_MAX;
-    int16_t num = max_current * (current / INV_CURR_PEAK_REAL);
-    return num; 
+    float num = (max_current / INV_CURR_PEAK_REAL) * current;
+    return (int16_t)num; 
 }
 
 float INV_get_IGBT_temp(INV_SideTypeDef side) {
@@ -166,7 +171,7 @@ int16_t INV_get_RPM(INV_SideTypeDef side) {
 }
 
 bool INV_is_drive_enabled(INV_SideTypeDef side) {
-    return (side == INV_LEFT) ? _INV_l_recv.ena82 : _INV_r_recv.ena82;
+    return (side == INV_LEFT) ? _INV_l_recv.ena64 : _INV_r_recv.ena64;
 }
 
 bool INV_get_RFE_state(INV_SideTypeDef side) {
@@ -183,7 +188,7 @@ void INV_enable_drive(INV_SideTypeDef side) {
         _INV_l_send.km_frg_off = 0;
         _INV_send_CAN_msg(INV_LEFT);
     } else {
-        _INV_r_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
+        _INV_r_send.send_mux = INVERTERS_INV_R_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
         _INV_r_send.km_frg_off = 0;
         _INV_send_CAN_msg(INV_RIGHT);
     }
@@ -195,7 +200,7 @@ void INV_disable_drive(INV_SideTypeDef side) {
         _INV_l_send.km_frg_off = 1;
         _INV_send_CAN_msg(INV_LEFT);
     } else {
-        _INV_r_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
+        _INV_r_send.send_mux = INVERTERS_INV_R_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
         _INV_r_send.km_frg_off = 1;
         _INV_send_CAN_msg(INV_RIGHT);
     }
@@ -208,7 +213,7 @@ void INV_set_torque_Nm(INV_SideTypeDef side, float torque) {
         _INV_l_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_90_M_SETDIG_CHOICE;
         _INV_l_send.m_setdig__iq = num;
         _INV_send_CAN_msg(INV_LEFT);
-    } else {
+    } else if (side == INV_RIGHT) {
         _INV_r_send.send_mux = INVERTERS_INV_R_SEND_SEND_MUX_ID_90_M_SETDIG_CHOICE;
         _INV_r_send.m_setdig__iq = num;
         _INV_send_CAN_msg(INV_RIGHT);

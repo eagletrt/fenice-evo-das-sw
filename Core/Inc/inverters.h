@@ -22,6 +22,7 @@ typedef enum {
 #define INV_CURR_PEAK_REAL          169.9f // A
 #define INV_RPM_CUTOFF              INV_CUTOFF_COEFF_REAL/INV_CURR_PEAK_REAL+1 // 1/s
 #define INV_CUTOFF_COEFF            (int32_t)(INV_CUTOFF_COEFF_REAL/INV_CURR_PEAK_REAL*INT16_MAX) // 1/s
+#define INV_CUTOFF_COEFF_TORQUE     MOT_TORQUE_COEFF / INV_CUTOFF_COEFF_REAL // 1/s
 
 
 void INV_parse_CAN_msg(CAN_IdTypeDef id, uint8_t *buf, uint8_t len);

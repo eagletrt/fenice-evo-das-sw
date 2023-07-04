@@ -23,5 +23,5 @@ uint32_t ADC_get_SD_IN();
 uint32_t ADC_get_PITOT();
 
 float ADC_to_voltage(uint32_t raw);
-
+unsigned int ADC_is_closed(float voltage);
 #endif

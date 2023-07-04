@@ -46,6 +46,7 @@ CANMSG_DASVersionTypeDef            CANMSG_DASVersion     = { {0U, false, 0U}, {
 CANMSG_DASErrorsTypeDef             CANMSG_DASErrors      = { {0U, false, 0U}, { 0U } };
 CANMSG_SteerStatusTypeDef           CANMSG_SteerStatus    = { {0U, false, 0U}, { .map_pw = 0.5, .map_sc = 0, .map_tv = 0 } };
 CANMSG_CarStatusTypeDef             CANMSG_CarStatus      = { {0U, false, 0U}, { .car_status = primary_car_status_car_status_IDLE } };
+CANMSG_ECUFeedbacksTypeDef          CANMSG_EcuFeedbacks   = { {0U, false, 0U}, { 0 }};
 CANMSG_SetCarStatusTypeDef          CANMSG_SetCarStatus   = { {0U, false, 0U}, { .car_status_set = primary_set_car_status_car_status_set_IDLE } };
 CANMSG_SpeedTypeDef                 CANMSG_Speed          = { {0U, false, 0U}, { .encoder_l = 0, .encoder_r = 0, .inverter_l = 0, .inverter_r = 0 } };
 CANMSG_HVVoltageTypeDef             CANMSG_HVVoltage      = { {0U, false, 0U}, { 0U } };
@@ -211,6 +212,8 @@ CANMSG_MetadataTypeDef* CANMSG_get_primary_metadata_from_id(CAN_IdTypeDef id) {
             return &(CANMSG_SteerStatus.info);
         case PRIMARY_CAR_STATUS_FRAME_ID:
             return &(CANMSG_CarStatus.info);
+        case PRIMARY_ECU_FEEDBACKS_FRAME_ID:
+            return &(CANMSG_EcuFeedbacks.info);
         case PRIMARY_SET_CAR_STATUS_FRAME_ID:
             return &(CANMSG_SetCarStatus.info);
         case PRIMARY_SPEED_FRAME_ID:
@@ -297,9 +300,10 @@ void CANMSG_flush_TX() {
         PRIMARY_DAS_VERSION_FRAME_ID,
         PRIMARY_DAS_ERRORS_FRAME_ID,
         PRIMARY_CAR_STATUS_FRAME_ID,
+        PRIMARY_ECU_FEEDBACKS_FRAME_ID,
         PRIMARY_SET_TS_STATUS_DAS_FRAME_ID,
         PRIMARY_SPEED_FRAME_ID,
-        // PRIMARY_SET_INVERTER_CONNECTION_STATUS_FRAME_ID,
+        PRIMARY_SET_INVERTER_CONNECTION_STATUS_FRAME_ID,
         // PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID,
         PRIMARY_PTT_STATUS_FRAME_ID,
 
@@ -315,7 +319,7 @@ void CANMSG_flush_TX() {
     uint8_t ids_loop_len = primary_ids_len + secondary_ids_len;
 
     /* Loop until either MBs are full or everything has been sent */
-    for (uint8_t tx_count = 0; tx_count < ids_loop_len; tx_count++) {
+    for (uint16_t tx_count = 0; tx_count < ids_loop_len; tx_count++) {
         CAN_IdTypeDef id;
         CANMSG_MetadataTypeDef *info;
 
@@ -355,8 +359,6 @@ void CANMSG_flush_TX() {
             info->timestamp = HAL_GetTick();
             info->is_new = false;
         }
-
-        ids_loop_idx = (ids_loop_idx + 1) % ids_loop_len;
     }
 }
 
@@ -390,6 +392,12 @@ bool _CANMSG_primary_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *m
         case PRIMARY_CAR_STATUS_FRAME_ID:
             msg->size = primary_car_status_pack(msg->data, &(CANMSG_CarStatus.data), PRIMARY_CAR_STATUS_BYTE_SIZE);
             break;
+        case PRIMARY_ECU_FEEDBACKS_FRAME_ID:{
+            primary_ecu_feedbacks_t raw_ecu_feedbacks;
+            primary_ecu_feedbacks_conversion_to_raw_struct(&raw_ecu_feedbacks, &(CANMSG_EcuFeedbacks.data));
+            msg->size = primary_ecu_feedbacks_pack(msg->data, &raw_ecu_feedbacks, PRIMARY_ECU_FEEDBACKS_BYTE_SIZE);
+            break;
+        }
         case PRIMARY_SPEED_FRAME_ID:{
             primary_speed_t speed = { 0U };
             primary_speed_conversion_to_raw_struct(&speed, &(CANMSG_Speed.data));

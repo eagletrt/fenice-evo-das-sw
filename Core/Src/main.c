@@ -80,6 +80,7 @@ uint8_t _MAIN_dbg_uart_buf[MAIN_DBG_BUF_LEN];
 bool _MAIN_is_dbg_uart_free = true;
 uint16_t _MAIN_dbg_uart_line_idx = 0;
 bool _MAIN_update_watchdog = false;   /* Every 10ms TIM1 sets this variable to true */
+uint16_t _MAIN_timer_feedbacks = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -230,7 +231,6 @@ int main(void)
     /* Parse all RX'd messages */
     CANMSG_process_RX_queue();
 
-    
 
     /* USER CODE END WHILE */
 
@@ -254,6 +254,21 @@ int main(void)
       // HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
       // CANMSG_DASErrors.data.das_error_pedal_implausibility = 1;
     }
+
+    /* Send ECU feedbacks */
+    if(HAL_GetTick() - CANMSG_EcuFeedbacks.info.timestamp >= 300){
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_cock_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB0()));
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_fb1 = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB1()));
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_bots_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB2()));
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_interial_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB3()));
+      // fb4
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_in = ADC_is_closed(ADC_to_voltage(ADC_get_SD_IN()));
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_our = ADC_is_closed(ADC_to_voltage(ADC_get_SD_OUT()));
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_ctrl_pin = HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin);
+
+      CANMSG_EcuFeedbacks.info.is_new = true;
+    }
+
 
     /* Send pedal and steer values to the steering wheel for visualization */
     PED_send_vals_in_CAN();
@@ -287,7 +302,6 @@ int main(void)
     
      /* Record loop duration */
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
-    float alpha = 0.7;
     _MAIN_avg_loop_duration_ms = loop_duration;
   }
   /* USER CODE END 3 */

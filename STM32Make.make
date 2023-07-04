@@ -37,9 +37,13 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 Core/Lib/can/lib/bms/bms_network.c \
+Core/Lib/can/lib/bms/bms_watchdog.c \
 Core/Lib/can/lib/inverters/inverters_network.c \
+Core/Lib/can/lib/inverters/inverters_watchdog.c \
 Core/Lib/can/lib/primary/primary_network.c \
+Core/Lib/can/lib/primary/primary_watchdog.c \
 Core/Lib/can/lib/secondary/secondary_network.c \
+Core/Lib/can/lib/secondary/secondary_watchdog.c \
 Core/Lib/micro-libs/can-fifo-queue/can_fifo_queue.c \
 Core/Lib/micro-libs/eeprom-config/eeprom-config.c \
 Core/Lib/micro-libs/logger/logger.c \

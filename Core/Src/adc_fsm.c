@@ -123,3 +123,7 @@ uint32_t ADC_get_PITOT() {
 float ADC_to_voltage(uint32_t raw) {
     return ((raw * 3.3) / (float)4095)*(9.0);
 }
+
+unsigned int ADC_is_closed(float voltage) {
+    return voltage > 9.0;
+}

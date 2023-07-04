@@ -28,6 +28,7 @@ const char *VFSM_state_names[] = {"init", "enable_inv_updates", "check_inv_setti
 
 /* Timestamp for checking timeouts in states */
 uint32_t state_entered_timestamp = 0U;
+uint8_t reset_inverters = 0U;
 
 /* List of state functions */
 state_func_t *const VFSM_state_table[VFSM_NUM_STATES] = {
@@ -266,6 +267,13 @@ VFSM_state_t VFSM_do_idle(VFSM_state_data_t *data) {
   TS_power_off();
   CANMSG_SetInvConnStatus.data.status = primary_ts_status_ts_status_OFF;
   CANMSG_SetInvConnStatus.info.is_new = true;
+  if(reset_inverters == 0U){
+    /* Ensure the inverters' power outputs are disabled */
+    INV_disable_drive(INV_LEFT);
+    INV_disable_drive(INV_RIGHT);
+    reset_inverters = 1U;
+  }
+
   // INV_set_torque_Nm(INV_RIGHT, 0);
   // INV_set_torque_Nm(INV_LEFT, 0);
   
@@ -468,9 +476,9 @@ VFSM_state_t VFSM_do_enable_inv_drive(VFSM_state_data_t *data) {
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_ENABLE_INV_DRIVE);
   
-  bool RFE_on = INV_get_RFE_state(INV_LEFT) && INV_get_RFE_state(INV_RIGHT);
-  bool RUN_on = INV_get_FRG_state(INV_LEFT) && INV_get_FRG_state(INV_RIGHT);
-  bool DRV_on = INV_is_drive_enabled(INV_LEFT) && INV_is_drive_enabled(INV_RIGHT);
+  bool RFE_on = INV_get_RFE_state(INV_LEFT) /*&& INV_get_RFE_state(INV_RIGHT)*/;
+  bool RUN_on = INV_get_FRG_state(INV_LEFT) /*&& INV_get_FRG_state(INV_RIGHT)*/;
+  bool DRV_on = INV_is_drive_enabled(INV_LEFT) /*&& INV_is_drive_enabled(INV_RIGHT)*/;
 
   if (!RFE_on || !RUN_on) {
     CANMSG_SetInvConnStatus.data.status = primary_set_inverter_connection_status_status_ON;
@@ -511,11 +519,16 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_DRIVE);
 
+  static uint32_t last_drive_send = 0;
+
   if (CANMSG_SetCarStatus.data.car_status_set == primary_set_car_status_car_status_set_IDLE && CANMSG_SetCarStatus.info.is_new) {
     CANMSG_SetCarStatus.info.is_new = false;
     next_state = VFSM_STATE_DISABLE_INV_DRIVE;
   } else {
-    // DAS_do_drive_routine();
+    if(HAL_GetTick() - last_drive_send >= 10){
+      last_drive_send = HAL_GetTick();
+      DAS_do_drive_routine();
+    }
     
     if (TS_get_status() != TS_STATUS_ON) {
       INV_set_torque_Nm(INV_LEFT, 0);

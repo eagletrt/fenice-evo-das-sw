@@ -19,6 +19,7 @@ typedef struct { CANMSG_MetadataTypeDef info; primary_das_version_converted_t da
 typedef struct { CANMSG_MetadataTypeDef info; primary_das_errors_t data;       } CANMSG_DASErrorsTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_steer_status_converted_t data;     } CANMSG_SteerStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_car_status_t data;       } CANMSG_CarStatusTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_feedbacks_converted_t data;       } CANMSG_ECUFeedbacksTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_set_car_status_t data;   } CANMSG_SetCarStatusTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_speed_converted_t data; } CANMSG_SpeedTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_hv_voltage_t data;       } CANMSG_HVVoltageTypeDef;
@@ -51,6 +52,7 @@ extern CANMSG_DASVersionTypeDef       CANMSG_DASVersion;
 extern CANMSG_DASErrorsTypeDef        CANMSG_DASErrors;
 extern CANMSG_SteerStatusTypeDef      CANMSG_SteerStatus;
 extern CANMSG_CarStatusTypeDef        CANMSG_CarStatus;
+extern CANMSG_ECUFeedbacksTypeDef     CANMSG_EcuFeedbacks;
 extern CANMSG_SetCarStatusTypeDef     CANMSG_SetCarStatus;
 extern CANMSG_SpeedTypeDef            CANMSG_Speed;
 extern CANMSG_HVVoltageTypeDef        CANMSG_HVVoltage;

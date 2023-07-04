@@ -56,18 +56,18 @@ void PED_init() {
     _PED_CALIB calib;
 
     /* Set calibration values */
-    calib.BRKF_MIN = 399;
-    calib.BRKF_MAX = 3590;
-    calib.BRKR_MIN = 399;
-    calib.BRKR_MAX = 3590;
-    calib.APPS1_MIN = 550;
-    calib.APPS1_MAX = 2500;
-    calib.APPS2_MIN = 1900;
-    calib.APPS2_MAX = 3920;
+    calib.BRKF_MIN = 360;
+    calib.BRKF_MAX = 450;
+    calib.BRKR_MIN = 0;
+    calib.BRKR_MAX = 2095;
+    calib.APPS1_MIN = 1740;
+    calib.APPS1_MAX = 3750;
+    calib.APPS2_MIN = 460;
+    calib.APPS2_MAX = 2450;
     calib.BPPS1_MIN = 0;
-    calib.BPPS1_MAX = 0;
+    calib.BPPS1_MAX = 100;
     calib.BPPS2_MIN = 0;
-    calib.BPPS2_MAX = 0;
+    calib.BPPS2_MAX = 100;
 
     EEPROM_config_init(&pedals_config, &EEPROM_SPI, CS_EEPROM_GPIO_Port, CS_EEPROM_Pin, 0x0, 0x3, &calib, sizeof(calib));
 }
@@ -220,12 +220,12 @@ bool PED_is_brake_ok() {
             "ACC2 Max", _PED_CALIB_APPS2_MAX, "ACC2 Min", _PED_CALIB_APPS2_MIN
         );
         LOG_write(LOGLEVEL_DEBUG, "PED/ADCs | %8s: %-6d %8s: %-6.1f %8s: %-6d %8s: %-6.1f",
-            "ACC1 Raw", _PED_ADC_RAW_ACC1, "ACC1 %%", _PED_from_raw_to_percent(_PED_ADC_RAW_ACC1,_PED_CALIB_APPS1_MIN, _PED_CALIB_APPS1_MAX),
-            "ACC2 Raw", _PED_ADC_RAW_ACC2, "ACC2 %%", _PED_from_raw_to_percent(_PED_ADC_RAW_ACC2, _PED_CALIB_APPS2_MIN, _PED_CALIB_APPS2_MAX)
+            "ACC1 Raw", ADC_get_APPS1(), "ACC1 %%", _PED_from_raw_to_percent(ADC_get_APPS1(),_PED_CALIB_APPS1_MIN, _PED_CALIB_APPS1_MAX),
+            "ACC2 Raw", ADC_get_APPS2(), "ACC2 %%", _PED_from_raw_to_percent(ADC_get_APPS2(), _PED_CALIB_APPS2_MIN, _PED_CALIB_APPS2_MAX)
         );
         LOG_write(LOGLEVEL_DEBUG, "PED/ADCs | %8s: %-6d %8s: %-6.1f %8s: %-6d %8s: %-6.1f",
-            "BRKF Raw", _PED_ADC_RAW_BRKF, "BRKF %%", _PED_from_raw_to_percent(_PED_ADC_RAW_BRKF, _PED_CALIB_BRKF_MIN, _PED_CALIB_BRKF_MAX),
-            "BRKR Raw", _PED_ADC_RAW_BRKR, "BRKR %%", _PED_from_raw_to_percent(_PED_ADC_RAW_BRKR, _PED_CALIB_BRKR_MIN, _PED_CALIB_BRKR_MAX)
+            "BRKF Raw", ADC_get_BRK_F(), "BRKF %%", _PED_from_raw_to_percent(ADC_get_BRK_F(), _PED_CALIB_BRKF_MIN, _PED_CALIB_BRKF_MAX),
+            "BRKR Raw", ADC_get_BRK_R(), "BRKR %%", _PED_from_raw_to_percent(ADC_get_BRK_R(), _PED_CALIB_BRKR_MIN, _PED_CALIB_BRKR_MAX)
         );
     }
 #endif

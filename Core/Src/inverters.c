@@ -140,11 +140,13 @@ float INV_torque_to_current(float torque){
 float INV_cutoff_torque(float request, float rpm) {
     if (rpm < INV_RPM_CUTOFF)
         return request;
+
+    float lim_Nm = INV_CUTOFF_COEFF/(float)rpm * MOT_TORQUE_COEFF;
     
     /* See Mattia Piccini's report for details */
-    float lim_current = (float)INV_CUTOFF_COEFF_TORQUE / (float)rpm;
+    // float lim_current = (float)INV_CUTOFF_COEFF_TORQUE / (float)rpm;
     
-    return (request > lim_current && lim_current > 0) ? lim_current : request;
+    return (request > lim_Nm && lim_Nm > 0) ? lim_Nm : request;
 }
 
 int16_t INV_current_to_num(float current) {
@@ -218,4 +220,13 @@ void INV_set_torque_Nm(INV_SideTypeDef side, float torque) {
         _INV_r_send.m_setdig__iq = num;
         _INV_send_CAN_msg(INV_RIGHT);
     }
+}
+
+bool INV_check_settings() {
+    bool retval =  _INV_l_recv.def_end_1 == INVERTERS_INV_L_RCV_DEF_END_1_N_CMD_REVERSE_CHOICE &&
+                   _INV_r_recv.def_end_1 == INVERTERS_INV_R_RCV_DEF_END_1_N_CMD_REVERSE_CHOICE;
+
+    retval &= _INV_l_recv.active190 == inverters_inv_l_rcv_active190_Low &&
+              _INV_r_recv.active190 == inverters_inv_r_rcv_active190_High;
+    return retval;
 }

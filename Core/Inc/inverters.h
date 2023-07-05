@@ -16,7 +16,7 @@ typedef enum {
 
 /* Calculate the correct coefficient to limit motor torque at high RPMs */
 #define INV_POWER_LIMIT             40e3 // W
-#define MOT_TORQUE_COEFF            0.45 // Nm/Arms
+#define MOT_TORQUE_COEFF            0.45 // Nm/Arms // 0,54 sul nuovo datasheet
 #define MOT_RPM_LIMIT_REAL          6500.f // #rot/min
 #define INV_CUTOFF_COEFF_REAL       INV_POWER_LIMIT*60/(MOT_TORQUE_COEFF*2*M_PI) // A/s
 #define INV_CURR_PEAK_REAL          169.9f // A

@@ -11,9 +11,9 @@
 primary_watchdog _WDG_CAN_watchdog;
 CAN_IdTypeDef _WDG_CAN_ids_to_watch[] = {
     PRIMARY_STEER_STATUS_FRAME_ID,
-    // PRIMARY_TS_STATUS_FRAME_ID,
-    // PRIMARY_INV_L_RESPONSE_FRAME_ID,
-    // PRIMARY_INV_R_RESPONSE_FRAME_ID
+    PRIMARY_TS_STATUS_FRAME_ID,
+    PRIMARY_INV_L_RESPONSE_FRAME_ID,
+    PRIMARY_INV_R_RESPONSE_FRAME_ID
 };
 
 
@@ -73,12 +73,12 @@ bool WDG_is_car_in_safe_state() {
     WDG_update_and_check_timestamps(HAL_GetTick());
 
     bool critical_error = false;
-    // critical_error |= CANLIB_BITTEST_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_TS_TOUT);
-    // // critical_error |= CANLIB_BITTEST_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_INVL_TOUT);
-    // // critical_error |= CANLIB_BITTEST_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_INVR_TOUT);
-    // critical_error |= CANLIB_BITTEST_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_STEER_TOUT);
-    // critical_error |= CANLIB_BITTEST_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_PEDAL_ADC);
-    // critical_error |= CANLIB_BITTEST_BITMASK(CANMSG_DASErrors.data.das_error, primary_DasErrors_PEDAL_IMPLAUSIBILITY);
+    critical_error |= CANMSG_DASErrors.data.das_error_ts_tout;
+    critical_error |= CANMSG_DASErrors.data.das_error_invl_tout;
+    critical_error |= CANMSG_DASErrors.data.das_error_invr_tout;
+    critical_error |= CANMSG_DASErrors.data.das_error_steer_tout;
+    critical_error |= CANMSG_DASErrors.data.das_error_pedal_adc;
+    critical_error |= CANMSG_DASErrors.data.das_error_pedal_implausibility;
 
-    return !critical_error;
+    return (!critical_error);
 }

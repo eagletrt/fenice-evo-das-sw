@@ -386,9 +386,12 @@ bool _CANMSG_primary_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *m
         case PRIMARY_DAS_VERSION_FRAME_ID:
             msg->size = primary_das_version_pack(msg->data, &(CANMSG_DASVersion.data), PRIMARY_DAS_VERSION_BYTE_SIZE);
             break;
-        case PRIMARY_DAS_ERRORS_FRAME_ID:
-            msg->size = primary_das_errors_pack(msg->data, &(CANMSG_DASErrors.data), PRIMARY_DAS_ERRORS_BYTE_SIZE);
+        case PRIMARY_DAS_ERRORS_FRAME_ID:{
+            primary_das_errors_t raw_das_errors;
+            primary_das_errors_conversion_to_raw_struct(&raw_das_errors, &(CANMSG_DASErrors.data));
+            msg->size = primary_das_errors_pack(msg->data, &raw_das_errors, PRIMARY_DAS_ERRORS_BYTE_SIZE);
             break;
+            }
         case PRIMARY_CAR_STATUS_FRAME_ID:
             msg->size = primary_car_status_pack(msg->data, &(CANMSG_CarStatus.data), PRIMARY_CAR_STATUS_BYTE_SIZE);
             break;

@@ -235,6 +235,9 @@ VFSM_state_t VFSM_do_check_inv_settings(VFSM_state_data_t *data) {
   _VFSM_update_CarStatus(VFSM_STATE_CHECK_INV_SETTINGS);
   
   LOG_write(LOGLEVEL_WARN, "[FSM] !!! Skipping inv. check settings !!!");
+  if(INV_check_settings()){
+    LOG_write(LOGLEVEL_WARN, "[FSM] !!! Inverters' settings are correct !!!"); // TODO: commentare la funzione di debug per controllare che questo funzioni. 
+  }
   #warning "TODO: Check inverters' settings"
   next_state = VFSM_STATE_IDLE;
   
@@ -635,6 +638,7 @@ VFSM_state_t VFSM_do_wait_ts_discharge(VFSM_state_data_t *data) {
   } else {
     /* Go to idle and close back the SD circuit */
     next_state = VFSM_STATE_IDLE;
+    reset_inverters = 0U;
     HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
   }
 
@@ -668,5 +672,5 @@ VFSM_state_t VFSM_do_wait_ts_discharge(VFSM_state_data_t *data) {
 VFSM_state_t VFSM_run_state(VFSM_state_t cur_state, VFSM_state_data_t *data) {
   VFSM_state_t new_state = VFSM_state_table[cur_state](data);
   if (new_state == VFSM_NO_CHANGE) new_state = cur_state;
-  return new_state == VFSM_NO_CHANGE ? cur_state : new_state;
+  return new_state;
 }

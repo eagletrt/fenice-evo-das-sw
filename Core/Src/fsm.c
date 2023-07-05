@@ -268,7 +268,7 @@ VFSM_state_t VFSM_do_idle(VFSM_state_data_t *data) {
 
   /* Ensure the TS is OFF */
   TS_power_off();
-  CANMSG_SetInvConnStatus.data.status = primary_ts_status_ts_status_OFF;
+  CANMSG_SetInvConnStatus.data.status = primary_set_inverter_connection_status_status_OFF;
   CANMSG_SetInvConnStatus.info.is_new = true;
   if(reset_inverters == 0U){
     /* Ensure the inverters' power outputs are disabled */
@@ -532,7 +532,7 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
       last_drive_send = HAL_GetTick();
       DAS_do_drive_routine();
     }
-    
+
     if (TS_get_status() != TS_STATUS_ON) {
       INV_set_torque_Nm(INV_LEFT, 0);
       INV_set_torque_Nm(INV_RIGHT, 0);

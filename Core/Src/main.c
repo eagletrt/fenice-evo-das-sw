@@ -261,9 +261,9 @@ int main(void)
       CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_fb1 = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB1()));
       CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_bots_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB2()));
       CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_interial_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB3()));
-      // fb4
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_fb4 = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB4()));
       CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_in = ADC_is_closed(ADC_to_voltage(ADC_get_SD_IN()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_our = ADC_is_closed(ADC_to_voltage(ADC_get_SD_OUT()));
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_out = ADC_is_closed(ADC_to_voltage(ADC_get_SD_OUT()));
       CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_ctrl_pin = HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin);
 
       CANMSG_EcuFeedbacks.info.is_new = true;

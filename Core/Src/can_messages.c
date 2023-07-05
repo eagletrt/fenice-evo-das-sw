@@ -54,7 +54,7 @@ CANMSG_HVCurrentTypeDef             CANMSG_HVCurrent      = { {0U, false, 0U}, {
 CANMSG_HVTemperatureTypeDef         CANMSG_HVTemperature  = { {0U, false, 0U}, { 0U } };
 CANMSG_HVErrorsTypeDef              CANMSG_HVErrors       = { {0U, false, 0U}, { 0U } };
 CANMSG_HVFeedbacksTypeDef           CANMSG_HVFeedbacks    = { {0U, false, 0U}, { 0U } };
-CANMSG_TSStatusTypeDef              CANMSG_TSStatus       = { {0U, false, 0U}, { .ts_status = primary_ts_status_ts_status_OFF } };
+CANMSG_TSStatusTypeDef              CANMSG_TSStatus       = { {0U, false, 0U}, { .ts_status = primary_ts_status_ts_status_INIT } };
 CANMSG_SetTSStatusTypeDef           CANMSG_SetTSStatus    = { {0U, false, 0U}, { .ts_status_set = primary_set_ts_status_das_ts_status_set_OFF } };
 CANMSG_LVCurrentTypeDef             CANMSG_LVCurrent      = { {0U, false, 0U}, { 0U } };
 CANMSG_LVVoltageTypeDef             CANMSG_LVVoltage      = { {0U, false, 0U}, { 0U } };

@@ -15,16 +15,19 @@ TS_StatusTypeDef TS_get_status() {
         CANMSG_TSStatus.info.is_new = false;
 
         switch (CANMSG_TSStatus.data.ts_status) {
-            case primary_ts_status_ts_status_FATAL:
+            case primary_ts_status_ts_status_FATAL_ERROR:
                 _TS_status = TS_STATUS_FATAL;
                 break;
-            case primary_ts_status_ts_status_ON:
+            case primary_ts_status_ts_status_TS_ON:
                 _TS_status = TS_STATUS_ON;
                 break;
-            case primary_ts_status_ts_status_OFF:
+            case primary_ts_status_ts_status_INIT:
+            case primary_ts_status_ts_status_IDLE:
                 _TS_status = TS_STATUS_OFF;
                 break;
+            case primary_ts_status_ts_status_AIRN_CLOSE:
             case primary_ts_status_ts_status_PRECHARGE:
+            case primary_ts_status_ts_status_AIRP_CLOSE:
                 _TS_status = TS_STATUS_PRECHARGE;
                 break;
         }

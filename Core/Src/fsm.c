@@ -22,6 +22,7 @@ Functions and types have been generated with prefix "VFSM_"
 #include "tractive_system.h"
 #include "inverters.h"
 
+VFSM_state_t vfsm_current_state = VFSM_STATE_INIT;
 
 /* State human-readable names */
 const char *VFSM_state_names[] = {"init", "enable_inv_updates", "check_inv_settings", "idle", "fatal_error", "start_ts_precharge", "wait_ts_precharge", "start_ts_discharge", "wait_driver", "enable_inv_drive", "drive", "disable_inv_drive", "wait_ts_discharge"};
@@ -207,7 +208,7 @@ VFSM_state_t VFSM_do_enable_inv_updates(VFSM_state_data_t *data) {
   //   next_state = VFSM_NO_CHANGE;
   
   #warning "[FSM] !!! Skipping inv. enable updates !!!"
-  LOG_write(LOGLEVEL_WARN, "[FSM] !!! Skipping inv. enable updates !!!");
+  // LOG_write(LOGLEVEL_WARN, "[FSM] !!! Skipping inv. enable updates !!!");
   next_state = VFSM_STATE_CHECK_INV_SETTINGS;
 
   switch (next_state) {
@@ -234,7 +235,7 @@ VFSM_state_t VFSM_do_check_inv_settings(VFSM_state_data_t *data) {
 
   _VFSM_update_CarStatus(VFSM_STATE_CHECK_INV_SETTINGS);
   
-  LOG_write(LOGLEVEL_WARN, "[FSM] !!! Skipping inv. check settings !!!");
+  // LOG_write(LOGLEVEL_WARN, "[FSM] !!! Skipping inv. check settings !!!");
   if(INV_check_settings()){
     LOG_write(LOGLEVEL_WARN, "[FSM] !!! Inverters' settings are correct !!!"); // TODO: commentare la funzione di debug per controllare che questo funzioni. 
   }
@@ -285,6 +286,12 @@ VFSM_state_t VFSM_do_idle(VFSM_state_data_t *data) {
     next_state = VFSM_STATE_START_TS_PRECHARGE;
     CANMSG_SetCarStatus.info.is_new = false;
   }
+
+  #if WTCHDG_DEBUG
+    if(!WDG_is_car_in_safe_state()){
+      next_state = VFSM_STATE_IDLE;
+    }
+  #endif
 
   switch (next_state) {
     case VFSM_NO_CHANGE:
@@ -354,10 +361,16 @@ VFSM_state_t VFSM_do_start_ts_precharge(VFSM_state_data_t *data) {
     } else if (pork == TS_STATUS_OFF) {
       TS_power_on();
       next_state = VFSM_NO_CHANGE;
-    } else {
+    } else if(pork == TS_STATUS_FATAL) {
       next_state = VFSM_STATE_START_TS_DISCHARGE;
     }
   }
+
+  #if WTCHDG_DEBUG
+    if(!WDG_is_car_in_safe_state()){
+      next_state = VFSM_STATE_START_TS_DISCHARGE;
+    }
+  #endif
 
   switch (next_state) {
     case VFSM_NO_CHANGE:
@@ -385,6 +398,7 @@ VFSM_state_t VFSM_do_wait_ts_precharge(VFSM_state_data_t *data) {
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_WAIT_TS_PRECHARGE);
 
+  
   /* If we have just entered, update the timestamp */
   if (state_entered_timestamp == 0U) {
     state_entered_timestamp = HAL_GetTick();
@@ -408,6 +422,12 @@ VFSM_state_t VFSM_do_wait_ts_precharge(VFSM_state_data_t *data) {
         break;
     }
   }
+
+  #if WTCHDG_DEBUG
+    if(!WDG_is_car_in_safe_state()){
+      next_state = VFSM_STATE_START_TS_DISCHARGE;
+    }
+  #endif
   
   switch (next_state) {
     case VFSM_NO_CHANGE:
@@ -435,6 +455,7 @@ VFSM_state_t VFSM_do_wait_driver(VFSM_state_data_t *data) {
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_WAIT_DRIVER);
 
+
   /* Check for relevant events */
   if (TS_get_status() != TS_STATUS_ON) {
     /* Abort sequence */
@@ -452,6 +473,12 @@ VFSM_state_t VFSM_do_wait_driver(VFSM_state_data_t *data) {
 
     CANMSG_SetCarStatus.info.is_new = false;
   }
+
+  #if WTCHDG_DEBUG
+    if(!!WDG_is_car_in_safe_state()){
+      next_state = VFSM_STATE_START_TS_DISCHARGE;
+    }
+  #endif
 
   switch (next_state) {
     case VFSM_NO_CHANGE:
@@ -478,10 +505,11 @@ VFSM_state_t VFSM_do_enable_inv_drive(VFSM_state_data_t *data) {
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_ENABLE_INV_DRIVE);
+
   
-  bool RFE_on = INV_get_RFE_state(INV_LEFT) /*&& INV_get_RFE_state(INV_RIGHT)*/;
-  bool RUN_on = INV_get_FRG_state(INV_LEFT) /*&& INV_get_FRG_state(INV_RIGHT)*/;
-  bool DRV_on = INV_is_drive_enabled(INV_LEFT) /*&& INV_is_drive_enabled(INV_RIGHT)*/;
+  bool RFE_on = INV_get_RFE_state(INV_LEFT) && INV_get_RFE_state(INV_RIGHT);
+  bool RUN_on = INV_get_FRG_state(INV_LEFT) && INV_get_FRG_state(INV_RIGHT);
+  bool DRV_on = INV_is_drive_enabled(INV_LEFT) && INV_is_drive_enabled(INV_RIGHT);
 
   if (!RFE_on || !RUN_on) {
     CANMSG_SetInvConnStatus.data.status = primary_set_inverter_connection_status_status_ON;
@@ -496,6 +524,12 @@ VFSM_state_t VFSM_do_enable_inv_drive(VFSM_state_data_t *data) {
   
   if (TS_get_status() != TS_STATUS_ON)
     next_state = VFSM_STATE_DISABLE_INV_DRIVE;
+
+  #if WTCHDG_DEBUG
+    if(!WDG_is_car_in_safe_state()){
+      next_state = VFSM_STATE_DISABLE_INV_DRIVE;
+    }
+  #endif
   
   switch (next_state) {
     case VFSM_NO_CHANGE:
@@ -522,6 +556,7 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_DRIVE);
 
+
   static uint32_t last_drive_send = 0;
 
   if (CANMSG_SetCarStatus.data.car_status_set == primary_set_car_status_car_status_set_IDLE && CANMSG_SetCarStatus.info.is_new) {
@@ -539,6 +574,12 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
       next_state = VFSM_STATE_DISABLE_INV_DRIVE;
     }
   }
+
+  #if WTCHDG_DEBUG
+    if(!WDG_is_car_in_safe_state()){
+      next_state = VFSM_STATE_DISABLE_INV_DRIVE;
+    }
+  #endif
 
   switch (next_state) {
     case VFSM_NO_CHANGE:
@@ -653,6 +694,10 @@ VFSM_state_t VFSM_do_wait_ts_discharge(VFSM_state_data_t *data) {
   }
   
   return next_state;
+}
+
+VFSM_state_t VFSM_get_state(){
+  return vfsm_current_state;
 }
 
 /*  ____  _        _        

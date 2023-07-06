@@ -20,6 +20,7 @@
 
 #define EEPROM_SPI hspi1
 
+#define PED_DEBUG 1
 
 typedef struct {
     bool ADC_internal, ADC_overrun, ADC_DMA_error, implausibility_err;

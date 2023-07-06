@@ -44,4 +44,6 @@ void INV_enable_drive(INV_SideTypeDef side);
 void INV_disable_drive(INV_SideTypeDef side);
 void INV_set_torque_Nm(INV_SideTypeDef side, float torque);
 
+bool INV_check_settings();
+
 #endif

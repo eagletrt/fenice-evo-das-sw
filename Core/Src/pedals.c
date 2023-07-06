@@ -56,10 +56,10 @@ void PED_init() {
     _PED_CALIB calib;
 
     /* Set calibration values */
-    calib.BRKF_MIN = 360;
-    calib.BRKF_MAX = 450;
-    calib.BRKR_MIN = 0;
-    calib.BRKR_MAX = 2095;
+    calib.BRKF_MIN = 400;
+    calib.BRKF_MAX = 1030;
+    calib.BRKR_MIN = 520;
+    calib.BRKR_MAX = 700;
     calib.APPS1_MIN = 1740;
     calib.APPS1_MAX = 3750;
     calib.APPS2_MIN = 460;
@@ -96,17 +96,24 @@ float PED_get_accelerator_torque(float acc_percent){
 }
 
 float PED_get_brake_percent() {
-    float bf_percent = _PED_from_raw_to_percent(
-        ADC_get_BPPS1(),
+    uint32_t brk_f, brk_r;
+    get_brk_average(&brk_f, &brk_r);
+    
+    /*
+        (raw / 4096 * 3.3 V * 18/28-0.5) *100/4.5
+    */
+    
+    float bf_bar = _PED_from_raw_to_percent(
+        brk_f,
         _PED_CALIB_BRKF_MIN,
         _PED_CALIB_BRKF_MAX
     );
     float br_percent = _PED_from_raw_to_percent(
-        ADC_get_BPPS2(),
+        brk_r,
         _PED_CALIB_BRKR_MIN,
         _PED_CALIB_BRKR_MAX
     );
-    float brk_max = (bf_percent > br_percent) ? bf_percent : br_percent;
+    float brk_max = (bf_bar + br_percent) /2.0;
 
     return brk_max;
 }
@@ -227,5 +234,6 @@ bool PED_is_brake_ok() {
             "BRKF Raw", ADC_get_BRK_F(), "BRKF %%", _PED_from_raw_to_percent(ADC_get_BRK_F(), _PED_CALIB_BRKF_MIN, _PED_CALIB_BRKF_MAX),
             "BRKR Raw", ADC_get_BRK_R(), "BRKR %%", _PED_from_raw_to_percent(ADC_get_BRK_R(), _PED_CALIB_BRKR_MIN, _PED_CALIB_BRKR_MAX)
         );
+        LOG_write(LOGLEVEL_DEBUG, "PED/ADCs | %8s: %-6.1f", "BRK perc", PED_get_brake_percent());
     }
 #endif

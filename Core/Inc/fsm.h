@@ -17,8 +17,13 @@ Functions and types have been generated with prefix "VFSM_"
 #define FSM_H
 #include <stdlib.h>
 
+#include "time_constraints.h"
+#include "race_control.h"
+
 // State data object
 typedef void VFSM_state_data_t;
+
+// #define WTCHDG_DEBUG 1
 
 // List of states
 typedef enum {
@@ -38,6 +43,9 @@ typedef enum {
   VFSM_NUM_STATES,
   VFSM_NO_CHANGE
 } VFSM_state_t;
+
+
+extern VFSM_state_t vfsm_current_state;
 
 // State human-readable names
 extern const char *VFSM_state_names[];
@@ -114,6 +122,8 @@ VFSM_state_t VFSM_do_wait_ts_discharge(VFSM_state_data_t *data);
 
 // List of state functions
 extern state_func_t *const VFSM_state_table[VFSM_NUM_STATES];
+
+VFSM_state_t VFSM_get_state();
 
 
 // State manager

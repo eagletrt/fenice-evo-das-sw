@@ -41,7 +41,7 @@ void WDG_update_and_check_timestamps() {
     primary_watchdog_timeout(&_WDG_CAN_watchdog, HAL_GetTick());
 
     /* Check timings */
-    for (uint8_t i = 0; i < sizeof(_WDG_CAN_ids_to_watch)/sizeof(_WDG_CAN_ids_to_watch[0]); i++) {
+    for (int i = 0; i < sizeof(_WDG_CAN_ids_to_watch)/sizeof(_WDG_CAN_ids_to_watch[0]); i++) {
         bool timed_out = CANLIB_BITTEST_ARRAY(
             _WDG_CAN_watchdog.timeout,
             primary_watchdog_index_from_id(_WDG_CAN_ids_to_watch[i])
@@ -75,8 +75,8 @@ bool WDG_is_car_in_safe_state() {
     bool critical_error = false;
     critical_error |= CANMSG_DASErrors.data.das_error_ts_tout;
     critical_error |= CANMSG_DASErrors.data.das_error_invl_tout;
-    critical_error |= CANMSG_DASErrors.data.das_error_invr_tout;
-    critical_error |= CANMSG_DASErrors.data.das_error_steer_tout;
+    // critical_error |= CANMSG_DASErrors.data.das_error_invr_tout;
+    // critical_error |= CANMSG_DASErrors.data.das_error_steer_tout;
     critical_error |= CANMSG_DASErrors.data.das_error_pedal_adc;
     critical_error |= CANMSG_DASErrors.data.das_error_pedal_implausibility;
 

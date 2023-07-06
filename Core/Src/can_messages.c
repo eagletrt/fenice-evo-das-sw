@@ -313,7 +313,7 @@ void CANMSG_flush_TX() {
         SECONDARY_PEDALS_OUTPUT_FRAME_ID,
         SECONDARY_STEERING_ANGLE_FRAME_ID,
     };
-    static uint8_t ids_loop_idx = 0;
+    // static uint8_t ids_loop_idx = 0;
     uint8_t primary_ids_len = sizeof(primary_ids_to_send)/sizeof(primary_ids_to_send[0]);
     uint8_t secondary_ids_len = sizeof(secondary_ids_to_send)/sizeof(secondary_ids_to_send[0]);
     uint8_t ids_loop_len = primary_ids_len + secondary_ids_len;
@@ -323,12 +323,12 @@ void CANMSG_flush_TX() {
         CAN_IdTypeDef id;
         CANMSG_MetadataTypeDef *info;
 
-        if (ids_loop_idx < primary_ids_len) {
-            id = primary_ids_to_send[ids_loop_idx];
+        if (tx_count < primary_ids_len) {
+            id = primary_ids_to_send[tx_count];
             info = CANMSG_get_primary_metadata_from_id(id);
             info->hcan = &CAN_PRIMARY_NETWORK;
         } else {
-            id = secondary_ids_to_send[ids_loop_idx - primary_ids_len];
+            id = secondary_ids_to_send[tx_count - primary_ids_len];
             info = CANMSG_get_secondary_metadata_from_id(id);
             info->hcan = &CAN_SECONDARY_NETWORK;
         }
@@ -383,9 +383,12 @@ bool _CANMSG_primary_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *m
     msg->id = id;
     
     switch (id) {
-        case PRIMARY_DAS_VERSION_FRAME_ID:
-            msg->size = primary_das_version_pack(msg->data, &(CANMSG_DASVersion.data), PRIMARY_DAS_VERSION_BYTE_SIZE);
+        case PRIMARY_DAS_VERSION_FRAME_ID:{
+            primary_das_version_t raw_das_version;
+            primary_das_version_conversion_to_raw_struct(&raw_das_version, &(CANMSG_DASVersion.data));
+            msg->size = primary_das_version_pack(msg->data, &raw_das_version, PRIMARY_DAS_VERSION_BYTE_SIZE);
             break;
+            }
         case PRIMARY_DAS_ERRORS_FRAME_ID:{
             primary_das_errors_t raw_das_errors;
             primary_das_errors_conversion_to_raw_struct(&raw_das_errors, &(CANMSG_DASErrors.data));

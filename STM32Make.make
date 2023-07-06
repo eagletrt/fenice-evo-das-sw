@@ -45,7 +45,9 @@ Core/Lib/can/lib/primary/primary_watchdog.c \
 Core/Lib/can/lib/secondary/secondary_network.c \
 Core/Lib/can/lib/secondary/secondary_watchdog.c \
 Core/Lib/micro-libs/can-fifo-queue/can_fifo_queue.c \
+Core/Lib/micro-libs/cli/cli.c \
 Core/Lib/micro-libs/eeprom-config/eeprom-config.c \
+Core/Lib/micro-libs/llist/llist.c \
 Core/Lib/micro-libs/logger/logger.c \
 Core/Lib/micro-libs/m95256/m95256.c \
 Core/Lib/micro-libs/pwm/pwm.c \
@@ -57,6 +59,7 @@ Core/Src/buzzer.c \
 Core/Src/can.c \
 Core/Src/can_messages.c \
 Core/Src/can_user_functions.c \
+Core/Src/cli_ecu.c \
 Core/Src/dma.c \
 Core/Src/encoders.c \
 Core/Src/fsm.c \
@@ -172,7 +175,9 @@ C_INCLUDES =  \
 -ICore/Lib/can/lib/primary \
 -ICore/Lib/can/lib/secondary \
 -ICore/Lib/micro-libs/can-fifo-queue \
+-ICore/Lib/micro-libs/cli \
 -ICore/Lib/micro-libs/eeprom-config \
+-ICore/Lib/micro-libs/llist \
 -ICore/Lib/micro-libs/logger \
 -ICore/Lib/micro-libs/m95256 \
 -ICore/Lib/micro-libs/pwm \

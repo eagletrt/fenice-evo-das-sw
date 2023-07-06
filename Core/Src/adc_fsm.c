@@ -1,36 +1,12 @@
 #include "adc.h"
 #include "adc_fsm.h"
 #include "logger.h"
-
-
-/** Mux channels. Encoded as LSB! */
-/** SD is close when raw value is grater then 1700
- *  voltage on mux = raw * alimentation_voltage (3.3V) / 4095
- *  due to voltage divider, voltage on mux = raw * alimentation_voltage (3.3V) / 4095 * 9
- *  AD is on 12 bits, so 4095 is the max value
-*/
-typedef enum {
-    ADC_CH_PITOT = 0, /*< 0000 */
-    ADC_CH_APPS2,     /*< 1000 */
-    ADC_CH_APPS1,     /*< 0100 */
-    ADC_CH_BPPS2,     /*< 1100 */
-    ADC_CH_BPPS1,     /*< 0010 */
-    ADC_CH_BRK_F,     /*< 0001 */
-    ADC_CH_BRK_R,     /*< 1001 */
-    ADC_CH_SEVEN,
-    ADC_CH_EIGHT,
-    ADC_CH_SD_FB4,
-    ADC_CH_SD_FB0,    /* Cockpit Mushroom */
-    ADC_CH_SD_FB1,
-    ADC_CH_SD_FB3,    /* Inertial switch */
-    ADC_CH_SD_FB2,    /* BOTS */
-    ADC_CH_SD_OUT,
-    ADC_CH_SD_IN,
-    ADC_NUM_CHANNELS
-} _ADC_ChannelTypeDef;
+#include <float.h>
 
 _ADC_ChannelTypeDef _ADC_curr_ch = ADC_CH_APPS1;
 uint32_t _ADC_raw_reads[ADC_NUM_CHANNELS] = {0};
+uint32_t brk_f_median_window[BRK_MED_SIZE] = {};
+uint32_t brk_r_median_window[BRK_MED_SIZE] = {};
 
 
 void _ADC_set_mux_channel(uint8_t ch) {
@@ -53,7 +29,6 @@ bool ADC_StartMuxCapure() {
         LOG_write(LOGLEVEL_ERR, "ADC DMA start failed");
         return true;
     }
-    
     return false;
 }
 
@@ -61,7 +36,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
     /* Increment ADC channel */
     _ADC_curr_ch = (_ADC_curr_ch + 1) % ADC_NUM_CHANNELS;
     _ADC_set_mux_channel(_ADC_curr_ch);
-    HAL_ADC_Start_DMA(&hadc1, _ADC_raw_reads + _ADC_curr_ch, 1);
+    brk_push_average();
 }
 
 uint32_t ADC_get_APPS1() {
@@ -126,4 +101,46 @@ float ADC_to_voltage(uint32_t raw) {
 
 unsigned int ADC_is_closed(float voltage) {
     return voltage > 9.0;
+}
+
+void brk_push_average() {
+    for (int i = 0; i < BRK_MED_SIZE - 1; i++) {
+        brk_f_median_window[i] = brk_f_median_window[i + 1];
+    }
+    brk_f_median_window[BRK_MED_SIZE - 1] = ADC_get_BRK_F();
+
+    for (int i = 0; i < BRK_MED_SIZE - 1; i++) {
+        brk_r_median_window[i] = brk_r_median_window[i + 1];
+    }
+    brk_r_median_window[BRK_MED_SIZE - 1] = ADC_get_BRK_R();
+}
+
+void get_brk_average(uint32_t *brk_f, uint32_t *brk_r) {
+    float min_f = FLT_MAX, max_f = FLT_MIN, median_f = 0;
+    float min_r = FLT_MAX, max_r = FLT_MIN, median_r = 0;
+
+    for (int i = 0; i < BRK_MED_SIZE; i++){
+        if (brk_f_median_window[i] < min_f){
+            min_f = brk_f_median_window[i];
+        }
+        if (brk_f_median_window[i] > max_f){
+            max_f = brk_f_median_window[i];
+        }
+        median_f += brk_f_median_window[i];
+    }
+    
+    for (int i = 0; i < BRK_MED_SIZE; i++){
+        if (brk_r_median_window[i] < min_r){
+            min_r = brk_r_median_window[i];
+        }
+        if (brk_r_median_window[i] > max_r){
+            max_r = brk_r_median_window[i];
+        }
+        median_r += brk_r_median_window[i];
+    }
+    median_f = median_f - min_f - max_f;
+    median_r = median_r - min_r - max_r;
+    
+    *brk_f = median_f / (BRK_MED_SIZE - 2);
+    *brk_r = median_r / (BRK_MED_SIZE - 2);
 }

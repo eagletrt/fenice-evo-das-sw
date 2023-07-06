@@ -51,6 +51,7 @@
 #include "usart.h"
 #include "time_constraints.h"
 #include <inttypes.h>
+#include "cli_ecu.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,8 +71,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-VFSM_state_t vfsm_current_state = VFSM_STATE_INIT;
-
 uint32_t _MAIN_last_loop_start_ms = 0;
 uint32_t _MAIN_avg_loop_duration_ms = 0;
 uint32_t _MAIN_last_ms_showed = 0;
@@ -150,6 +149,8 @@ int main(void)
   MX_SPI2_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
+  MX_TIM6_Init();
+  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 
   /* Initialize logger */
@@ -165,7 +166,7 @@ int main(void)
 
   
   LOG_write(LOGLEVEL_INFO, "\e[1;1H\e[2J");
-  LOG_print_fenice_logo("            -    D A S   f i r m w a r e   v 2 . 0   -            ");
+  // LOG_print_fenice_logo("            -    D A S   f i r m w a r e   v 2 . 0   -            ");
 
   /* Signal Startup */
   pwm_start_channel(&htim8, TIM_CHANNEL_4);
@@ -187,6 +188,7 @@ int main(void)
   HAL_TIM_OC_Start_IT(&htim13, TIM_CHANNEL_1);
   HAL_TIM_OC_Start_IT(&htim10, TIM_CHANNEL_1);
   time_base_init(&htim13);
+  HAL_TIM_Base_Start_IT(&htim7);
 
   /* Initialize the ADC capture loop */
   ADC_StartMuxCapure();
@@ -199,6 +201,9 @@ int main(void)
   
   /* Initialize watchdogs */
   WDG_init();
+
+  /* Initialize CLI */
+  // cli_ecu_init();
 
   uint32_t last_enc_calc = 0;
 
@@ -256,7 +261,7 @@ int main(void)
     }
 
     /* Send ECU feedbacks */
-    if(HAL_GetTick() - CANMSG_EcuFeedbacks.info.timestamp >= 300){
+    if(HAL_GetTick() - CANMSG_EcuFeedbacks.info.timestamp >= PRIMARY_ECU_FEEDBACKS_CYCLE_TIME_MS){
       CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_cock_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB0()));
       CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_fb1 = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB1()));
       CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_bots_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB2()));
@@ -272,6 +277,10 @@ int main(void)
 
     /* Send pedal and steer values to the steering wheel for visualization */
     PED_send_vals_in_CAN();
+
+    /* Light up the brakelight if the pedal is pressed */
+    float brk_percent = PED_get_brake_percent();
+    BKL_set_curve(brk_percent);
 
     if(HAL_GetTick() - PRIMARY_SPEED_CYCLE_TIME_MS >= last_enc_calc) {
       last_enc_calc = HAL_GetTick();
@@ -303,6 +312,11 @@ int main(void)
      /* Record loop duration */
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
     _MAIN_avg_loop_duration_ms = loop_duration;
+    
+    #ifdef DEBUG_CLI
+      cli_watch_flush_handler();
+      cli_loop(&cli_ecu);
+    #endif
   }
   /* USER CODE END 3 */
 }
@@ -387,10 +401,10 @@ void _MAIN_process_ped_calib_msg() {
 
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
   static uint64_t last_speed_sample = 0, last_angle_sample = 0;
-  if (htim == &htim1) {
+  if (htim->Instance == htim1.Instance) {
     _MAIN_update_watchdog = true;
     BUZ_timer_callback();
-  } else if(htim == &htim10){
+  } else if(htim->Instance == htim10.Instance){
       if ((true) && (get_time() - last_speed_sample > ENC_SPEED_PERIOD_MS)){
         ENC_R_push_speed_rads();
         ENC_L_push_speed_rads();
@@ -401,10 +415,18 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
         ENC_C_push_angle_deg();
         last_angle_sample = get_time();
       }
-  } else if (htim == &htim13) {
+  } else if (htim->Instance == htim13.Instance) {
       time_base_elapsed();
   } 
 }
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) { 
+    if(htim->Instance == htim6.Instance){
+      _cli_timer_handler(htim);
+    } else if(htim->Instance == htim7.Instance){
+      HAL_ADC_Start_DMA(&hadc1, _ADC_raw_reads + _ADC_curr_ch, 1);
+    }
+  }
 
 void _MAIN_print_dbg_line(char *title, char *txt) {
   uint16_t n_bytes = snprintf(_MAIN_dbg_uart_buf, MAIN_DBG_BUF_LEN, "%10s | %s\033[K\r\n", title, txt);

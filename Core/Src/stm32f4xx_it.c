@@ -60,6 +60,8 @@ extern ADC_HandleTypeDef hadc1;
 extern CAN_HandleTypeDef hcan1;
 extern CAN_HandleTypeDef hcan2;
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim8;
 extern TIM_HandleTypeDef htim10;
 extern TIM_HandleTypeDef htim13;
@@ -346,6 +348,34 @@ void TIM8_CC_IRQHandler(void)
   /* USER CODE BEGIN TIM8_CC_IRQn 1 */
 
   /* USER CODE END TIM8_CC_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM6 global interrupt and DAC1, DAC2 underrun error interrupts.
+  */
+void TIM6_DAC_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+
+  /* USER CODE END TIM6_DAC_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+
+  /* USER CODE END TIM6_DAC_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM7 global interrupt.
+  */
+void TIM7_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM7_IRQn 0 */
+
+  /* USER CODE END TIM7_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim7);
+  /* USER CODE BEGIN TIM7_IRQn 1 */
+
+  /* USER CODE END TIM7_IRQn 1 */
 }
 
 /**

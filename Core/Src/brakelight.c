@@ -38,12 +38,12 @@ void BKL_set_state(BKL_StateTypeDef state) {
     _BKL_set_ch_pwm(dc, TIM_CHANNEL_3);
 }
 
-void BKL_set_curve(float brk_percent) {
+void BKL_set_curve(float brk_bar) {
     static float dc=0;
 
-    if (brk_percent > 4.0f){
+    if (brk_bar > 3.0f){
       dc=1.0;
-    } else if (brk_percent < 1.5f){
+    } else if (brk_bar < 2.0f){
       dc=0;
     }
     _BKL_set_ch_pwm(dc, TIM_CHANNEL_1);

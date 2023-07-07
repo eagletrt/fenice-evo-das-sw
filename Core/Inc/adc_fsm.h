@@ -55,6 +55,8 @@ uint32_t ADC_get_PITOT();
 
 void brk_push_average();
 
+bool is_SD_closed();
+
 void get_brk_average(uint32_t *brk_f, uint32_t *brk_r);
 
 float ADC_to_voltage(uint32_t raw);

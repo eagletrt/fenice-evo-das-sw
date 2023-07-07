@@ -110,7 +110,7 @@ void _pedals(uint16_t argc, char **argv, char *out){
     ADC_get_BRK_F(),
     ADC_get_BRK_R(),
     PED_get_accelerator_percent(),
-    PED_get_brake_percent()
+    PED_get_brake_bar()
     );
 }
 

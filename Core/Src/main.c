@@ -92,6 +92,7 @@ void _MAIN_print_dbg_line(char *title, char *txt);
 /* USER CODE BEGIN 0 */
 void MAIN_print_dbg_info();
 void _MAIN_process_ped_calib_msg();
+void _update_ecu_feedbacks();
 
 /* Redefine the weak function in logger.c to use the UART as textual output */
 void _LOG_write_raw(char *txt) {
@@ -261,25 +262,14 @@ int main(void)
     }
 
     /* Send ECU feedbacks */
-    if(HAL_GetTick() - CANMSG_EcuFeedbacks.info.timestamp >= PRIMARY_ECU_FEEDBACKS_CYCLE_TIME_MS){
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_cock_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB0()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_fb1 = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB1()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_bots_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB2()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_interial_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB3()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_fb4 = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB4()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_in = ADC_is_closed(ADC_to_voltage(ADC_get_SD_IN()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_out = ADC_is_closed(ADC_to_voltage(ADC_get_SD_OUT()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_ctrl_pin = HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin);
-
-      CANMSG_EcuFeedbacks.info.is_new = true;
-    }
+    _update_ecu_feedbacks();
 
 
     /* Send pedal and steer values to the steering wheel for visualization */
     PED_send_vals_in_CAN();
 
     /* Light up the brakelight if the pedal is pressed */
-    float brk_percent = PED_get_brake_percent();
+    float brk_percent = PED_get_brake_bar();
     BKL_set_curve(brk_percent);
 
     if(HAL_GetTick() - PRIMARY_SPEED_CYCLE_TIME_MS >= last_enc_calc) {
@@ -399,6 +389,24 @@ void _MAIN_process_ped_calib_msg() {
 
 }
 
+/**
+ * @brief     Update ECU Feedback 
+ */
+void _update_ecu_feedbacks(){
+  if(HAL_GetTick() - CANMSG_EcuFeedbacks.info.timestamp >= PRIMARY_ECU_FEEDBACKS_CYCLE_TIME_MS){
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_cock_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB0()));
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_fb1 = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB1()));
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_bots_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB2()));
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_interial_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB3()));
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_fb4 = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB4()));
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_in = ADC_is_closed(ADC_to_voltage(ADC_get_SD_IN()));
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_out = ADC_is_closed(ADC_to_voltage(ADC_get_SD_OUT()));
+      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_ctrl_pin = HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin);
+
+      CANMSG_EcuFeedbacks.info.is_new = true;
+    }
+}
+
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
   static uint64_t last_speed_sample = 0, last_angle_sample = 0;
   if (htim->Instance == htim1.Instance) {
@@ -477,7 +485,7 @@ void MAIN_print_dbg_info() {
       _MAIN_print_dbg_line("SD", buf);
       break;
     case 6:
-      snprintf(buf, buf_len, "%8s: %-3.1fV %10s: %-3.1fV %10s: %-3.1fV %12s: %d", "SD_FB4", ADC_to_voltage(ADC_get_SD_FB4()), "SD_IN", ADC_to_voltage(ADC_get_SD_IN()), "SD_OUT", ADC_to_voltage(ADC_get_SD_OUT()), "SD CTRL PIN", HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin));
+      snprintf(buf, buf_len, "%8s: %-3.1fV %10s: %-3.1fV %10s: %-3.1fV %12s: %d %4s: %d", "SD_FB4", ADC_to_voltage(ADC_get_SD_FB4()), "SD_IN", ADC_to_voltage(ADC_get_SD_IN()), "SD_OUT", ADC_to_voltage(ADC_get_SD_OUT()), "SD CTRL PIN", HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin), "TOT", is_SD_closed());
       _MAIN_print_dbg_line("", buf);
       break;
     case 7:
@@ -532,7 +540,7 @@ void MAIN_print_dbg_info() {
         PED_log_dbg_info();
       #endif
       snprintf(buf, buf_len, "%8s: %-5.1f%% %8s: %-5.1f%% %8s: %-5.1f%%",
-        "APPS", PED_get_accelerator_percent(), "Brake/F", PED_get_brake_percent(), "Brake/R", 0.0f);
+        "APPS", PED_get_accelerator_percent(), "Brake/F", PED_get_brake_bar(), "Brake/R", 0.0f);
       _MAIN_print_dbg_line("PED", buf);
       break;
     case 17:

@@ -21,6 +21,7 @@ Functions and types have been generated with prefix "VFSM_"
 #include "pedals.h"
 #include "tractive_system.h"
 #include "inverters.h"
+#include "adc_fsm.h"
 
 VFSM_state_t vfsm_current_state = VFSM_STATE_INIT;
 
@@ -153,7 +154,7 @@ VFSM_state_t VFSM_do_enable_inv_updates(VFSM_state_data_t *data) {
   
   /* Ensure the inverters' power outputs are disabled */
   INV_disable_drive(INV_LEFT);
-  INV_disable_drive(INV_RIGHT);
+  // INV_disable_drive(INV_RIGHT);
   
   /* Check if all updates are live */
   // TODO: scommentare queste righe
@@ -271,21 +272,27 @@ VFSM_state_t VFSM_do_idle(VFSM_state_data_t *data) {
   TS_power_off();
   CANMSG_SetInvConnStatus.data.status = primary_set_inverter_connection_status_status_OFF;
   CANMSG_SetInvConnStatus.info.is_new = true;
+  
   if(reset_inverters == 0U){
     /* Ensure the inverters' power outputs are disabled */
     INV_disable_drive(INV_LEFT);
-    INV_disable_drive(INV_RIGHT);
+    // INV_disable_drive(INV_RIGHT);
     reset_inverters = 1U;
   }
-
-  // INV_set_torque_Nm(INV_RIGHT, 0);
-  // INV_set_torque_Nm(INV_LEFT, 0);
   
   /* Check for a TS-ON request */
   if (CANMSG_SetCarStatus.data.car_status_set == primary_set_car_status_car_status_set_READY && CANMSG_SetCarStatus.info.is_new) {
     next_state = VFSM_STATE_START_TS_PRECHARGE;
     CANMSG_SetCarStatus.info.is_new = false;
+
+    /* Check when SD is open (and therefore I have to go in discharge) */
+    // if(!is_SD_closed())
+    //   next_state = VFSM_STATE_IDLE;
+    // else if (!CANMSG_HVFeedbacks.data.feedbacks_status_feedback_sd_end && CANMSG_HVFeedbacks.info.is_new)
+    //   next_state = VFSM_STATE_IDLE;
+    
   }
+  
 
   #if WTCHDG_DEBUG
     if(!WDG_is_car_in_safe_state()){
@@ -348,7 +355,7 @@ VFSM_state_t VFSM_do_start_ts_precharge(VFSM_state_data_t *data) {
     state_entered_timestamp = HAL_GetTick();
   }
   
-  if (false) { // HAL_GetTick() - state_entered_timestamp > 15*1000) {
+  if ( HAL_GetTick() - state_entered_timestamp > 15*1000) {
     /* We had a timeout, go back */
     state_entered_timestamp = 0U;
     next_state = VFSM_STATE_START_TS_DISCHARGE;
@@ -365,6 +372,12 @@ VFSM_state_t VFSM_do_start_ts_precharge(VFSM_state_data_t *data) {
       next_state = VFSM_STATE_START_TS_DISCHARGE;
     }
   }
+
+  /* Check when SD is open (and therefore I have to go in discharge) */
+  if(!is_SD_closed())
+    next_state = VFSM_STATE_START_TS_DISCHARGE;
+  else if (!CANMSG_HVFeedbacks.data.feedbacks_status_feedback_sd_end)
+    next_state = VFSM_STATE_START_TS_DISCHARGE;
 
   #if WTCHDG_DEBUG
     if(!WDG_is_car_in_safe_state()){
@@ -466,7 +479,7 @@ VFSM_state_t VFSM_do_wait_driver(VFSM_state_data_t *data) {
     if (s == primary_set_car_status_car_status_set_IDLE) {
       /* New set IDLE message */
       next_state = VFSM_STATE_START_TS_DISCHARGE;
-    } else if (s == primary_set_car_status_car_status_set_DRIVE && PED_get_brake_percent() >= 5.0f) {
+    } else if (s == primary_set_car_status_car_status_set_DRIVE && PED_get_brake_bar() >= 5.0f) {
       /* New set DRIVE message */
       next_state = VFSM_STATE_ENABLE_INV_DRIVE;
     }
@@ -507,16 +520,16 @@ VFSM_state_t VFSM_do_enable_inv_drive(VFSM_state_data_t *data) {
   _VFSM_update_CarStatus(VFSM_STATE_ENABLE_INV_DRIVE);
 
   
-  bool RFE_on = INV_get_RFE_state(INV_LEFT) && INV_get_RFE_state(INV_RIGHT);
-  bool RUN_on = INV_get_FRG_state(INV_LEFT) && INV_get_FRG_state(INV_RIGHT);
-  bool DRV_on = INV_is_drive_enabled(INV_LEFT) && INV_is_drive_enabled(INV_RIGHT);
+  bool RFE_on = INV_get_RFE_state(INV_LEFT) ;//&& INV_get_RFE_state(INV_RIGHT);
+  bool RUN_on = INV_get_FRG_state(INV_LEFT) ;//&& INV_get_FRG_state(INV_RIGHT);
+  bool DRV_on = INV_is_drive_enabled(INV_LEFT) ;//&& INV_is_drive_enabled(INV_RIGHT);
 
   if (!RFE_on || !RUN_on) {
     CANMSG_SetInvConnStatus.data.status = primary_set_inverter_connection_status_status_ON;
     CANMSG_SetInvConnStatus.info.is_new = true;
   } else if (!DRV_on) {
     INV_enable_drive(INV_LEFT);
-    INV_enable_drive(INV_RIGHT);
+    // INV_enable_drive(INV_RIGHT);
   } else { /* RFE_on && RUN_on && DRV_on */
     BUZ_beep_ms_async(1500);
     next_state = VFSM_STATE_DRIVE;
@@ -570,7 +583,7 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
 
     if (TS_get_status() != TS_STATUS_ON) {
       INV_set_torque_Nm(INV_LEFT, 0);
-      INV_set_torque_Nm(INV_RIGHT, 0);
+      // INV_set_torque_Nm(INV_RIGHT, 0);
       next_state = VFSM_STATE_DISABLE_INV_DRIVE;
     }
   }
@@ -609,7 +622,7 @@ VFSM_state_t VFSM_do_disable_inv_drive(VFSM_state_data_t *data) {
     next_state = VFSM_STATE_START_TS_DISCHARGE;
   } else {
     INV_disable_drive(INV_LEFT);
-    INV_disable_drive(INV_RIGHT);
+    // INV_disable_drive(INV_RIGHT);
   }
   
   switch (next_state) {

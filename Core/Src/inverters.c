@@ -226,7 +226,7 @@ bool INV_check_settings() {
     bool retval =  _INV_l_recv.def_end_1 == INVERTERS_INV_L_RCV_DEF_END_1_N_CMD_REVERSE_CHOICE &&
                    _INV_r_recv.def_end_1 == INVERTERS_INV_R_RCV_DEF_END_1_N_CMD_REVERSE_CHOICE;
 
-    retval &= _INV_l_recv.active190 == inverters_inv_l_rcv_active190_Low &&
-              _INV_r_recv.active190 == inverters_inv_r_rcv_active190_High;
+    retval = retval && _INV_l_recv.active190 == inverters_inv_l_rcv_active190_Low &&
+                       _INV_r_recv.active190 == inverters_inv_r_rcv_active190_High;
     return retval;
 }

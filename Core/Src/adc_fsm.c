@@ -99,8 +99,20 @@ float ADC_to_voltage(uint32_t raw) {
     return ((raw * 3.3) / (float)4095)*(9.0);
 }
 
+/**
+ * @brief     Return 1 if voltage is grater than 9.0V
+ */
 unsigned int ADC_is_closed(float voltage) {
     return voltage > 9.0;
+}
+
+bool is_SD_closed(){
+    bool close = false;
+
+    close = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB0())) /*&& ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB1()))*/ && ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB2())) 
+            && ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB3())) && ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB4())) && ADC_is_closed(ADC_to_voltage(ADC_get_SD_IN())) 
+            && ADC_is_closed(ADC_to_voltage(ADC_get_SD_OUT())) && HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin);
+    return close;
 }
 
 void brk_push_average() {

@@ -47,7 +47,7 @@ void DAS_do_drive_routine() {
  */
 float _DAS_get_driver_request() {
     float APPS_percent = PED_get_accelerator_percent();
-    float BSE_percent = PED_get_brake_percent();
+    float BSE_percent = PED_get_brake_bar();
 
     PED_update_plausibility_check();
     _DAS_update_brake_impl(APPS_percent, BSE_percent);

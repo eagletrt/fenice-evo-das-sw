@@ -54,7 +54,7 @@ float PED_get_accelerator_torque(float acc_percent);
 /**
  * @brief     Return the value of the brake pedal in the range 0.0f - 100.0f
  */
-float PED_get_brake_percent();
+float PED_get_brake_bar();
 
 /**
  * @brief     Send updates over CAN on the current values of the pedals

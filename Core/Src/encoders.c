@@ -168,7 +168,6 @@ float ENC_C_get_angle_deg() {
 
 void ENC_send_vals_in_CAN() {
     CANMSG_SteerVal.data.angle = ENC_C_get_angle_deg();
-    CANMSG_SteerVal.data.angle = 0.0;
     CANMSG_SteerVal.info.is_new = true;
 
     CANMSG_Speed.data.encoder_l = ENC_L_get_radsec();

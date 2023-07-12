@@ -154,7 +154,7 @@ VFSM_state_t VFSM_do_enable_inv_updates(VFSM_state_data_t *data) {
   
   /* Ensure the inverters' power outputs are disabled */
   INV_disable_drive(INV_LEFT);
-  // INV_disable_drive(INV_RIGHT);
+  INV_disable_drive(INV_RIGHT);
   
   /* Check if all updates are live */
   // TODO: scommentare queste righe
@@ -276,7 +276,7 @@ VFSM_state_t VFSM_do_idle(VFSM_state_data_t *data) {
   if(reset_inverters == 0U){
     /* Ensure the inverters' power outputs are disabled */
     INV_disable_drive(INV_LEFT);
-    // INV_disable_drive(INV_RIGHT);
+    INV_disable_drive(INV_RIGHT);
     reset_inverters = 1U;
   }
   
@@ -621,7 +621,7 @@ VFSM_state_t VFSM_do_disable_inv_drive(VFSM_state_data_t *data) {
     next_state = VFSM_STATE_START_TS_DISCHARGE;
   } else {
     INV_disable_drive(INV_LEFT);
-    // INV_disable_drive(INV_RIGHT);
+    INV_disable_drive(INV_RIGHT);
   }
   
   switch (next_state) {

@@ -5,6 +5,7 @@
 #include "limits.h"
 #include "time_base.h"
 #include "spi.h"
+#include "inverters.h"
 #include <float.h>
 
 #include <math.h>
@@ -119,7 +120,7 @@ void ENC_R_push_speed_rads() {
  * @brief     Calculate the ground speed from steering wheel encoder
  */
 void ENC_C_push_angle_deg(){
-    float calib_center_ang = 193.8f;
+    float calib_center_ang = 240.0f;
     uint16_t buf = 0;
     
     /* Clock rate must be <= 4 MHz (from datasheet) */
@@ -135,13 +136,13 @@ void ENC_C_push_angle_deg(){
     buf = ((uint16_t)(lsb) << 8) | (msb);
     buf = (buf >> 3) & 0x0FFF;
 
-    float angle = 360.0f / 4096.f * buf;
+    float angle = (360.0f / 4096.f * buf) - calib_center_ang;
 
     /* Update array of values*/
     for (int i = ENC_ROLLAVG_SIZE-1; i > 0; i--)
         _ENC_C_median_window[i] = _ENC_C_median_window[i-1];
     
-    _ENC_C_median_window[0] = angle; // -(angle - calib_center_ang);
+    _ENC_C_median_window[0] = angle;
 
 }
 
@@ -172,6 +173,8 @@ void ENC_send_vals_in_CAN() {
 
     CANMSG_Speed.data.encoder_l = ENC_L_get_radsec();
     CANMSG_Speed.data.encoder_r = ENC_R_get_radsec();
+    CANMSG_Speed.data.inverter_l = INV_get_RPM(INV_LEFT);
+    CANMSG_Speed.data.inverter_r = INV_get_RPM(INV_RIGHT);
     CANMSG_Speed.info.is_new = true;
 }
 

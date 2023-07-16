@@ -75,6 +75,25 @@ CANMSG_SteerValTypeDef       CANMSG_SteerVal       = { {0U, false, 0U}, { 0U } }
 CANMSG_IMUAccTypeDef         CANMSG_IMUAcc         = { {0U, false, 0U}, { 0U } };
 CANMSG_IMUAngTypeDef         CANMSG_IMUAng         = { {0U, false, 0U}, { 0U } };
 
+/* Inverter automatic message */
+CANMSG_INVResponseTypeDef CANMSG_InvL_I_CMD_RAMP = {{0U, false, 0U}}; 
+CANMSG_INVResponseTypeDef CANMSG_InvL_I_CMD = {{0U, false, 0U}};
+CANMSG_INVResponseTypeDef CANMSG_InvL_IQ_ACTUAL = {{0U, false, 0U}};
+CANMSG_INVResponseTypeDef CANMSG_InvL_T_MOTOR = {{0U, false, 0U}}; 
+CANMSG_INVResponseTypeDef CANMSG_InvL_T_IGBT = {{0U, false, 0U}}; 
+CANMSG_INVResponseTypeDef CANMSG_InvL_N_ACTUAL_FILT = {{0U, false, 0U}}; 
+CANMSG_INVResponseTypeDef CANMSG_InvL_M_CMD_RAMP = {{0U, false, 0U}}; 
+CANMSG_INVResponseTypeDef CANMSG_InvL_VDC_BUS = {{0U, false, 0U}};
+
+CANMSG_INVResponseTypeDef CANMSG_InvR_I_CMD_RAMP = {{0U, false, 0U}}; 
+CANMSG_INVResponseTypeDef CANMSG_InvR_I_CMD = {{0U, false, 0U}};
+CANMSG_INVResponseTypeDef CANMSG_InvR_IQ_ACTUAL = {{0U, false, 0U}};
+CANMSG_INVResponseTypeDef CANMSG_InvR_T_MOTOR = {{0U, false, 0U}}; 
+CANMSG_INVResponseTypeDef CANMSG_InvR_T_IGBT = {{0U, false, 0U}}; 
+CANMSG_INVResponseTypeDef CANMSG_InvR_N_ACTUAL_FILT = {{0U, false, 0U}}; 
+CANMSG_INVResponseTypeDef CANMSG_InvR_M_CMD_RAMP = {{0U, false, 0U}}; 
+CANMSG_INVResponseTypeDef CANMSG_InvR_VDC_BUS = {{0U, false, 0U}};
+
 CANFQ_QueueTypeDef _CANMSG_RX_queue = { 0U };
 
 
@@ -286,6 +305,59 @@ CANMSG_MetadataTypeDef* CANMSG_get_secondary_metadata_from_id(CAN_IdTypeDef id) 
             // secondary_message_name_from_id(id, name);
             // LOG_write(LOGLEVEL_WARN, "[CANMSG/getMetadata]     > secondary nwk decoding: [%s]", name);
             return NULL;
+    }
+}
+
+/**
+ * @brief     Return a pointer to the metadata struct for the specified CAN message of inverter messages
+ */
+CANMSG_MetadataTypeDef* CANMSG_get_InvL_metadata_from_mux_id(CAN_IdTypeDef id){
+    switch (id)
+    {
+    case INVERTERS_INV_L_RCV_RCV_MUX_ID_22_I_CMD_RAMP_CHOICE:
+        return &(CANMSG_InvL_I_CMD_RAMP.info);
+    case INVERTERS_INV_L_RCV_RCV_MUX_ID_26_I_CMD_CHOICE:
+        return &(CANMSG_InvL_I_CMD.info);
+    case INVERTERS_INV_L_RCV_RCV_MUX_ID_27_IQ_ACTUAL_CHOICE:
+        return &(CANMSG_InvL_IQ_ACTUAL.info);
+    case INVERTERS_INV_L_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE:
+        return &(CANMSG_InvL_T_MOTOR.info);
+    case INVERTERS_INV_L_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE:
+        return &(CANMSG_InvL_T_IGBT.info);
+    case INVERTERS_INV_L_RCV_RCV_MUX_ID_A8_N_ACTUAL_FILT_CHOICE:
+        return &(CANMSG_InvL_N_ACTUAL_FILT.info);
+    case INVERTERS_INV_L_RCV_RCV_MUX_ID_3A_M_CMD_RAMP_CHOICE:
+        return &(CANMSG_InvL_M_CMD_RAMP.info);
+    case INVERTERS_INV_L_SEND_READ_ID_EBH_VDC_BUS_CHOICE:
+        return &(CANMSG_InvL_VDC_BUS.info);
+    default:
+        return NULL;
+    }
+}
+/**
+ * @brief     Return a pointer to the metadata struct for the specified CAN message of inverter messages
+ */
+CANMSG_MetadataTypeDef* CANMSG_get_InvR_metadata_from_mux_id(CAN_IdTypeDef id){
+    switch (id)
+    {
+    case INVERTERS_INV_R_RCV_RCV_MUX_ID_22_I_CMD_RAMP_CHOICE:
+        return &(CANMSG_InvR_I_CMD_RAMP.info);
+    case INVERTERS_INV_R_RCV_RCV_MUX_ID_26_I_CMD_CHOICE:
+        return &(CANMSG_InvR_I_CMD.info);
+    case INVERTERS_INV_R_RCV_RCV_MUX_ID_27_IQ_ACTUAL_CHOICE:
+        return &(CANMSG_InvR_IQ_ACTUAL.info);
+    case INVERTERS_INV_R_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE:
+        return &(CANMSG_InvR_T_MOTOR.info);
+    case INVERTERS_INV_R_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE:
+        return &(CANMSG_InvR_T_IGBT.info);
+    case INVERTERS_INV_R_RCV_RCV_MUX_ID_A8_N_ACTUAL_FILT_CHOICE:
+        return &(CANMSG_InvR_N_ACTUAL_FILT.info);
+    case INVERTERS_INV_R_RCV_RCV_MUX_ID_3A_M_CMD_RAMP_CHOICE:
+        return &(CANMSG_InvR_M_CMD_RAMP.info);
+    case INVERTERS_INV_R_SEND_READ_ID_EBH_VDC_BUS_CHOICE:
+        return &(CANMSG_InvR_VDC_BUS.info);
+    default:
+        return NULL;
     }
 }
 

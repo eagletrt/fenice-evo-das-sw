@@ -1,4 +1,5 @@
 #include "brakelight.h"
+#include "pedals.h"
 #include "pwm.h"
 
 
@@ -41,9 +42,9 @@ void BKL_set_state(BKL_StateTypeDef state) {
 void BKL_set_curve(float brk_bar) {
     static float dc=0;
 
-    if (brk_bar > 3.0f){
+    if (brk_bar > BRK_THRESHOLD_HIGH){
       dc=1.0;
-    } else if (brk_bar < 2.0f){
+    } else if (brk_bar < BRK_THRESHOLD_LOW){
       dc=0;
     }
     _BKL_set_ch_pwm(dc, TIM_CHANNEL_1);

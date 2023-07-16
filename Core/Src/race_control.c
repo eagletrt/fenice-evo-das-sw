@@ -39,7 +39,7 @@ void DAS_do_drive_routine() {
     // }
 
     INV_set_torque_Nm(INV_LEFT, torque_l_Nm);
-    INV_set_torque_Nm(INV_RIGHT, torque_r_Nm);
+    // INV_set_torque_Nm(INV_RIGHT, torque_r_Nm);
 }
 
 /**
@@ -64,11 +64,13 @@ float _DAS_get_driver_request() {
  */
 void _DAS_update_brake_impl(float apps, float bse) {
     if (_DAS_is_brake_impl_on) {
-        if (bse < 50.0f && apps < 5.0f)
+        if (bse < BRK_THRESHOLD_LOW && apps < 5.0f){
             _DAS_is_brake_impl_on = false;
+        }
     } else {
-        if (apps > 25.0f && bse > 50.0f)
+        if (apps > 25.0f && bse > BRK_DRIVE_THRESHOLD){ // TODO: aumentare la threshold
             _DAS_is_brake_impl_on = true;
+        }
     }
 }
 

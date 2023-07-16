@@ -22,6 +22,7 @@ Functions and types have been generated with prefix "VFSM_"
 #include "tractive_system.h"
 #include "inverters.h"
 #include "adc_fsm.h"
+#include "pedals.h"
 
 VFSM_state_t vfsm_current_state = VFSM_STATE_INIT;
 
@@ -157,61 +158,71 @@ VFSM_state_t VFSM_do_enable_inv_updates(VFSM_state_data_t *data) {
   INV_disable_drive(INV_RIGHT);
   
   /* Check if all updates are live */
-  // TODO: scommentare queste righe
-  // uint32_t tout_ms = primary_watchdog_interval_from_id(PRIMARY_INV_R_RESPONSE_FRAME_ID) * 1.5f;
-  // bool status_on  = (HAL_GetTick() - CANMSG_InvL_Status.info.timestamp) < tout_ms;
-  //      status_on &= (HAL_GetTick() - CANMSG_InvR_Status.info.timestamp) < tout_ms;
-  // bool ioinfo_on  = (HAL_GetTick() - CANMSG_InvL_IOInfo.info.timestamp) < tout_ms;
-  //      ioinfo_on &= (HAL_GetTick() - CANMSG_InvR_IOInfo.info.timestamp) < tout_ms;
-  // bool errors_on  = (HAL_GetTick() - CANMSG_InvL_Errors.info.timestamp) < tout_ms;
-  //      errors_on &= (HAL_GetTick() - CANMSG_InvR_Errors.info.timestamp) < tout_ms;
-  // bool speed_on   = (HAL_GetTick() - CANMSG_InvL_Speed.info.timestamp)  < tout_ms;
-  //      speed_on  &= (HAL_GetTick() - CANMSG_InvR_Speed.info.timestamp)  < tout_ms;
-  // bool m_temp_on  = (HAL_GetTick() - CANMSG_InvL_MTemp.info.timestamp)  < tout_ms;
-  //      m_temp_on &= (HAL_GetTick() - CANMSG_InvR_MTemp.info.timestamp)  < tout_ms;
-  // bool i_temp_on  = (HAL_GetTick() - CANMSG_InvL_ITemp.info.timestamp)  < tout_ms;
-  //      i_temp_on &= (HAL_GetTick() - CANMSG_InvR_ITemp.info.timestamp)  < tout_ms;
+  // uint32_t tout_ms = 20.0f * 1.5f;
+  // bool i_cmd_ramp  = (HAL_GetTick() - CANMSG_InvL_I_CMD_RAMP.info.timestamp) < tout_ms;
+  //      i_cmd_ramp &= (HAL_GetTick() - CANMSG_InvR_I_CMD_RAMP.info.timestamp) < tout_ms;
+  // bool i_cmd  = (HAL_GetTick() - CANMSG_InvL_I_CMD.info.timestamp) < tout_ms;
+  //      i_cmd &= (HAL_GetTick() - CANMSG_InvR_I_CMD.info.timestamp) < tout_ms;
+  // bool iq_actual  = (HAL_GetTick() - CANMSG_InvL_IQ_ACTUAL.info.timestamp) < tout_ms;
+  //      iq_actual &= (HAL_GetTick() - CANMSG_InvR_IQ_ACTUAL.info.timestamp) < tout_ms;
+  // bool t_motor  = (HAL_GetTick() - CANMSG_InvL_T_MOTOR.info.timestamp) < tout_ms;
+  //      t_motor &= (HAL_GetTick() - CANMSG_InvR_T_MOTOR.info.timestamp) < tout_ms;
+  // bool t_igbt  = (HAL_GetTick() - CANMSG_InvL_T_IGBT.info.timestamp) < tout_ms;
+  //      t_igbt &= (HAL_GetTick() - CANMSG_InvR_T_IGBT.info.timestamp) < tout_ms;
+  // bool n_actual_filt  = (HAL_GetTick() - CANMSG_InvL_N_ACTUAL_FILT.info.timestamp) < tout_ms;
+  //      n_actual_filt &= (HAL_GetTick() - CANMSG_InvR_N_ACTUAL_FILT.info.timestamp) < tout_ms;
+  // bool m_cmd_ramp  = (HAL_GetTick() - CANMSG_InvL_M_CMD_RAMP.info.timestamp) < tout_ms;
+  //      m_cmd_ramp &= (HAL_GetTick() - CANMSG_InvR_M_CMD_RAMP.info.timestamp) < tout_ms;
+  // bool vdc_bus  = (HAL_GetTick() - CANMSG_InvL_VDC_BUS.info.timestamp) < tout_ms;
+  //      vdc_bus &= (HAL_GetTick() - CANMSG_InvR_VDC_BUS.info.timestamp) < tout_ms;
 
-  /* When enabling regular updates, introduce minor delays to unsync them */
-  // if (!status_on) {
-  //   INV_enable_regid_updates(INV_REG_STATUS);
+  
+  // /* When enabling regular updates, introduce minor delays to unsync them */
+  // if(!i_cmd_ramp) {
+  //   INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE, 20);
   //   HAL_Delay(51);
   // }
-  // if (!ioinfo_on) {
-  //   INV_enable_regid_updates(INV_REG_IOINFO);
+  // if(!i_cmd) {
+  //   INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_26H_I_CMD_CHOICE, 20);
   //   HAL_Delay(51);
   // }
-  // if (!errors_on) {
-  //   INV_enable_regid_updates(INV_REG_ERRORS);
+  // if(!iq_actual) {
+  //   INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE, 20);
   //   HAL_Delay(51);
   // }
-  // if (!speed_on) {
-  //   INV_enable_regid_updates(INV_REG_SPEED);
+  // if(!t_motor) {
+  //   INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_49H_T_MOTOR_CHOICE, 20);
   //   HAL_Delay(51);
   // }
-  // if (!m_temp_on) {
-  //   INV_enable_regid_updates(INV_REG_MOT_TEMP);
+  // if(!t_igbt) {
+  //   INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_4AH_T_IGBT_CHOICE, 20);
   //   HAL_Delay(51);
   // }
-  // if (!i_temp_on) {
-  //   INV_enable_regid_updates(INV_REG_INV_TEMP);
+  // if(!n_actual_filt) {
+  //   INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_A8H_N_ACTUAL_FILT_CHOICE, 20);
   //   HAL_Delay(51);
   // }
+  // if(!m_cmd_ramp) {
+  //   INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_3AH_M_CMD_RAMP_CHOICE, 20);
+  //   HAL_Delay(51);
+  // }
+  // if(!vdc_bus) {
+  //   INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_EBH_VDC_BUS_CHOICE, 20);
+  //   HAL_Delay(51);
+  // }
+  
 
   // LOG_write(LOGLEVEL_DEBUG,
   //   "INV/Updates: status=%d, io=%d, err=%d, speed=%d",
   //   status_on, ioinfo_on, errors_on, speed_on
   // );
 
-  // if (status_on && ioinfo_on && errors_on && speed_on && m_temp_on && i_temp_on)
+  // if (i_cmd_ramp && i_cmd && iq_actual && t_motor && t_igbt && n_actual_filt && m_cmd_ramp && vdc_bus)
   //   next_state = VFSM_STATE_CHECK_INV_SETTINGS;
   // else
   //   next_state = VFSM_NO_CHANGE;
   
-  #warning "[FSM] !!! Skipping inv. enable updates !!!"
-  // LOG_write(LOGLEVEL_WARN, "[FSM] !!! Skipping inv. enable updates !!!");
   next_state = VFSM_STATE_CHECK_INV_SETTINGS;
-
   switch (next_state) {
     case VFSM_STATE_ENABLE_INV_UPDATES:
     case VFSM_STATE_CHECK_INV_SETTINGS:
@@ -238,7 +249,9 @@ VFSM_state_t VFSM_do_check_inv_settings(VFSM_state_data_t *data) {
   
   // LOG_write(LOGLEVEL_WARN, "[FSM] !!! Skipping inv. check settings !!!");
   if(INV_check_settings()){
-    LOG_write(LOGLEVEL_WARN, "[FSM] !!! Inverters' settings are correct !!!"); // TODO: commentare la funzione di debug per controllare che questo funzioni. 
+    LOG_write(LOGLEVEL_WARN, "[FSM] !!! Inverters' settings are correct !!!");
+  } else {
+    LOG_write(LOGLEVEL_WARN, "[FSM] !!! Inverters' settings are NOT correct !!!");
   }
   #warning "TODO: Check inverters' settings"
   next_state = VFSM_STATE_IDLE;
@@ -478,7 +491,7 @@ VFSM_state_t VFSM_do_wait_driver(VFSM_state_data_t *data) {
     if (s == primary_set_car_status_car_status_set_IDLE) {
       /* New set IDLE message */
       next_state = VFSM_STATE_START_TS_DISCHARGE;
-    } else if (s == primary_set_car_status_car_status_set_DRIVE && PED_get_brake_bar() >= 5.0f) {
+    } else if (s == primary_set_car_status_car_status_set_DRIVE && PED_get_brake_bar() >= BRK_THRESHOLD_HIGH) {
       /* New set DRIVE message */
       next_state = VFSM_STATE_ENABLE_INV_DRIVE;
     }
@@ -530,7 +543,7 @@ VFSM_state_t VFSM_do_enable_inv_drive(VFSM_state_data_t *data) {
     INV_enable_drive(INV_LEFT);
     INV_enable_drive(INV_RIGHT);
   } else { /* RFE_on && RUN_on && DRV_on */
-    BUZ_beep_ms_async(1500);
+    BUZ_beep_ms_async(2000);
     next_state = VFSM_STATE_DRIVE;
   }
   
@@ -570,6 +583,12 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
 
 
   static uint32_t last_drive_send = 0;
+
+  // bool DRV_on = INV_is_drive_enabled(INV_LEFT) && INV_is_drive_enabled(INV_RIGHT);
+  // if(!DRV_on){
+  //   next_state = VFSM_STATE_ENABLE_INV_DRIVE;
+  //   return next_state;
+  // }
 
   if (CANMSG_SetCarStatus.data.car_status_set == primary_set_car_status_car_status_set_IDLE && CANMSG_SetCarStatus.info.is_new) {
     CANMSG_SetCarStatus.info.is_new = false;

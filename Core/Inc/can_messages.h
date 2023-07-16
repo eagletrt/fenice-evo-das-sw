@@ -47,6 +47,9 @@ typedef struct { CANMSG_MetadataTypeDef info; secondary_steering_angle_converted
 typedef struct { CANMSG_MetadataTypeDef info; secondary_imu_acceleration_converted_t data; } CANMSG_IMUAccTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; secondary_imu_angular_rate_converted_t data; } CANMSG_IMUAngTypeDef;
 
+/* Inverter automatic message */
+typedef struct { CANMSG_MetadataTypeDef info; } CANMSG_INVResponseTypeDef;
+
 
 extern CANMSG_DASVersionTypeDef       CANMSG_DASVersion;
 extern CANMSG_DASErrorsTypeDef        CANMSG_DASErrors;
@@ -77,6 +80,9 @@ extern CANMSG_CtrlOutTypeDef          CANMSG_CtrlOut;
 extern CANMSG_SteerValTypeDef         CANMSG_SteerVal;
 extern CANMSG_IMUAccTypeDef           CANMSG_IMUAcc;
 extern CANMSG_IMUAngTypeDef           CANMSG_IMUAng;
+
+extern CANMSG_INVResponseTypeDef      CANMSG_InvL_I_CMD_RAMP, CANMSG_InvL_I_CMD, CANMSG_InvL_IQ_ACTUAL, CANMSG_InvL_T_MOTOR, CANMSG_InvL_T_IGBT, CANMSG_InvL_N_ACTUAL_FILT, CANMSG_InvL_M_CMD_RAMP, CANMSG_InvL_VDC_BUS;
+extern CANMSG_INVResponseTypeDef      CANMSG_InvR_I_CMD_RAMP, CANMSG_InvR_I_CMD, CANMSG_InvR_IQ_ACTUAL, CANMSG_InvR_T_MOTOR, CANMSG_InvR_T_IGBT, CANMSG_InvR_N_ACTUAL_FILT, CANMSG_InvR_M_CMD_RAMP, CANMSG_InvR_VDC_BUS;
 
 
 /**
@@ -115,5 +121,7 @@ void CANMSG_process_RX_queue();
 
 CANMSG_MetadataTypeDef* CANMSG_get_primary_metadata_from_id(CAN_IdTypeDef id);
 CANMSG_MetadataTypeDef* CANMSG_get_secondary_metadata_from_id(CAN_IdTypeDef id);
+CANMSG_MetadataTypeDef* CANMSG_get_InvL_metadata_from_mux_id(CAN_IdTypeDef id);
+CANMSG_MetadataTypeDef* CANMSG_get_InvR_metadata_from_mux_id(CAN_IdTypeDef id);
 
 #endif

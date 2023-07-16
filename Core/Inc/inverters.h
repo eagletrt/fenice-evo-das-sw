@@ -4,15 +4,24 @@
 #include "stdint.h"
 #include "can.h"
 #include "math.h"
+#include "../Lib/can/lib/inverters/inverters_network.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265f
 #endif
 
+#define INV_L_RX_ID    PRIMARY_ID_INV_L_REQUEST  /*< ID on which the left inverter listens */
+#define INV_L_TX_ID    PRIMARY_ID_INV_L_RESPONSE /*< ID with which the left inverter transmits */
+#define INV_R_RX_ID    PRIMARY_ID_INV_R_REQUEST  /*< ID on which the right inverter listens */
+#define INV_R_TX_ID    PRIMARY_ID_INV_R_RESPONSE /*< ID with which the right inverter transmits */
+
 typedef enum {
     INV_LEFT,
     INV_RIGHT
 } INV_SideTypeDef;
+
+/* Register IDs for which updates will be activated */
+#define INV_CMD_TX_REQ     0x3D
 
 /* Calculate the correct coefficient to limit motor torque at high RPMs */
 #define INV_POWER_LIMIT             40e3 // W
@@ -24,7 +33,7 @@ typedef enum {
 #define INV_CUTOFF_COEFF            (int32_t)(INV_CUTOFF_COEFF_REAL/INV_CURR_PEAK_REAL*INT16_MAX) // 1/s
 #define INV_CUTOFF_COEFF_TORQUE     MOT_TORQUE_COEFF / INV_CUTOFF_COEFF_REAL // 1/s
 
-
+void INV_enable_regid_updates(uint16_t regid, uint8_t interval);
 void INV_parse_CAN_msg(CAN_IdTypeDef id, uint8_t *buf, uint8_t len);
 
 void INV_read_next_register();
@@ -35,7 +44,7 @@ float INV_cutoff_torque(float request, float rpm);
 
 float INV_get_IGBT_temp(INV_SideTypeDef side);
 float INV_get_motor_temp(INV_SideTypeDef side);
-int16_t INV_get_RPM(INV_SideTypeDef side);
+float INV_get_RPM(INV_SideTypeDef side);
 bool INV_is_drive_enabled(INV_SideTypeDef side);
 bool INV_get_RFE_state(INV_SideTypeDef side);
 bool INV_get_FRG_state(INV_SideTypeDef side);

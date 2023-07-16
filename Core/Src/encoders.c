@@ -136,7 +136,11 @@ void ENC_C_push_angle_deg(){
     buf = ((uint16_t)(lsb) << 8) | (msb);
     buf = (buf >> 3) & 0x0FFF;
 
-    float angle = (360.0f / 4096.f * buf) - calib_center_ang;
+    buf = buf < 50.0f ? buf + 4096.0f : buf;
+    float raw = 360.0f / 4096.f * buf;
+    float angle = (raw) - calib_center_ang;
+    // float angle = (360.0f / 4096.f * buf) - calib_center_ang;
+
 
     /* Update array of values*/
     for (int i = ENC_ROLLAVG_SIZE-1; i > 0; i--)

@@ -17,6 +17,9 @@
 // #define PED_ADC hadc1              /*< ADC connected to the pedals */
 #define PED_DEADZONE_PERCENT 20.0f /*< Initial portion of pedal travel to ignore */
 #define PED_IMPL_THRESHOLD   60.0f /*< Percent of potentiometer offset that triggers the error */
+#define BRK_THRESHOLD_HIGH 0.9f
+#define BRK_THRESHOLD_LOW 0.4f
+#define BRK_DRIVE_THRESHOLD 2.0f
 
 #define EEPROM_SPI hspi1
 

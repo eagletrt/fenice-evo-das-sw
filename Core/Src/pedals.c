@@ -73,6 +73,7 @@ void PED_init() {
 }
 
 float PED_get_accelerator_percent() {
+    static float  media = 0.0;
     float acc1_percent = _PED_from_raw_to_percent(
         ADC_get_APPS1(),
         _PED_CALIB_APPS1_MIN,
@@ -86,8 +87,12 @@ float PED_get_accelerator_percent() {
 
     float acc_avg = (acc1_percent + acc2_percent) / 2.0f;
     float acc_no_deadzone = _PED_remove_dead_zone(acc_avg);
-
-    return acc_no_deadzone;
+    if(acc_no_deadzone> media){
+        media=media*0.999+acc_no_deadzone*0.001;
+    } else{
+        media = acc_no_deadzone;
+    }
+    return (media);
 }
 
 float PED_get_accelerator_torque(float acc_percent){
@@ -99,36 +104,11 @@ float PED_get_accelerator_torque(float acc_percent){
 float PED_get_brake_bar() {
     uint32_t brk_f, brk_r;
     get_brk_average(&brk_f, &brk_r);
-    
-
-    /*
-        VOLPE: (raw / 4096 * 3.3 V * 18/28 -0.5) *100/4.5
-                
-                raw / 4096 * 3.3 V * 18/28
-                
-        SIMO:   ((raw/4096 * 3.1 * 9 ) - 0.5) / 4 * 100
-
-
-        MIA: (raw / 4096  * 4.5 - 0.5 ) * 100
-    */
-    
-    // float bf_bar = _PED_from_raw_to_percent(
-    //     brk_f,
-    //     _PED_CALIB_BRKF_MIN,
-    //     _PED_CALIB_BRKF_MAX
-    // );
-    // float br_percent = _PED_from_raw_to_percent(
-    //     brk_r,
-    //     _PED_CALIB_BRKR_MIN,
-    //     _PED_CALIB_BRKR_MAX
-    // );
 
     float bf_bar = ((brk_f/4096.0 * 3.3 - 0.3)/ 4.0) * 100.0;
     float br_bar = ((brk_r/4096.0 * 3.3 - 0.35)/4.0) * 100.0;
-    // LOG_write(LOGLEVEL_DEBUG, "brk_f: %f, brk_r: %f", bf_bar, br_bar);
     float brk_max = (bf_bar > br_bar) ? bf_bar : br_bar;
-
-    return bf_bar;
+    return brk_max;
 }
 
 float _PED_from_raw_to_percent(uint32_t val, uint32_t min, uint32_t max) {
@@ -191,11 +171,15 @@ float _PED_remove_dead_zone(float val) {
 }
 
 void PED_send_vals_in_CAN() {
+    uint32_t brk_f, brk_r;
+    get_brk_average(&brk_f, &brk_r);
+    float bf_bar = ((brk_f/4096.0 * 3.3 - 0.3)/ 4.0) * 100.0;
+    float br_bar = ((brk_r/4096.0 * 3.3 - 0.35)/4.0) * 100.0;
+
     CANMSG_PedVals.data.apps = PED_get_accelerator_percent();
-    CANMSG_PedVals.data.bse_front = _PED_from_raw_to_percent(ADC_get_BRK_F(), _PED_CALIB_BRKF_MIN, _PED_CALIB_BRKF_MAX);
-    CANMSG_PedVals.data.bse_rear = _PED_from_raw_to_percent(ADC_get_BRK_R(), _PED_CALIB_BRKR_MIN, _PED_CALIB_BRKR_MAX);
+    CANMSG_PedVals.data.bse_front = bf_bar;
+    CANMSG_PedVals.data.bse_rear = br_bar;
     CANMSG_PedVals.info.is_new = true;
-    // LOG_write(LOGLEVEL_DEBUG, "[PED] Updating Pedals values");
 }
 
 void PED_calibrate(PED_CalibTypeDef calib) {
@@ -242,10 +226,6 @@ bool PED_is_brake_ok() {
         LOG_write(LOGLEVEL_DEBUG, "PED/ADCs | %8s: %-6d %8s: %-6.1f %8s: %-6d %8s: %-6.1f",
             "ACC1 Raw", ADC_get_APPS1(), "ACC1 %%", _PED_from_raw_to_percent(ADC_get_APPS1(),_PED_CALIB_APPS1_MIN, _PED_CALIB_APPS1_MAX),
             "ACC2 Raw", ADC_get_APPS2(), "ACC2 %%", _PED_from_raw_to_percent(ADC_get_APPS2(), _PED_CALIB_APPS2_MIN, _PED_CALIB_APPS2_MAX)
-        );
-        LOG_write(LOGLEVEL_DEBUG, "PED/ADCs | %8s: %-6d %8s: %-6.1f %8s: %-6d %8s: %-6.1f",
-            "BRKF Raw", ADC_get_BRK_F(), "BRKF %%", _PED_from_raw_to_percent(ADC_get_BRK_F(), _PED_CALIB_BRKF_MIN, _PED_CALIB_BRKF_MAX),
-            "BRKR Raw", ADC_get_BRK_R(), "BRKR %%", _PED_from_raw_to_percent(ADC_get_BRK_R(), _PED_CALIB_BRKR_MIN, _PED_CALIB_BRKR_MAX)
         );
         LOG_write(LOGLEVEL_DEBUG, "PED/ADCs | %8s: %-6.4f", "BRK perc", PED_get_brake_bar());
         uint32_t brk_f, brk_r;

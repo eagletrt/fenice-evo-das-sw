@@ -507,7 +507,7 @@ void MAIN_print_dbg_info() {
        _MAIN_print_dbg_line("INV/L", buf);
        break;
     case 11:
-       snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6.1f %8s: %-6.1f",
+       snprintf(buf, buf_len, "%8s: %-6d %8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
          "DriveEna", INV_is_drive_enabled(INV_LEFT), "RPM", INV_get_RPM(INV_LEFT), "Mot T", INV_get_motor_temp(INV_LEFT), "IGBT T", INV_get_IGBT_temp(INV_LEFT));
        _MAIN_print_dbg_line("", buf);
        break;
@@ -517,7 +517,7 @@ void MAIN_print_dbg_info() {
        _MAIN_print_dbg_line("INV/R", buf);
        break;
     case 13:
-       snprintf(buf, buf_len, "%8s: %-6d %8s: %-6d %8s: %-6.1f %8s: %-6.1f",
+       snprintf(buf, buf_len, "%8s: %-6d %8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
          "DriveEna", INV_is_drive_enabled(INV_RIGHT), "RPM", INV_get_RPM(INV_RIGHT), "Mot T", INV_get_motor_temp(INV_RIGHT), "IGBT T", INV_get_IGBT_temp(INV_RIGHT));
        _MAIN_print_dbg_line("", buf);
        break;
@@ -539,7 +539,7 @@ void MAIN_print_dbg_info() {
       #if PED_DEBUG
         PED_log_dbg_info();
       #endif
-      snprintf(buf, buf_len, "%8s: %-5.1f%% %8s: %-5.1f%% %8s: %-5.1f%%",
+      snprintf(buf, buf_len, "%8s: %-5.1f%% %8s: %-5.1f% %8s: %-5.1f%%",
         "APPS", PED_get_accelerator_percent(), "Brake/F", PED_get_brake_bar(), "Brake/R", 0.0f);
       _MAIN_print_dbg_line("PED", buf);
       break;

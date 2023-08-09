@@ -109,13 +109,14 @@ void CANMSG_add_msg_to_RX_queue(CAN_MessageTypeDef *msg) {
 
 void CANMSG_process_RX_queue() {
     CAN_MessageTypeDef msg;
-    
     while (CANFQ_pop(_CANMSG_RX_queue, &msg)) {   
         
         if (msg.hcan == &CAN_PRIMARY_NETWORK) {
             if (inverters_id_is_message(msg.id)) {
                 INV_parse_CAN_msg(msg.id, msg.data, msg.size);
+                // LOG_write(LOGLEVEL_INFO, "INV proc RX queue");
             } else {
+                // LOG_write(LOGLEVEL_INFO, "PRI proc RX queue");
                 _CANMSG_primary_deserialize_msg_by_id(msg);
 
                 CANMSG_MetadataTypeDef *msg_to_update = CANMSG_get_primary_metadata_from_id(msg.id);
@@ -126,6 +127,7 @@ void CANMSG_process_RX_queue() {
             }
         } else if (msg.hcan == &CAN_SECONDARY_NETWORK){
             _CANMSG_secondary_deserialize_msg_by_id(msg);
+            // LOG_write(LOGLEVEL_INFO, "SEC proc RX queue");
 
             CANMSG_MetadataTypeDef *msg_to_update = CANMSG_get_secondary_metadata_from_id(msg.id);
             if (msg_to_update != NULL) {
@@ -133,13 +135,11 @@ void CANMSG_process_RX_queue() {
                 msg_to_update->is_new = true;
             }
         }
-             
-        
     }
 }
 
 
-void _CANMSG_primary_deserialize_msg_by_id(CAN_MessageTypeDef msg){
+void _CANMSG_primary_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
     switch (msg.id) {
         case PRIMARY_STEER_STATUS_FRAME_ID:{
             primary_steer_status_t raw_steer_status;

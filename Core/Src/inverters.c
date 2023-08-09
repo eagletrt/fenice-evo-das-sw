@@ -4,11 +4,6 @@
 #include "inverters.h"
 #include "logger.h"
 
-#include <string.h>
-#include <math.h>
-
-#define clamp(x, a, b)\
-    (((x) < (a)) ? (a) : (((x) > (b)) ? (b) : (x)))
 
 inverters_inv_r_send_converted_t _INV_r_send = {0U};
 inverters_inv_l_send_converted_t _INV_l_send = {0U};
@@ -27,18 +22,18 @@ typedef struct {
 } INV_RegMetadataTypeDef;
 
 INV_RegMetadataTypeDef _INV_READ_REG_QUEUE[] = {
-    // { INVERTERS_INV_L_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE,          INV_LEFT,  20,  0  * 2}, // questo
-    // { INVERTERS_INV_R_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE,          INV_RIGHT, 20,  1  * 2}, 
-    // { INVERTERS_INV_L_SEND_READ_ID_26H_I_CMD_CHOICE,               INV_LEFT,  20,  2  * 2}, // questo
-    // { INVERTERS_INV_R_SEND_READ_ID_26H_I_CMD_CHOICE,               INV_RIGHT, 20,  3  * 2},
-    // { INVERTERS_INV_L_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE,           INV_LEFT,  20,  4  * 2}, // questo
-    // { INVERTERS_INV_R_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE,           INV_RIGHT, 20,  5  * 2},
-    { INVERTERS_INV_L_SEND_READ_ID_40H_STATUS_MAP_CHOICE,          INV_LEFT,  100,  6  * 2},
-    { INVERTERS_INV_R_SEND_READ_ID_40H_STATUS_MAP_CHOICE,          INV_RIGHT, 100,  7  * 2},
-    // { INVERTERS_INV_L_SEND_READ_ID_49H_T_MOTOR_CHOICE,             INV_LEFT,  50,  8  * 2}, // questo
-    // { INVERTERS_INV_R_SEND_READ_ID_49H_T_MOTOR_CHOICE,             INV_RIGHT, 50,  9  * 2},
-    // { INVERTERS_INV_L_SEND_READ_ID_4AH_T_IGBT_CHOICE,              INV_LEFT,  50,  10 * 2}, // questo
-    // { INVERTERS_INV_R_SEND_READ_ID_4AH_T_IGBT_CHOICE,              INV_RIGHT, 50,  11 * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE,          INV_LEFT,  20,  0  * 2}, // questo
+    { INVERTERS_INV_R_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE,          INV_RIGHT, 20,  1  * 2}, 
+    { INVERTERS_INV_L_SEND_READ_ID_26H_I_CMD_CHOICE,               INV_LEFT,  20,  2  * 2}, // questo
+    { INVERTERS_INV_R_SEND_READ_ID_26H_I_CMD_CHOICE,               INV_RIGHT, 20,  3  * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE,           INV_LEFT,  20,  4  * 2}, // questo
+    { INVERTERS_INV_R_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE,           INV_RIGHT, 20,  5  * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_40H_STATUS_MAP_CHOICE,          INV_LEFT,  20,  6  * 2},
+    { INVERTERS_INV_R_SEND_READ_ID_40H_STATUS_MAP_CHOICE,          INV_RIGHT, 20,  7  * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_49H_T_MOTOR_CHOICE,             INV_LEFT,  50,  8  * 2}, // questo
+    { INVERTERS_INV_R_SEND_READ_ID_49H_T_MOTOR_CHOICE,             INV_RIGHT, 50,  9  * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_4AH_T_IGBT_CHOICE,              INV_LEFT,  50,  10 * 2}, // questo
+    { INVERTERS_INV_R_SEND_READ_ID_4AH_T_IGBT_CHOICE,              INV_RIGHT, 50,  11 * 2},
     { INVERTERS_INV_L_SEND_READ_ID_51H_KERN_MODE_STATE_CHOICE,     INV_LEFT,  100, 12 * 2},
     { INVERTERS_INV_R_SEND_READ_ID_51H_KERN_MODE_STATE_CHOICE,     INV_RIGHT, 100, 13 * 2},
 
@@ -47,17 +42,17 @@ INV_RegMetadataTypeDef _INV_READ_REG_QUEUE[] = {
 
     { INVERTERS_INV_L_SEND_READ_ID_8FH_ERRORWARNING_MAP_CHOICE,    INV_LEFT,  100, 16 * 2},
     { INVERTERS_INV_R_SEND_READ_ID_8FH_ERRORWARNING_MAP_CHOICE,    INV_RIGHT, 100, 17 * 2},
-    // { INVERTERS_INV_L_SEND_READ_ID_A8H_N_ACTUAL_FILT_CHOICE,       INV_LEFT,  20,  18 * 2}, // questo
-    // { INVERTERS_INV_R_SEND_READ_ID_A8H_N_ACTUAL_FILT_CHOICE,       INV_RIGHT, 20,  19 * 2},
-    { INVERTERS_INV_L_SEND_READ_ID_D8H_LOGICREADBITSIN_OUT_CHOICE, INV_LEFT,  100,  20 * 2},
-    { INVERTERS_INV_R_SEND_READ_ID_D8H_LOGICREADBITSIN_OUT_CHOICE, INV_RIGHT, 100,  21 * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_A8H_N_ACTUAL_FILT_CHOICE,       INV_LEFT,  20,  18 * 2}, // questo
+    { INVERTERS_INV_R_SEND_READ_ID_A8H_N_ACTUAL_FILT_CHOICE,       INV_RIGHT, 20,  19 * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_D8H_LOGICREADBITSIN_OUT_CHOICE, INV_LEFT,  20,  20 * 2},
+    { INVERTERS_INV_R_SEND_READ_ID_D8H_LOGICREADBITSIN_OUT_CHOICE, INV_RIGHT, 20,  21 * 2},
     { INVERTERS_INV_L_SEND_READ_ID_C0H_DEF_DIN_1_CHOICE,           INV_LEFT,  100, 22 * 2},
     { INVERTERS_INV_R_SEND_READ_ID_C0H_DEF_DIN_1_CHOICE,           INV_RIGHT, 100, 23 * 2},
 
-    // { INVERTERS_INV_L_SEND_READ_ID_3AH_M_CMD_RAMP_CHOICE,          INV_LEFT,  20,  24 * 2}, // questo
-    // { INVERTERS_INV_R_SEND_READ_ID_3AH_M_CMD_RAMP_CHOICE,          INV_RIGHT, 20,  25 * 2},
-    // { INVERTERS_INV_L_SEND_READ_ID_EBH_VDC_BUS_CHOICE,             INV_RIGHT, 20,  26 * 2}, // questo
-    // { INVERTERS_INV_R_SEND_READ_ID_EBH_VDC_BUS_CHOICE,             INV_RIGHT, 20,  27 * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_3AH_M_CMD_RAMP_CHOICE,          INV_LEFT,  20,  24 * 2}, // questo
+    { INVERTERS_INV_R_SEND_READ_ID_3AH_M_CMD_RAMP_CHOICE,          INV_RIGHT, 20,  25 * 2},
+    { INVERTERS_INV_L_SEND_READ_ID_EBH_VDC_BUS_CHOICE,             INV_RIGHT, 20,  26 * 2}, // questo
+    { INVERTERS_INV_R_SEND_READ_ID_EBH_VDC_BUS_CHOICE,             INV_RIGHT, 20,  27 * 2},
 };
 uint8_t _INV_READ_REG_QUEUE_LEN = sizeof(_INV_READ_REG_QUEUE) / sizeof(_INV_READ_REG_QUEUE[0]);
 uint8_t _INV_last_read_reg_idx = 0;
@@ -185,7 +180,7 @@ int16_t INV_current_to_num(float current) {
     //A maximum value of 32.768 equals to 169.9A max absorbed
     int16_t max_current = INT16_MAX;
     float num = (max_current / INV_CURR_PEAK_REAL) * current;
-    return (int16_t)clamp(num, INT16_MIN + 10, INT16_MAX - 10);
+    return (int16_t)num; 
 }
 
 float INV_get_IGBT_temp(INV_SideTypeDef side) {
@@ -199,8 +194,8 @@ float INV_get_motor_temp(INV_SideTypeDef side) {
 }
 
 float INV_get_RPM(INV_SideTypeDef side) {
-    float raw_rpm = (side == INV_LEFT) ? _INV_l_recv.n_actual_filt : _INV_r_recv.n_actual_filt;
-    return (float)raw_rpm; // TODO: Probably needs conversion!
+    float raw_rpm = (side == INV_LEFT) ? -_INV_l_recv.n_actual : _INV_r_recv.n_actual;
+    return (float)(raw_rpm*6500/3600); // TODO: Probably needs conversion!
 }
 
 bool INV_is_drive_enabled(INV_SideTypeDef side) {
@@ -216,30 +211,18 @@ bool INV_get_FRG_state(INV_SideTypeDef side) {
 }
 
 void INV_enable_drive(INV_SideTypeDef side) {
-    memset(&_INV_l_send, 0, sizeof(_INV_l_send));
-    memset(&_INV_r_send, 0, sizeof(_INV_r_send));
     if (side == INV_LEFT) {
         _INV_l_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
-        
-        _INV_l_send.km_frg_off = 1;
-        _INV_send_CAN_msg(INV_LEFT);
-        HAL_Delay(1);
         _INV_l_send.km_frg_off = 0;
         _INV_send_CAN_msg(INV_LEFT);
     } else {
         _INV_r_send.send_mux = INVERTERS_INV_R_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
-
-        _INV_r_send.km_frg_off = 1;
-        _INV_send_CAN_msg(INV_RIGHT);
-        HAL_Delay(1);
         _INV_r_send.km_frg_off = 0;
         _INV_send_CAN_msg(INV_RIGHT);
     }
 }
 
 void INV_disable_drive(INV_SideTypeDef side) {
-    memset(&_INV_l_send, 0, sizeof(_INV_l_send));
-    memset(&_INV_r_send, 0, sizeof(_INV_r_send));
     if (side == INV_LEFT) {
         _INV_l_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
         _INV_l_send.km_frg_off = 1;
@@ -254,8 +237,6 @@ void INV_disable_drive(INV_SideTypeDef side) {
 void INV_set_torque_Nm(INV_SideTypeDef side, float torque) {
     float current = INV_torque_to_current(torque);
     int16_t num = INV_current_to_num(current);
-    memset(&_INV_l_send, 0, sizeof(_INV_l_send));
-    memset(&_INV_r_send, 0, sizeof(_INV_r_send));
     if (side == INV_LEFT) {
         _INV_l_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_90_M_SETDIG_CHOICE;
         _INV_l_send.m_setdig__iq = num;

@@ -108,9 +108,9 @@ float ENC_R_get_radsec() {
  * @brief     Calculate the ground speed from the right wheel encoder
  */
 void ENC_R_push_speed_rads() {
-    uint32_t elapsed_us = get_time() - _ENC_R_last_ticks;
+    uint32_t ellapsed_us = get_time() - _ENC_R_last_ticks;
     uint32_t tim_counter = _ENC_get_tim_cnt(&ENC_R_TIM);
-    float speed = _ENC_calculate_wheel_speed(tim_counter, elapsed_us); //impulses * 2*PI / encoder_poles / seconds
+    float speed = _ENC_calculate_wheel_speed(tim_counter, ellapsed_us); //impulses * 2*PI / encoder_poles / seconds
     _ENC_R_last_ticks = get_time();
     _ENC_R_rollavg[_ENC_R_rollavg_idx] = speed;
     _ENC_R_rollavg_idx = (_ENC_R_rollavg_idx + 1) % ENC_ROLLAVG_SIZE;
@@ -120,7 +120,7 @@ void ENC_R_push_speed_rads() {
  * @brief     Calculate the ground speed from steering wheel encoder
  */
 void ENC_C_push_angle_deg(){
-    float calib_center_ang = 61.8f;
+    float calib_center_ang = 240.0f;
     uint16_t buf = 0;
     
     /* Clock rate must be <= 4 MHz (from datasheet) */
@@ -136,12 +136,10 @@ void ENC_C_push_angle_deg(){
     buf = ((uint16_t)(lsb) << 8) | (msb);
     buf = (buf >> 3) & 0x0FFF;
 
+    buf = buf < 50.0f ? buf + 4096.0f : buf;
     float raw = 360.0f / 4096.f * buf;
-    raw = raw > 200.0f ? raw - 360.f : raw;
     float angle = (raw) - calib_center_ang;
-    angle *= -1;
-    if(angle < 0.0f) // correction factor for negative angles
-        angle *= 0.75;
+    // float angle = (360.0f / 4096.f * buf) - calib_center_ang;
 
 
     /* Update array of values*/
@@ -149,12 +147,14 @@ void ENC_C_push_angle_deg(){
         _ENC_C_median_window[i] = _ENC_C_median_window[i-1];
     
     _ENC_C_median_window[0] = angle;
+
 }
 
 /**
  * @brief     Read the absolute steering wheel angle
  */
 float ENC_C_get_angle_deg() {
+     
     float min = FLT_MAX, max = FLT_MIN, median = 0;
     for (int i = 0; i < ENC_ROLLAVG_SIZE; i++){
         if (_ENC_C_median_window[i] < min){

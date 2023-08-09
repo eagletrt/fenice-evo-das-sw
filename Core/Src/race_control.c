@@ -22,8 +22,8 @@ void DAS_do_drive_routine() {
     
     // if (DAS_get_sc_map() == 0 && DAS_get_tv_map() == 0) {
     torque_l_Nm = torque_r_Nm = _DAS_get_driver_request();
-    // torque_l_Nm = INV_cutoff_torque(torque_l_Nm, INV_get_RPM(INV_LEFT));
-    // torque_r_Nm = INV_cutoff_torque(torque_r_Nm, INV_get_RPM(INV_RIGHT));
+    torque_l_Nm = INV_cutoff_torque(torque_l_Nm, INV_get_RPM(INV_LEFT));
+    torque_r_Nm = INV_cutoff_torque(torque_r_Nm, INV_get_RPM(INV_RIGHT));
     // } else {
     //     DAS_sync_CTRL();
     //     float max_torque = 76.455f; /* (Max_current * [Nm/A]) = (169.9 * 0.45) */
@@ -68,7 +68,7 @@ void _DAS_update_brake_impl(float apps, float bse) {
             _DAS_is_brake_impl_on = false;
         }
     } else {
-        if (apps > 25.0f && bse > BRK_IMPL_THRESHOLD){ // TODO: aumentare la threshold
+        if (apps > 25.0f && bse > BRK_DRIVE_THRESHOLD){ // TODO: aumentare la threshold
             _DAS_is_brake_impl_on = true;
         }
     }

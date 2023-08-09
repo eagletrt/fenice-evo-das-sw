@@ -226,7 +226,7 @@ int main(void)
     vfsm_current_state = VFSM_run_state(vfsm_current_state, NULL);
     
     /* Update debug information over UART */
-    // MAIN_print_dbg_info();
+    MAIN_print_dbg_info();
     
     /* Iterate over inverter registers */
     INV_read_next_register();
@@ -539,7 +539,7 @@ void MAIN_print_dbg_info() {
       #if PED_DEBUG
         PED_log_dbg_info();
       #endif
-      snprintf(buf, buf_len, "%8s: %-5.1f%% %8s: %-5.1f% %8s: %-5.1f%%",
+      snprintf(buf, buf_len, "%8s: %-5.1f%% %8s: %-5.1f%% %8s: %-5.1f%%",
         "APPS", PED_get_accelerator_percent(), "Brake/F", PED_get_brake_bar(), "Brake/R", 0.0f);
       _MAIN_print_dbg_line("PED", buf);
       break;

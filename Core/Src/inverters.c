@@ -94,17 +94,17 @@ void _INV_send_CAN_msg(INV_SideTypeDef side) {
 void INV_parse_CAN_msg(CAN_IdTypeDef id, uint8_t *buf, uint8_t len) {
     if (id == INVERTERS_INV_L_RCV_FRAME_ID) {
         inverters_inv_l_rcv_t tmp;
-        inverters_inv_l_rcv_unpack(&tmp, buf, len);
+        inverters_inv_l_rcv_unpack(&tmp, buf, INVERTERS_INV_L_RCV_BYTE_SIZE);
         inverters_inv_l_rcv_raw_to_conversion_struct(&_INV_l_recv, &tmp);
         
         CANMSG_MetadataTypeDef *info;
         info = CANMSG_get_InvL_metadata_from_mux_id(_INV_l_recv.rcv_mux);
         if(info != NULL)
             info->timestamp = HAL_GetTick();
-
+        
     } else if (id == INVERTERS_INV_R_RCV_FRAME_ID) {
         inverters_inv_r_rcv_t tmp;
-        inverters_inv_r_rcv_unpack(&tmp, buf, len);
+        inverters_inv_r_rcv_unpack(&tmp, buf, INVERTERS_INV_R_RCV_BYTE_SIZE);
         inverters_inv_r_rcv_raw_to_conversion_struct(&_INV_r_recv, &tmp);
 
         CANMSG_MetadataTypeDef *info;
@@ -112,6 +112,193 @@ void INV_parse_CAN_msg(CAN_IdTypeDef id, uint8_t *buf, uint8_t len) {
         if(info != NULL)
             info->timestamp = HAL_GetTick();
     }
+    INV_fill_struct(id, &_INV_r_recv, &_INV_l_recv);
+}
+
+void INV_fill_struct(CAN_IdTypeDef id, inverters_inv_r_rcv_converted_t *INV_r_recv, inverters_inv_l_rcv_converted_t *INV_l_recv) {
+    static inverters_inv_r_rcv_converted_t INV_r_filled;
+    static inverters_inv_l_rcv_converted_t INV_l_filled;
+    if (id == INVERTERS_INV_L_RCV_FRAME_ID) {
+        INV_l_filled.rcv_mux = INV_l_recv->rcv_mux;
+        switch(INV_l_filled.rcv_mux) {
+            case INVERTERS_INV_L_RCV_RCV_MUX_ID_27_IQ_ACTUAL_CHOICE:
+                INV_l_filled.iq_actual = INV_l_recv->iq_actual;
+            break;
+            case INVERTERS_INV_L_RCV_RCV_MUX_ID_30_N_ACTUAL_CHOICE:
+                INV_l_filled.n_actual = INV_l_recv->n_actual;
+            break;
+            case INVERTERS_INV_L_RCV_RCV_MUX_ID_40_STATUS_MAP_CHOICE:
+                INV_l_filled.ena64 = INV_l_recv->ena64;
+                INV_l_filled.ncr064 = INV_l_recv->ncr064;
+                INV_l_filled.lim_plus64 = INV_l_recv->lim_plus64;
+                INV_l_filled.lim_minus64 = INV_l_recv->lim_minus64;
+                INV_l_filled.ok64 = INV_l_recv->ok64;
+                INV_l_filled.icns64 = INV_l_recv->icns64;
+                INV_l_filled.tnlim64 = INV_l_recv->tnlim64;
+                INV_l_filled.pn64 = INV_l_recv->pn64;
+                INV_l_filled.ni64 = INV_l_recv->ni64;
+                INV_l_filled._n064 = INV_l_recv->_n064;
+                INV_l_filled.rsw64 = INV_l_recv->rsw64;
+                INV_l_filled.cal064 = INV_l_recv->cal064;
+                INV_l_filled.cal64 = INV_l_recv->cal64;
+                INV_l_filled.tol64 = INV_l_recv->tol64;
+                INV_l_filled.rdy64 = INV_l_recv->rdy64;
+                INV_l_filled.brk064 = INV_l_recv->brk064;
+                INV_l_filled.signmag64 = INV_l_recv->signmag64;
+                INV_l_filled.nclip64 = INV_l_recv->nclip64;
+                INV_l_filled.nclip_minus64 = INV_l_recv->nclip_minus64;
+                INV_l_filled.nclip_plus64 = INV_l_recv->nclip_plus64;
+                INV_l_filled.irddig64 = INV_l_recv->irddig64;
+                INV_l_filled.iuserchd64 = INV_l_recv->iuserchd64;
+                INV_l_filled.irdn64 = INV_l_recv->irdn64;
+                INV_l_filled.irdti64 = INV_l_recv->irdti64;
+                INV_l_filled.irdtir64 = INV_l_recv->irdtir64;
+                INV_l_filled._10hz64 = INV_l_recv->_10hz64;
+                INV_l_filled.irdtm64 = INV_l_recv->irdtm64;
+                INV_l_filled.irdana64 = INV_l_recv->irdana64;
+                INV_l_filled.iwcns64 = INV_l_recv->iwcns64;
+                INV_l_filled.rfepulse64 = INV_l_recv->rfepulse64;
+                INV_l_filled.md64 = INV_l_recv->md64;
+                INV_l_filled.hndwhl64 = INV_l_recv->hndwhl64;
+            break;
+            case INVERTERS_INV_L_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE:
+                INV_l_filled.t_igbt = INV_l_recv->t_igbt;
+            break;
+            case INVERTERS_INV_L_RCV_RCV_MUX_ID_A8_N_ACTUAL_FILT_CHOICE:
+                INV_l_filled.n_actual_filt = INV_l_recv->n_actual_filt;
+            break;
+            case INVERTERS_INV_L_RCV_RCV_MUX_ID_51_KERN_MODE_STATE_CHOICE:
+                INV_l_filled.km_rsvd_0 = INV_l_recv->km_rsvd_0;
+                INV_l_filled.km_speed_0 = INV_l_recv->km_speed_0;
+                INV_l_filled.km_frg_off = INV_l_recv->km_frg_off;
+                INV_l_filled.km_cal_off = INV_l_recv->km_cal_off;
+                INV_l_filled.km_tx_tog_stat = INV_l_recv->km_tx_tog_stat;
+                INV_l_filled.km_i_limit = INV_l_recv->km_i_limit;
+                INV_l_filled.km_n_clip = INV_l_recv->km_n_clip;
+                INV_l_filled.km_mix_ana_on = INV_l_recv->km_mix_ana_on;
+                INV_l_filled.km_allow_sync = INV_l_recv->km_allow_sync;
+                INV_l_filled.km_handwheel = INV_l_recv->km_handwheel;
+                INV_l_filled.km_phasing_extend = INV_l_recv->km_phasing_extend;
+                INV_l_filled.km_rsvd_11 = INV_l_recv->km_rsvd_11;
+                INV_l_filled.km_rsvd_12 = INV_l_recv->km_rsvd_12;
+                INV_l_filled.km_rsvd_13 = INV_l_recv->km_rsvd_13;
+                INV_l_filled.km_pseudo_enable = INV_l_recv->km_pseudo_enable;
+                INV_l_filled.km_debug_test = INV_l_recv->km_debug_test;
+            break;
+            case INVERTERS_INV_L_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE:
+                INV_l_filled.t_motor = INV_l_recv->t_motor;
+            break;
+            case INVERTERS_INV_L_RCV_RCV_MUX_ID_D8_LOGICREADBITSIN_OUT_CHOICE:
+                INV_l_filled.lmt_active_1 = INV_l_recv->lmt_active_1;
+                INV_l_filled.lmt_active_2 = INV_l_recv->lmt_active_2;
+                INV_l_filled.in_active_2 = INV_l_recv->in_active_2;
+                INV_l_filled.in_active_1 = INV_l_recv->in_active_1;
+                INV_l_filled.frgrun = INV_l_recv->frgrun;
+                INV_l_filled.rfe216 = INV_l_recv->rfe216;
+                INV_l_filled.d_out_1_on = INV_l_recv->d_out_1_on;
+                INV_l_filled.d_out_2_on = INV_l_recv->d_out_2_on;
+                INV_l_filled.btbrdy = INV_l_recv->btbrdy;
+                INV_l_filled.go216 = INV_l_recv->go216;
+                INV_l_filled.d_out_3_on = INV_l_recv->d_out_3_on;
+                INV_l_filled.d_out_4_on = INV_l_recv->d_out_4_on;
+                INV_l_filled.goff = INV_l_recv->goff;
+                INV_l_filled.brk1216 = INV_l_recv->brk1216;
+            break;
+            default:
+            break;
+        }
+    } else if (id == INVERTERS_INV_R_RCV_FRAME_ID) {
+        INV_r_filled.rcv_mux = INV_r_recv->rcv_mux;
+        switch(INV_r_filled.rcv_mux) {
+            case INVERTERS_INV_R_RCV_RCV_MUX_ID_27_IQ_ACTUAL_CHOICE:
+                INV_r_filled.iq_actual = INV_r_recv->iq_actual;
+            break;
+            case INVERTERS_INV_R_RCV_RCV_MUX_ID_30_N_ACTUAL_CHOICE:
+                INV_r_filled.n_actual = INV_r_recv->n_actual;
+            break;
+            case INVERTERS_INV_R_RCV_RCV_MUX_ID_40_STATUS_MAP_CHOICE:
+                INV_r_filled.ena64 = INV_r_recv->ena64;
+                INV_r_filled.ncr064 = INV_r_recv->ncr064;
+                INV_r_filled.lim_plus64 = INV_r_recv->lim_plus64;
+                INV_r_filled.lim_minus64 = INV_r_recv->lim_minus64;
+                INV_r_filled.ok64 = INV_r_recv->ok64;
+                INV_r_filled.icns64 = INV_r_recv->icns64;
+                INV_r_filled.tnlim64 = INV_r_recv->tnlim64;
+                INV_r_filled.pn64 = INV_r_recv->pn64;
+                INV_r_filled.ni64 = INV_r_recv->ni64;
+                INV_r_filled._n064 = INV_r_recv->_n064;
+                INV_r_filled.rsw64 = INV_r_recv->rsw64;
+                INV_r_filled.cal064 = INV_r_recv->cal064;
+                INV_r_filled.cal64 = INV_r_recv->cal64;
+                INV_r_filled.tol64 = INV_r_recv->tol64;
+                INV_r_filled.rdy64 = INV_r_recv->rdy64;
+                INV_r_filled.brk064 = INV_r_recv->brk064;
+                INV_r_filled.signmag64 = INV_r_recv->signmag64;
+                INV_r_filled.nclip64 = INV_r_recv->nclip64;
+                INV_r_filled.nclip_minus64 = INV_r_recv->nclip_minus64;
+                INV_r_filled.nclip_plus64 = INV_r_recv->nclip_plus64;
+                INV_r_filled.irddig64 = INV_r_recv->irddig64;
+                INV_r_filled.iuserchd64 = INV_r_recv->iuserchd64;
+                INV_r_filled.irdn64 = INV_r_recv->irdn64;
+                INV_r_filled.irdti64 = INV_r_recv->irdti64;
+                INV_r_filled.irdtir64 = INV_r_recv->irdtir64;
+                INV_r_filled._10hz64 = INV_r_recv->_10hz64;
+                INV_r_filled.irdtm64 = INV_r_recv->irdtm64;
+                INV_r_filled.irdana64 = INV_r_recv->irdana64;
+                INV_r_filled.iwcns64 = INV_r_recv->iwcns64;
+                INV_r_filled.rfepulse64 = INV_r_recv->rfepulse64;
+                INV_r_filled.md64 = INV_r_recv->md64;
+                INV_r_filled.hndwhl64 = INV_r_recv->hndwhl64;
+            break;
+            case INVERTERS_INV_R_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE:
+                INV_r_filled.t_igbt = INV_r_recv->t_igbt;
+            break;
+            case INVERTERS_INV_R_RCV_RCV_MUX_ID_A8_N_ACTUAL_FILT_CHOICE:
+                INV_r_filled.n_actual_filt = INV_r_recv->n_actual_filt;
+            break;
+            case INVERTERS_INV_R_RCV_RCV_MUX_ID_51_KERN_MODE_STATE_CHOICE:
+                INV_r_filled.km_rsvd_0 = INV_r_recv->km_rsvd_0;
+                INV_r_filled.km_speed_0 = INV_r_recv->km_speed_0;
+                INV_r_filled.km_frg_off = INV_r_recv->km_frg_off;
+                INV_r_filled.km_cal_off = INV_r_recv->km_cal_off;
+                INV_r_filled.km_tx_tog_stat = INV_r_recv->km_tx_tog_stat;
+                INV_r_filled.km_i_limit = INV_r_recv->km_i_limit;
+                INV_r_filled.km_n_clip = INV_r_recv->km_n_clip;
+                INV_r_filled.km_mix_ana_on = INV_r_recv->km_mix_ana_on;
+                INV_r_filled.km_allow_sync = INV_r_recv->km_allow_sync;
+                INV_r_filled.km_handwheel = INV_r_recv->km_handwheel;
+                INV_r_filled.km_phasing_extend = INV_r_recv->km_phasing_extend;
+                INV_r_filled.km_rsvd_11 = INV_r_recv->km_rsvd_11;
+                INV_r_filled.km_rsvd_12 = INV_r_recv->km_rsvd_12;
+                INV_r_filled.km_rsvd_13 = INV_r_recv->km_rsvd_13;
+                INV_r_filled.km_pseudo_enable = INV_r_recv->km_pseudo_enable;
+                INV_r_filled.km_debug_test = INV_r_recv->km_debug_test;
+            break;
+            case INVERTERS_INV_R_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE:
+                INV_r_filled.t_motor = INV_r_recv->t_motor;
+            break;
+            case INVERTERS_INV_R_RCV_RCV_MUX_ID_D8_LOGICREADBITSIN_OUT_CHOICE:
+                INV_r_filled.lmt_active_1 = INV_r_recv->lmt_active_1;
+                INV_r_filled.lmt_active_2 = INV_r_recv->lmt_active_2;
+                INV_r_filled.in_active_2 = INV_r_recv->in_active_2;
+                INV_r_filled.in_active_1 = INV_r_recv->in_active_1;
+                INV_r_filled.frgrun = INV_r_recv->frgrun;
+                INV_r_filled.rfe216 = INV_r_recv->rfe216;
+                INV_r_filled.d_out_1_on = INV_r_recv->d_out_1_on;
+                INV_r_filled.d_out_2_on = INV_r_recv->d_out_2_on;
+                INV_r_filled.btbrdy = INV_r_recv->btbrdy;
+                INV_r_filled.go216 = INV_r_recv->go216;
+                INV_r_filled.d_out_3_on = INV_r_recv->d_out_3_on;
+                INV_r_filled.d_out_4_on = INV_r_recv->d_out_4_on;
+                INV_r_filled.goff = INV_r_recv->goff;
+                INV_r_filled.brk1216 = INV_r_recv->brk1216;
+            break;
+            default:
+            break;
+        }
+    }
+    *INV_r_recv = INV_r_filled;
+    *INV_l_recv = INV_l_filled;
 }
 
 /**
@@ -164,28 +351,25 @@ float INV_torque_to_current(float torque){
  * @return    The current in Nm after the power limit has been applied
  */
 float INV_cutoff_torque(float request, float rpm) {
-    if (rpm < INV_RPM_CUTOFF)
+    if (rpm < INV_CUTOFF_RPM)
         return request;
+        
+    float lim_Nm = INV_CUTOFF_COEFF_TORQUE / rpm;
 
-    float lim_Nm = INV_CUTOFF_COEFF/(float)rpm * MOT_TORQUE_COEFF;
-    
-    /* See Mattia Piccini's report for details */
-    // float lim_current = (float)INV_CUTOFF_COEFF_TORQUE / (float)rpm;
-    
     return (request > lim_Nm && lim_Nm > 0) ? lim_Nm : request;
 }
 
 int16_t INV_current_to_num(float current) {
     /* Check Inverter datasheet */
     //A maximum value of 32.768 equals to 169.9A max absorbed
-    int16_t max_current = INT16_MAX;
-    float num = (max_current / INV_CURR_PEAK_REAL) * current;
-    return (int16_t)num; 
+    float num = (current / INV_CURR_PEAK_REAL) * INT16_MAX;
+    return (int16_t)clamp(num, INT16_MIN + 1, INT16_MAX - 1);
 }
 
 float INV_get_IGBT_temp(INV_SideTypeDef side) {
     uint16_t raw_temp = (side == INV_LEFT) ? _INV_l_recv.t_igbt : _INV_r_recv.t_igbt;
-    return 0.005f * raw_temp - 38.0f;
+    return -43.23745 + 0.01073427 * raw_temp - 5.523417e-7 * pow(raw_temp, 2) +
+         1.330787e-11 * pow(raw_temp, 3);
 }
 
 float INV_get_motor_temp(INV_SideTypeDef side) {
@@ -194,8 +378,14 @@ float INV_get_motor_temp(INV_SideTypeDef side) {
 }
 
 float INV_get_RPM(INV_SideTypeDef side) {
+<<<<<<< HEAD
     float raw_rpm = (side == INV_LEFT) ? -_INV_l_recv.n_actual : _INV_r_recv.n_actual;
     return (float)(raw_rpm*6500/3600); // TODO: Probably needs conversion!
+=======
+    float raw_rpm = (side == INV_LEFT) ? - _INV_l_recv.n_actual_filt : _INV_r_recv.n_actual_filt;
+    raw_rpm *= 10.0f; // DBC conversion backward
+    return raw_rpm * (MOT_RPM_LIMIT_REAL / INT16_MAX);
+>>>>>>> fix-cutoff
 }
 
 bool INV_is_drive_enabled(INV_SideTypeDef side) {

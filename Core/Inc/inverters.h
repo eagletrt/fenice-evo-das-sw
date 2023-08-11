@@ -24,17 +24,18 @@ typedef enum {
 #define INV_CMD_TX_REQ     0x3D
 
 /* Calculate the correct coefficient to limit motor torque at high RPMs */
-#define INV_POWER_LIMIT             40e3 // W
-#define MOT_TORQUE_COEFF            0.45 // Nm/Arms // 0,54 sul nuovo datasheet
 #define MOT_RPM_LIMIT_REAL          6500.f // #rot/min
-#define INV_CUTOFF_COEFF_REAL       INV_POWER_LIMIT*60/(MOT_TORQUE_COEFF*2*M_PI) // A/s
+#define INV_POWER_LIMIT             35e3f   // W
+#define MOT_TORQUE_COEFF            0.45f  // Nm/Arms // 0,54 sul nuovo datasheet
 #define INV_CURR_PEAK_REAL          169.9f // A
-#define INV_RPM_CUTOFF              INV_CUTOFF_COEFF_REAL/INV_CURR_PEAK_REAL+1 // 1/s
-#define INV_CUTOFF_COEFF            (int32_t)(INV_CUTOFF_COEFF_REAL/INV_CURR_PEAK_REAL*INT16_MAX) // 1/s
-#define INV_CUTOFF_COEFF_TORQUE     MOT_TORQUE_COEFF / INV_CUTOFF_COEFF_REAL // 1/s
+
+#define INV_CUTOFF_COEFF            (INV_POWER_LIMIT/MOT_TORQUE_COEFF * (60.0f/(2*M_PI))) // Arms (Imax)
+#define INV_CUTOFF_RPM              (INV_CUTOFF_COEFF / INV_CURR_PEAK_REAL) // 1/s
+#define INV_CUTOFF_COEFF_TORQUE     (INV_CUTOFF_COEFF * MOT_TORQUE_COEFF)   // Nm
 
 void INV_enable_regid_updates(uint16_t regid, uint8_t interval);
 void INV_parse_CAN_msg(CAN_IdTypeDef id, uint8_t *buf, uint8_t len);
+void INV_fill_struct(CAN_IdTypeDef id, inverters_inv_r_rcv_converted_t *INV_r_recv, inverters_inv_l_rcv_converted_t *INV_l_recv);
 
 void INV_read_next_register();
 

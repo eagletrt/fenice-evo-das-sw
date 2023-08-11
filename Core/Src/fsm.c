@@ -536,7 +536,10 @@ VFSM_state_t VFSM_do_enable_inv_drive(VFSM_state_data_t *data) {
   bool RUN_on = INV_get_FRG_state(INV_LEFT) && INV_get_FRG_state(INV_RIGHT);
   bool DRV_on = INV_is_drive_enabled(INV_LEFT) && INV_is_drive_enabled(INV_RIGHT);
 
-  if (!RFE_on || !RUN_on) {
+  if (CANMSG_SetCarStatus.data.car_status_set == primary_set_car_status_car_status_set_IDLE && CANMSG_SetCarStatus.info.is_new) {
+    CANMSG_SetCarStatus.info.is_new = false;
+    next_state = VFSM_STATE_DISABLE_INV_DRIVE;
+  } else if (!RFE_on || !RUN_on) {
     CANMSG_SetInvConnStatus.data.status = primary_set_inverter_connection_status_status_ON;
     CANMSG_SetInvConnStatus.info.is_new = true;
   } else if (!DRV_on) {

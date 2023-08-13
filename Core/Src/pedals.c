@@ -73,7 +73,6 @@ void PED_init() {
 }
 
 float PED_get_accelerator_percent() {
-    static float  media = 0.0;
     float acc1_percent = _PED_from_raw_to_percent(
         ADC_get_APPS1(),
         _PED_CALIB_APPS1_MIN,
@@ -87,17 +86,16 @@ float PED_get_accelerator_percent() {
 
     float acc_avg = (acc1_percent + acc2_percent) / 2.0f;
     float acc_no_deadzone = _PED_remove_dead_zone(acc_avg);
-    if(acc_no_deadzone> media){
-        media=media*0.999+acc_no_deadzone*0.001;
-    } else{
-        media = acc_no_deadzone;
-    }
-    return (media);
+    static float avg = 0.0f;
+    avg = avg * 0.99 + acc_no_deadzone * 0.01;
+    return avg;
 }
 
 float PED_get_accelerator_torque(float acc_percent){
     float power_map = (CANMSG_SteerStatus.data.map_pw >= 0 ? CANMSG_SteerStatus.data.map_pw : 0.0);
-    float torque = (55.0f * acc_percent / 100.0f)*(power_map);
+    if(power_map > 0.65 && power_map < 0.75)
+        power_map = 0.65;
+    float torque = (88.0f * acc_percent / 100.0f)*(power_map);
     return torque;
 }
 

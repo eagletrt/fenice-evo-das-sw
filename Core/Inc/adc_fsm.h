@@ -3,7 +3,7 @@
 
 #include "stdint.h"
 #include "stdbool.h"
-#define BRK_MED_SIZE 20
+#define BRK_MED_SIZE 500
 
 typedef enum {
     ADC_CH_PITOT = 0, /*< 0000 */

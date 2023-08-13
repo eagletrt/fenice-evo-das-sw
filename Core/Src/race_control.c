@@ -68,7 +68,7 @@ void _DAS_update_brake_impl(float apps, float bse) {
             _DAS_is_brake_impl_on = false;
         }
     } else {
-        if (apps > 25.0f && bse > BRK_DRIVE_THRESHOLD){ // TODO: aumentare la threshold
+        if (apps > 25.0f && bse > BRK_IMPL_THRESHOLD){ // TODO: aumentare la threshold
             _DAS_is_brake_impl_on = true;
         }
     }

@@ -226,7 +226,7 @@ int main(void)
     vfsm_current_state = VFSM_run_state(vfsm_current_state, NULL);
     
     /* Update debug information over UART */
-    MAIN_print_dbg_info();
+    // MAIN_print_dbg_info();
     
     /* Iterate over inverter registers */
     INV_read_next_register();

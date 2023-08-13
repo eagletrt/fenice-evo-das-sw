@@ -601,9 +601,9 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
     }
 
     if (TS_get_status() != TS_STATUS_ON) {
-      // INV_set_torque_Nm(INV_LEFT, 0);
-      // INV_set_torque_Nm(INV_RIGHT, 0);
-      // next_state = VFSM_STATE_DISABLE_INV_DRIVE;
+      INV_set_torque_Nm(INV_LEFT, 0);
+      INV_set_torque_Nm(INV_RIGHT, 0);
+      next_state = VFSM_STATE_DISABLE_INV_DRIVE;
       LOG_write(LOGLEVEL_INFO, "TS_status: %d", TS_get_status());
     }
   }

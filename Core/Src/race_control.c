@@ -20,23 +20,9 @@ void _DAS_update_brake_impl(float apps, float bse);
 void DAS_do_drive_routine() {
     float torque_l_Nm, torque_r_Nm;
     
-    // if (DAS_get_sc_map() == 0 && DAS_get_tv_map() == 0) {
     torque_l_Nm = torque_r_Nm = _DAS_get_driver_request();
     torque_l_Nm = INV_cutoff_torque(torque_l_Nm, INV_get_RPM(INV_LEFT));
     torque_r_Nm = INV_cutoff_torque(torque_r_Nm, INV_get_RPM(INV_RIGHT));
-    // } else {
-    //     DAS_sync_CTRL();
-    //     float max_torque = 76.455f; /* (Max_current * [Nm/A]) = (169.9 * 0.45) */
-    //     torque_l_Nm = CTRL_get_torque_L() / max_torque * 100.0f;
-    //     torque_r_Nm = CTRL_get_torque_R() / max_torque * 100.0f;
-        
-    //     CANMSG_CtrlOut.data.torque_l = CTRL_get_torque_L();
-    //     CANMSG_CtrlOut.data.torque_r = CTRL_get_torque_R();
-    //     CANMSG_CtrlOut.data.tmax_l = CTRL_get_tmax_L();
-    //     CANMSG_CtrlOut.data.tmax_r = CTRL_get_tmax_R();
-    //     CANMSG_CtrlOut.data.estimated_velocity = CTRL_get_vest();
-    //     CANMSG_CtrlOut.info.is_new = true;
-    // }
 
     INV_set_torque_Nm(INV_LEFT, torque_l_Nm);
     INV_set_torque_Nm(INV_RIGHT, torque_r_Nm);

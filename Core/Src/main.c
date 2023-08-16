@@ -226,7 +226,7 @@ int main(void)
     vfsm_current_state = VFSM_run_state(vfsm_current_state, NULL);
     
     /* Update debug information over UART */
-    // MAIN_print_dbg_info();
+    MAIN_print_dbg_info();
     
     /* Iterate over inverter registers */
     INV_read_next_register();
@@ -257,8 +257,8 @@ int main(void)
       // CANMSG_DASErrors.data.das_error_pedal_adc = 1;
     }
     if (!PED_is_brake_ok()) {
-      // HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
-      // CANMSG_DASErrors.data.das_error_pedal_implausibility = 1;
+      HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
+      CANMSG_DASErrors.data.das_error_pedal_implausibility = 1;
     }
 
     /* Send ECU feedbacks */

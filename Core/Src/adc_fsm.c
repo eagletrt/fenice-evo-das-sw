@@ -48,11 +48,11 @@ uint32_t ADC_get_APPS2() {
 }
 
 uint32_t ADC_get_BPPS1() {
-    return _ADC_raw_reads[ADC_CH_BPPS1];
+    return brk_f_median_window[0];
 }
 
 uint32_t ADC_get_BPPS2() {
-    return _ADC_raw_reads[ADC_CH_BPPS2];
+    return brk_r_median_window[0];
 }
 
 uint32_t ADC_get_BRK_F() {

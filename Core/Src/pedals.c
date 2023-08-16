@@ -208,9 +208,11 @@ void PED_calibrate(PED_CalibTypeDef calib) {
 }
 
 bool PED_is_brake_ok() {
-    if (ADC_get_BPPS1() < (_PED_CALIB_BRKF_MIN - 100) || ADC_get_BPPS1() > (_PED_CALIB_BRKF_MAX + 100))
+    uint32_t x = ADC_get_BRK_F();
+    uint32_t y = ADC_get_BRK_R();
+    if (x < 200 || x > 3000)
         return 0;
-    if (ADC_get_BPPS2() < (_PED_CALIB_BRKR_MIN - 100) || ADC_get_BPPS2() > (_PED_CALIB_BRKR_MAX + 100))
+    if (y < 200 || y > 3000)
         return 0;
     return 1;
 }

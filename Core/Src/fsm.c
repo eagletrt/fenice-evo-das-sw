@@ -541,8 +541,10 @@ VFSM_state_t VFSM_do_enable_inv_drive(VFSM_state_data_t *data) {
     CANMSG_SetInvConnStatus.data.status = primary_set_inverter_connection_status_status_ON;
     CANMSG_SetInvConnStatus.info.is_new = true;
   } else if (!DRV_on) {
-    INV_enable_drive(INV_LEFT);
-    INV_enable_drive(INV_RIGHT);
+    if(!INV_is_drive_enabled(INV_LEFT))
+      INV_enable_drive(INV_LEFT);
+    if(!INV_is_drive_enabled(INV_RIGHT))
+      INV_enable_drive(INV_RIGHT);
   } else { /* RFE_on && RUN_on && DRV_on */
     BUZ_beep_ms_async(2000);
     next_state = VFSM_STATE_DRIVE;

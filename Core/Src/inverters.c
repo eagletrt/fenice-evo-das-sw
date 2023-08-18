@@ -406,16 +406,16 @@ void INV_enable_drive(INV_SideTypeDef side) {
     if (side == INV_LEFT) {
         _INV_l_send.send_mux = INVERTERS_INV_L_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
         
-        _INV_l_send.km_frg_off = 1;
-        _INV_send_CAN_msg(INV_LEFT);
+        //_INV_l_send.km_frg_off = 1;
+        //_INV_send_CAN_msg(INV_LEFT);
         HAL_Delay(1);
         _INV_l_send.km_frg_off = 0;
         _INV_send_CAN_msg(INV_LEFT);
     } else {
         _INV_r_send.send_mux = INVERTERS_INV_R_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
 
-        _INV_r_send.km_frg_off = 1;
-        _INV_send_CAN_msg(INV_RIGHT);
+        //_INV_r_send.km_frg_off = 1;
+        //_INV_send_CAN_msg(INV_RIGHT);
         HAL_Delay(1);
         _INV_r_send.km_frg_off = 0;
         _INV_send_CAN_msg(INV_RIGHT);

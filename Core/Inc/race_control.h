@@ -1,6 +1,15 @@
 #ifndef RACE_CTRL_H
 #define RACE_CTRL_H
 
+#include <math.h>
+#include <stdbool.h>
+
+#define ENABLE_CONTROLS (true)
+#define CONTROL_FAIL_COUNT 10
+
+static bool equal_d(float a, float b) {
+    return fabs(a - b) < 0.0001;
+}
 
 /**
  * @brief     Perform everything that is needed to read the driver's input and

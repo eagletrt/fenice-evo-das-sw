@@ -5,6 +5,8 @@
 #include "inverters.h"
 #include "logger.h"
 #include "can_messages.h"
+#include "../Lib/can/lib/primary/primary_watchdog.h"
+#include "../Lib/can/lib/secondary/secondary_watchdog.h"
 // #include "traction_control.h"
 
 
@@ -15,12 +17,41 @@ bool _DAS_is_brake_impl_on = false;
 
 float _DAS_get_driver_request();
 void _DAS_update_brake_impl(float apps, float bse);
+bool _DAS_is_control_feasible();
 
+bool _DAS_is_control_feasible() {
+    static uint8_t counter = 0;
+
+    if(HAL_GetTick() - CANMSG_CtrlOut.info.timestamp > PRIMARY_INTERVAL_CONTROL_OUTPUT) {
+        counter ++;
+    }
+    if(HAL_GetTick() - CANMSG_CtrlState.info.timestamp > SECONDARY_INTERVAL_CONTROL_STATE) {
+        counter ++;
+    }
+
+    if (equal_d(CANMSG_CtrlState.data.map_pw, CANMSG_SteerStatus.data.map_pw) && 
+        equal_d(CANMSG_CtrlState.data.map_tv, CANMSG_SteerStatus.data.map_tv) && 
+        equal_d(CANMSG_CtrlState.data.map_sc, CANMSG_SteerStatus.data.map_sc)) {
+        counter = 0;
+    } else {
+        if(counter < CONTROL_FAIL_COUNT) {
+            counter ++;
+        }
+    }
+
+    return (counter < CONTROL_FAIL_COUNT) ? true : false;
+}
 
 void DAS_do_drive_routine() {
     float torque_l_Nm, torque_r_Nm;
     
-    torque_l_Nm = torque_r_Nm = _DAS_get_driver_request();
+    // Check on control watchdog, control power maps and control torque vectoring.
+    if(ENABLE_CONTROLS && _DAS_is_control_feasible()) {
+        torque_l_Nm = CANMSG_CtrlOut.data.torque_l;
+        torque_r_Nm = CANMSG_CtrlOut.data.torque_r;
+    } else {
+        torque_l_Nm = torque_r_Nm = _DAS_get_driver_request();
+    }
     torque_l_Nm = INV_cutoff_torque(torque_l_Nm, INV_get_RPM(INV_LEFT));
     torque_r_Nm = INV_cutoff_torque(torque_r_Nm, INV_get_RPM(INV_RIGHT));
 

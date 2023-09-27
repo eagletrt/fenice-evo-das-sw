@@ -92,11 +92,10 @@ float PED_get_accelerator_percent() {
 }
 
 float PED_get_accelerator_torque(float acc_percent){
-    // = (CANMSG_SteerStatus.data.map_pw >= 0 ? CANMSG_SteerStatus.data.map_pw : 0.0);
-    // 65 + (map / 10)
-    float mp = 0.65f + (CANMSG_SteerStatus.data.map_pw / 10.0f);
-    float torque = (88.0f * acc_percent / 100.0f) * (mp);
-    return torque;
+    float mp = CANMSG_SteerStatus.data.map_pw;
+    mp = mp > 0.0 ? mp : 0.0;
+    mp = mp > 1.0 ? 1.0 : mp;
+    return (88.0f * acc_percent / 100.0f) * mp;
 }
 
 float PED_get_brake_bar() {

@@ -48,7 +48,7 @@ float _ENC_ms_to_radsec(float);
  * @return    float Ground speed in meters/second
  */
 //  (tim_counter / (120.0 * 400)) * 2*M_PI / (ellapsed_ms/1000.0)
-float _ENC_calculate_wheel_speed(uint32_t tim_counter, uint32_t elapsed_us) {
+float _ENC_calculate_wheel_speed(int64_t tim_counter, uint32_t elapsed_us) {
     return (tim_counter / (120.0 * 400)) * 2*M_PI * 1000000.0 / elapsed_us;
 }
 
@@ -58,14 +58,12 @@ float _ENC_calculate_wheel_speed(uint32_t tim_counter, uint32_t elapsed_us) {
  * @param     htim The timer from which to read
  * @return    uint32_t Timer ticks since the last read
  */
-uint32_t _ENC_get_tim_cnt(TIM_HandleTypeDef *htim) {
-    uint32_t *last_cnt = (htim == &ENC_L_TIM) ? &_ENC_L_last_cnt : &_ENC_R_last_cnt;
-    uint32_t cnt = __HAL_TIM_GET_COUNTER(htim);
-    uint32_t diff = fmin(
-        *last_cnt - cnt,
-        UINT32_MAX - (*last_cnt - cnt)
-    );
-    *last_cnt = cnt;
+int64_t _ENC_get_tim_cnt(TIM_HandleTypeDef *htim) {
+    uint32_t *last_cnt_ptr = (htim == &ENC_L_TIM) ? &_ENC_L_last_cnt : &_ENC_R_last_cnt;
+    int64_t last_cnt = *last_cnt_ptr;
+    int64_t cnt = __HAL_TIM_GET_COUNTER(htim);
+    int64_t diff = last_cnt - cnt;
+    *last_cnt_ptr = cnt;
     return diff;
 }
 
@@ -75,8 +73,8 @@ uint32_t _ENC_get_tim_cnt(TIM_HandleTypeDef *htim) {
  */
 void ENC_L_push_speed_rads() {
     uint32_t ellapsed_us = get_time() - _ENC_L_last_ticks;
-    uint32_t tim_counter = _ENC_get_tim_cnt(&ENC_L_TIM);
-    float speed = _ENC_calculate_wheel_speed(tim_counter, ellapsed_us); //impulses * 2*PI / encoder_poles / seconds
+    int64_t tim_counter = _ENC_get_tim_cnt(&ENC_L_TIM);
+    float speed = - _ENC_calculate_wheel_speed(tim_counter, ellapsed_us); //impulses * 2*PI / encoder_poles / seconds
     _ENC_L_last_ticks = get_time();
     _ENC_L_rollavg[_ENC_L_rollavg_idx] = speed;
     _ENC_L_rollavg_idx = (_ENC_L_rollavg_idx + 1) % ENC_ROLLAVG_SIZE;
@@ -109,8 +107,8 @@ float ENC_R_get_radsec() {
  */
 void ENC_R_push_speed_rads() {
     uint32_t elapsed_us = get_time() - _ENC_R_last_ticks;
-    uint32_t tim_counter = _ENC_get_tim_cnt(&ENC_R_TIM);
-    float speed = _ENC_calculate_wheel_speed(tim_counter, elapsed_us); //impulses * 2*PI / encoder_poles / seconds
+    int64_t tim_counter = _ENC_get_tim_cnt(&ENC_R_TIM);
+    float speed = - _ENC_calculate_wheel_speed(tim_counter, elapsed_us); //impulses * 2*PI / encoder_poles / seconds
     _ENC_R_last_ticks = get_time();
     _ENC_R_rollavg[_ENC_R_rollavg_idx] = speed;
     _ENC_R_rollavg_idx = (_ENC_R_rollavg_idx + 1) % ENC_ROLLAVG_SIZE;
@@ -120,7 +118,7 @@ void ENC_R_push_speed_rads() {
  * @brief     Calculate the ground speed from steering wheel encoder
  */
 void ENC_C_push_angle_deg(){
-    float calib_center_ang = 61.8f;
+    float calib_center_ang = 243.45f;
     uint16_t buf = 0;
     
     /* Clock rate must be <= 4 MHz (from datasheet) */
@@ -137,12 +135,8 @@ void ENC_C_push_angle_deg(){
     buf = (buf >> 3) & 0x0FFF;
 
     float raw = 360.0f / 4096.f * buf;
-    raw = raw > 200.0f ? raw - 360.f : raw;
     float angle = (raw) - calib_center_ang;
     angle *= -1;
-    if(angle < 0.0f) // correction factor for negative angles
-        angle *= 0.75;
-
 
     /* Update array of values*/
     for (int i = ENC_ROLLAVG_SIZE-1; i > 0; i--)

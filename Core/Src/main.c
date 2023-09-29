@@ -61,6 +61,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define DEBUG 0
 #define MAIN_DBG_BUF_LEN 256
 /* USER CODE END PD */
 
@@ -226,7 +227,9 @@ int main(void)
     vfsm_current_state = VFSM_run_state(vfsm_current_state, NULL);
     
     /* Update debug information over UART */
+#if DEBUG == 1
     MAIN_print_dbg_info();
+#endif
     
     /* Iterate over inverter registers */
     INV_read_next_register();

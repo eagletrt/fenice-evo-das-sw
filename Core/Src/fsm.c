@@ -365,7 +365,7 @@ VFSM_state_t VFSM_do_start_ts_precharge(VFSM_state_data_t *data) {
     state_entered_timestamp = HAL_GetTick();
   }
   
-  if ( HAL_GetTick() - state_entered_timestamp > 15*1000) {
+  if ( HAL_GetTick() - state_entered_timestamp > 25*1000) {
     /* We had a timeout, go back */
     state_entered_timestamp = 0U;
     next_state = VFSM_STATE_START_TS_DISCHARGE;

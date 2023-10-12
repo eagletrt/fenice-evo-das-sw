@@ -282,14 +282,16 @@ int main(void)
 
     /* Check if we have PUSH TO TALK messages to process */
     if (CANMSG_SetPTTStatus.info.is_new){
-      if (CANMSG_SetPTTStatus.data.status == primary_set_ptt_status_status_ON){
-        HAL_GPIO_WritePin(PTT_GPIO_Port, PTT_Pin, GPIO_PIN_SET);
-        CANMSG_PTTStatus.data.status = primary_ptt_status_status_ON;
-        CANMSG_PTTStatus.info.is_new = true;
-      } else if (CANMSG_SetPTTStatus.data.status == primary_set_ptt_status_status_OFF){
-        HAL_GPIO_WritePin(PTT_GPIO_Port, PTT_Pin, GPIO_PIN_RESET);
-        CANMSG_PTTStatus.data.status = primary_ptt_status_status_OFF;
-        CANMSG_PTTStatus.info.is_new = true;
+      if (CANMSG_SetPTTStatus.data.status != CANMSG_PTTStatus.data.status) {
+        if (CANMSG_SetPTTStatus.data.status == primary_set_ptt_status_status_ON){
+          HAL_GPIO_WritePin(PTT_GPIO_Port, PTT_Pin, GPIO_PIN_SET);
+          CANMSG_PTTStatus.data.status = primary_ptt_status_status_ON;
+          CANMSG_PTTStatus.info.is_new = true;
+        } else if (CANMSG_SetPTTStatus.data.status == primary_set_ptt_status_status_OFF){
+          HAL_GPIO_WritePin(PTT_GPIO_Port, PTT_Pin, GPIO_PIN_RESET);
+          CANMSG_PTTStatus.data.status = primary_ptt_status_status_OFF;
+          CANMSG_PTTStatus.info.is_new = true;
+        }
       }
       CANMSG_SetPTTStatus.info.is_new = false;
     }

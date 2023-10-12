@@ -130,7 +130,7 @@ void INV_fill_struct(CAN_IdTypeDef id, inverters_inv_r_rcv_converted_t *INV_r_re
                 INV_l_filled.iq_actual = INV_l_recv->iq_actual;
             break;
             case INVERTERS_INV_L_RCV_RCV_MUX_ID_30_N_ACTUAL_CHOICE:
-                INV_l_filled.n_actual = INV_l_recv->n_actual;
+                // INV_l_filled.n_actual = INV_l_recv->n_actual; // REMOVED MESSAGE FROM CANLIB
             break;
             case INVERTERS_INV_L_RCV_RCV_MUX_ID_40_STATUS_MAP_CHOICE:
                 INV_l_filled.ena64 = INV_l_recv->ena64;
@@ -219,7 +219,7 @@ void INV_fill_struct(CAN_IdTypeDef id, inverters_inv_r_rcv_converted_t *INV_r_re
                 INV_r_filled.iq_actual = INV_r_recv->iq_actual;
             break;
             case INVERTERS_INV_R_RCV_RCV_MUX_ID_30_N_ACTUAL_CHOICE:
-                INV_r_filled.n_actual = INV_r_recv->n_actual;
+                // INV_r_filled.n_actual = INV_r_recv->n_actual; // REMOVED MESSAGE FROM CANLIB
             break;
             case INVERTERS_INV_R_RCV_RCV_MUX_ID_40_STATUS_MAP_CHOICE:
                 INV_r_filled.ena64 = INV_r_recv->ena64;

@@ -27,7 +27,7 @@ typedef enum {
 #define MOT_RPM_LIMIT_REAL          6500.f // #rot/min
 #define INV_POWER_LIMIT             35e3f   // W
 #define MOT_TORQUE_COEFF            0.45f  // Nm/Arms // 0,54 sul nuovo datasheet
-#define INV_CURR_PEAK_REAL          169.9f // A
+#define INV_CURR_PEAK_REAL          400f // A
 
 #define INV_CUTOFF_COEFF            (INV_POWER_LIMIT/MOT_TORQUE_COEFF * (60.0f/(2*M_PI))) // Arms (Imax)
 #define INV_CUTOFF_RPM              (INV_CUTOFF_COEFF / INV_CURR_PEAK_REAL) // 1/s

@@ -366,7 +366,7 @@ float INV_cutoff_torque(float request, float rpm) {
 
 int16_t INV_current_to_num(float current) {
     /* Check Inverter datasheet */
-    //A maximum value of 32.768 equals to 169.9A max absorbed
+    //A maximum value of 32.768 equals to INV_CURR_PEAK_REAL max absorbed
     float num = (current / INV_CURR_PEAK_REAL) * INT16_MAX;
     return (int16_t)clamp(num, INT16_MIN + 1, INT16_MAX - 1);
 }

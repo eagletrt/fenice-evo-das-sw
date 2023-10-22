@@ -22,6 +22,8 @@
 #define BRK_THRESHOLD_LOW     0.4f
 #define BRK_DRIVE_THRESHOLD   2.0f
 
+#define PED_MAX_TORQUE       88.0f  // Nm
+
 #define EEPROM_SPI hspi1
 
 #define PED_DEBUG 1

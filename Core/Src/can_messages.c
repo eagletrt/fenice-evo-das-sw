@@ -74,6 +74,7 @@ CANMSG_CtrlOutTypeDef        CANMSG_CtrlOut        = { {0U, false, 0U}, { 0U } }
 CANMSG_SteerValTypeDef       CANMSG_SteerVal       = { {0U, false, 0U}, { 0U } };
 CANMSG_IMUAccTypeDef         CANMSG_IMUAcc         = { {0U, false, 0U}, { 0U } };
 CANMSG_IMUAngTypeDef         CANMSG_IMUAng         = { {0U, false, 0U}, { 0U } };
+CANMSG_CtrlStateTypeDef      CANMSG_CtrlState      = { {0U, false, 0U}, { 0U } };
 
 /* Inverter automatic message */
 CANMSG_INVResponseTypeDef CANMSG_InvL_I_CMD_RAMP = {{0U, false, 0U}}; 
@@ -188,6 +189,13 @@ void _CANMSG_primary_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
             primary_set_ptt_status_unpack(&(CANMSG_SetPTTStatus.data), msg.data, PRIMARY_SET_PTT_STATUS_BYTE_SIZE);
             CANMSG_SetPTTStatus.info.hcan = msg.hcan;
             break;
+        case PRIMARY_CONTROL_OUTPUT_FRAME_ID: {
+            primary_control_output_t raw_control_output;
+            primary_control_output_unpack(&raw_control_output, msg.data, PRIMARY_CONTROL_OUTPUT_BYTE_SIZE);
+            primary_control_output_raw_to_conversion_struct(&(CANMSG_CtrlOut.data), &raw_control_output);
+            CANMSG_CtrlOut.info.hcan = msg.hcan;
+            break;
+        }
         default:
             // LOG_write(LOGLEVEL_ERR, "[CANMSG/Deserialize] Unknown message id: 0x%X", msg.id);
             break;
@@ -204,14 +212,21 @@ void _CANMSG_secondary_deserialize_msg_by_id(CAN_MessageTypeDef msg){
             CANMSG_AmbientTemperature.info.is_new = true;
             CANMSG_IMUAcc.info.hcan = msg.hcan;
             break;
-            }
+        }
         case SECONDARY_IMU_ANGULAR_RATE_FRAME_ID:{
             secondary_imu_angular_rate_t raw_imu_ang;
             secondary_imu_angular_rate_unpack(&raw_imu_ang, msg.data, SECONDARY_IMU_ANGULAR_RATE_BYTE_SIZE);
             secondary_imu_angular_rate_raw_to_conversion_struct(&(CANMSG_IMUAng.data), &raw_imu_ang);
             CANMSG_IMUAng.info.hcan = msg.hcan;
             break;
-            }
+        }
+        case SECONDARY_CONTROL_STATE_FRAME_ID: {
+            secondary_control_state_t raw_control_state;
+            secondary_control_state_unpack(&raw_control_state, msg.data, SECONDARY_CONTROL_STATE_BYTE_SIZE);
+            secondary_control_state_raw_to_conversion_struct(&(CANMSG_CtrlState.data), &raw_control_state);
+            CANMSG_CtrlState.info.hcan = msg.hcan;
+            break;
+        }
         default:
             // LOG_write(LOGLEVEL_ERR, "[CANMSG/Deserialize] Unknown message id: 0x%X", msg.id);
             break;
@@ -299,6 +314,8 @@ CANMSG_MetadataTypeDef* CANMSG_get_secondary_metadata_from_id(CAN_IdTypeDef id) 
             return &(CANMSG_IMUAcc.info);
         case SECONDARY_IMU_ANGULAR_RATE_FRAME_ID:
             return &(CANMSG_IMUAng.info);
+        case SECONDARY_CONTROL_STATE_FRAME_ID:
+            return &(CANMSG_CtrlState.info);
         default:
             // LOG_write(LOGLEVEL_WARN, "[CANMSG/getMetadata] Unknown message id: 0x%X", id);
             // name[0] = '\0';

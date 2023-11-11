@@ -240,6 +240,8 @@ int main(void)
     /* Parse all RX'd messages */
     CANMSG_process_RX_queue();
 
+    _DAS_is_control_feasible();
+
 
     /* USER CODE END WHILE */
 

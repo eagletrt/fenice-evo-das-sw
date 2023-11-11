@@ -44,6 +44,8 @@ Core/Lib/can/lib/primary/primary_network.c \
 Core/Lib/can/lib/primary/primary_watchdog.c \
 Core/Lib/can/lib/secondary/secondary_network.c \
 Core/Lib/can/lib/secondary/secondary_watchdog.c \
+Core/Lib/can/lib/simulator/simulator_network.c \
+Core/Lib/can/lib/simulator/simulator_watchdog.c \
 Core/Lib/micro-libs/can-fifo-queue/can_fifo_queue.c \
 Core/Lib/micro-libs/cli/cli.c \
 Core/Lib/micro-libs/eeprom-config/eeprom-config.c \
@@ -116,7 +118,7 @@ PREFIX = arm-none-eabi-
 POSTFIX = "
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
-GCC_PATH="/usr/bin
+GCC_PATH="/home/filippo/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-none-eabi-gcc/12.2.1-1.2.1/.content/bin
 ifdef GCC_PATH
 CXX = $(GCC_PATH)/$(PREFIX)g++$(POSTFIX)
 CC = $(GCC_PATH)/$(PREFIX)gcc$(POSTFIX)
@@ -174,6 +176,7 @@ C_INCLUDES =  \
 -ICore/Lib/can/lib/inverters \
 -ICore/Lib/can/lib/primary \
 -ICore/Lib/can/lib/secondary \
+-ICore/Lib/can/lib/simulator \
 -ICore/Lib/micro-libs/can-fifo-queue \
 -ICore/Lib/micro-libs/cli \
 -ICore/Lib/micro-libs/eeprom-config \
@@ -282,13 +285,13 @@ $(BUILD_DIR):
 # flash
 #######################################
 flash: $(BUILD_DIR)/$(TARGET).elf
-	"/usr/bin/openocd" -f ./openocd.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+	"/home/filippo/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.12.0-1.1/.content/bin/openocd" -f ./openocd.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
 
 #######################################
 # erase
 #######################################
 erase: $(BUILD_DIR)/$(TARGET).elf
-	"/usr/bin/openocd" -f ./openocd.cfg -c "init; reset halt; stm32f4x mass_erase 0; exit"
+	"/home/filippo/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.12.0-1.1/.content/bin/openocd" -f ./openocd.cfg -c "init; reset halt; stm32f4x mass_erase 0; exit"
 
 #######################################
 # clean up

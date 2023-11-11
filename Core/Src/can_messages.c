@@ -42,7 +42,7 @@ void _CANMSG_secondary_deserialize_msg_by_id(CAN_MessageTypeDef msg);
 /* Initialize all static CAN messages with safe contents */
 
 /* Primary Network */
-CANMSG_DASVersionTypeDef            CANMSG_DASVersion     = { {0U, false, 0U}, { .component_version = INT_COMPONENT_VERSION, .canlib_build_time = CANLIB_BUILD_TIME } };
+CANMSG_DASVersionTypeDef            CANMSG_DASVersion     = { {0U, false, 0U}, { .component_build_time = INT_COMPONENT_VERSION, .canlib_build_time = CANLIB_BUILD_TIME } };
 CANMSG_DASErrorsTypeDef             CANMSG_DASErrors      = { {0U, false, 0U}, { 0U } };
 CANMSG_SteerStatusTypeDef           CANMSG_SteerStatus    = { {0U, false, 0U}, { .map_pw = 0.5, .map_sc = 0, .map_tv = 0 } };
 CANMSG_CarStatusTypeDef             CANMSG_CarStatus      = { {0U, false, 0U}, { .car_status = primary_car_status_car_status_IDLE } };
@@ -173,8 +173,8 @@ void _CANMSG_primary_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
             primary_hv_errors_unpack(&(CANMSG_HVErrors.data), msg.data, PRIMARY_HV_ERRORS_BYTE_SIZE);
             CANMSG_HVErrors.info.hcan = msg.hcan;
             break;
-        case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID:
-            primary_hv_feedbacks_status_unpack(&(CANMSG_HVFeedbacks.data), msg.data, PRIMARY_HV_FEEDBACKS_STATUS_BYTE_SIZE);
+        case PRIMARY_HV_FEEDBACK_STATUS_FRAME_ID:
+            primary_hv_feedback_status_unpack(&(CANMSG_HVFeedbacks.data), msg.data, PRIMARY_HV_FEEDBACK_STATUS_BYTE_SIZE);
             CANMSG_HVFeedbacks.info.hcan = msg.hcan;
             break;
         case PRIMARY_SET_PEDAL_CALIBRATION_FRAME_ID:
@@ -264,7 +264,7 @@ CANMSG_MetadataTypeDef* CANMSG_get_primary_metadata_from_id(CAN_IdTypeDef id) {
             return &(CANMSG_HVTemperature.info);
         case PRIMARY_HV_ERRORS_FRAME_ID:
             return &(CANMSG_HVErrors.info);
-        case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID:
+        case PRIMARY_HV_FEEDBACK_STATUS_FRAME_ID:
             return &(CANMSG_HVFeedbacks.info);
         case PRIMARY_SET_PEDAL_CALIBRATION_FRAME_ID:
             return &(CANMSG_SetPedalsCalibration.info);

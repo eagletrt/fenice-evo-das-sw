@@ -81,6 +81,7 @@ bool _MAIN_is_dbg_uart_free = true;
 uint16_t _MAIN_dbg_uart_line_idx = 0;
 bool _MAIN_update_watchdog = false;   /* Every 10ms TIM1 sets this variable to true */
 uint16_t _MAIN_timer_feedbacks = 0;
+bool _MAIN_last_tlm_status = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -296,6 +297,45 @@ int main(void)
         }
       }
       CANMSG_SetPTTStatus.info.is_new = false;
+    }
+
+    if(CANMSG_TLMStatus.info.is_new){
+      static int count = 0;
+      static uint32_t last_ms = 0;
+      if(CANMSG_TLMStatus.data.tlm_status == primary_tlm_status_tlm_status_ON){
+        if(!_MAIN_last_tlm_status){
+          if(count % 50 == 0) {
+            if(count % 100 == 0) {
+              pwm_stop_channel(&htim8, TIM_CHANNEL_4);
+            } else {
+              pwm_start_channel(&htim8, TIM_CHANNEL_4);
+            }
+          }
+          if(count > 400) {
+            count = 0;
+            _MAIN_last_tlm_status = true;
+          }
+          if(HAL_GetTick() - last_ms > 1){
+            last_ms = HAL_GetTick();
+            count++;
+          }
+        }
+      } else {
+        if(_MAIN_last_tlm_status){
+          if(count == 0) {
+              pwm_start_channel(&htim8, TIM_CHANNEL_4);
+          }
+          if(count > 200) {
+            pwm_stop_channel(&htim8, TIM_CHANNEL_4);
+            count = 0;
+            _MAIN_last_tlm_status = false;
+          }
+          if(HAL_GetTick() - last_ms > 1){
+            last_ms = HAL_GetTick();
+            count++;
+          }
+        }
+      }
     }
     
 

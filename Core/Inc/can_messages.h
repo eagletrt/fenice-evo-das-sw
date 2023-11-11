@@ -40,6 +40,7 @@ typedef struct { CANMSG_MetadataTypeDef info; primary_set_pedal_calibration_t da
 typedef struct { CANMSG_MetadataTypeDef info; primary_pedal_calibration_ack_t data; } CANMSG_PedalCalibrationAckTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_ambient_temperature_t data; } CANMSG_AmbientTemperatureTypeDef;
 typedef struct { CANMSG_MetadataTypeDef info; primary_control_output_converted_t data; } CANMSG_CtrlOutTypeDef;
+typedef struct { CANMSG_MetadataTypeDef info; primary_tlm_status_converted_t data; } CANMSG_TLMStatusTypeDef;
 
 /* Secondary Network */
 typedef struct { CANMSG_MetadataTypeDef info; secondary_pedals_output_converted_t data;  } CANMSG_PedValsTypeDef;
@@ -75,6 +76,8 @@ extern CANMSG_SetPTTStatusTypeDef     CANMSG_SetPTTStatus;
 extern CANMSG_PTTStatusTypeDef        CANMSG_PTTStatus;
 extern CANMSG_SetPedalCalibrationTypeDef CANMSG_SetPedalsCalibration;
 extern CANMSG_PedalCalibrationAckTypeDef CANMSG_PedalsCalibrationAck;
+extern CANMSG_AmbientTemperatureTypeDef CANMSG_AmbientTemperature;
+extern CANMSG_TLMStatusTypeDef        CANMSG_TLMStatus;
 
 extern CANMSG_PedValsTypeDef          CANMSG_PedVals;
 extern CANMSG_CtrlOutTypeDef          CANMSG_CtrlOut;

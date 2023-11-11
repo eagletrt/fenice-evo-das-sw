@@ -22,19 +22,17 @@ bool _DAS_is_control_feasible();
 bool _DAS_is_control_feasible() {
     static uint8_t counter = 0;
 
+    if (equal_d_threshold(CANMSG_SteerStatus.data.map_tv, 0.0, 0.05) &&
+        equal_d_threshold(CANMSG_SteerStatus.data.map_sc, 0.0, 0.05)) {
+        return false;
+    }
+
     if(HAL_GetTick() - CANMSG_CtrlOut.info.timestamp > PRIMARY_INTERVAL_CONTROL_OUTPUT * 3) {
         counter ++;
     }
     if(HAL_GetTick() - CANMSG_CtrlState.info.timestamp > SECONDARY_INTERVAL_CONTROL_STATE * 3) {
         counter ++;
     }
-
-    static int count = 0;
-    char buff[1000];
-    if(count % 1000 == 0) {
-        count = 0;
-    }
-    count ++;
 
     if (equal_d_threshold(CANMSG_CtrlState.data.map_pw, CANMSG_SteerStatus.data.map_pw, 0.05) && 
         equal_d_threshold(CANMSG_CtrlState.data.map_tv, CANMSG_SteerStatus.data.map_tv, 0.05) && 

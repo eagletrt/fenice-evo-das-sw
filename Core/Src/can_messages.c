@@ -65,6 +65,7 @@ CANMSG_PTTStatusTypeDef             CANMSG_PTTStatus      = { {0U, false, 0U}, {
 CANMSG_SetPedalCalibrationTypeDef  CANMSG_SetPedalsCalibration  = { {0U, false, 0U}, { 0U } };
 CANMSG_PedalCalibrationAckTypeDef  CANMSG_PedalsCalibrationAck  = { {0U, false, 0U}, { 0U } };
 CANMSG_SetInvConnStatusTypeDef      CANMSG_SetInvConnStatus = { {0U, false, 0U}, { 0U } };
+CANMSG_TLMStatusTypeDef            CANMSG_TLMStatus      = { {0U, false, 0U}, { 0U } };
 
 CANMSG_AmbientTemperatureTypeDef CANMSG_AmbientTemperature  = { {0U, false, 0U}, { 0U } };
 
@@ -195,6 +196,12 @@ void _CANMSG_primary_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
             primary_control_output_raw_to_conversion_struct(&(CANMSG_CtrlOut.data), &raw_control_output);
             CANMSG_CtrlOut.info.hcan = msg.hcan;
             break;
+        case PRIMARY_TLM_STATUS_FRAME_ID:
+            primary_tlm_status_t raw_tlm_status;
+            primary_tlm_status_unpack(&raw_tlm_status, msg.data, PRIMARY_TLM_STATUS_BYTE_SIZE);
+            primary_tlm_status_raw_to_conversion_struct(&(CANMSG_TLMStatus.data), &raw_tlm_status);
+            CANMSG_TLMStatus.info.hcan = msg.hcan;
+            break;
         }
         default:
             // LOG_write(LOGLEVEL_ERR, "[CANMSG/Deserialize] Unknown message id: 0x%X", msg.id);
@@ -282,10 +289,11 @@ CANMSG_MetadataTypeDef* CANMSG_get_primary_metadata_from_id(CAN_IdTypeDef id) {
             return &(CANMSG_AmbientTemperature.info);
         case PRIMARY_CONTROL_OUTPUT_FRAME_ID:
             return &(CANMSG_CtrlOut.info);
+        case PRIMARY_TLM_STATUS_FRAME_ID:
+            return &(CANMSG_TLMStatus.info);
         case PRIMARY_SET_CELL_BALANCING_STATUS_FRAME_ID:
         case PRIMARY_HANDCART_SETTINGS_SET_FRAME_ID:
         case PRIMARY_TLM_VERSION_FRAME_ID:
-        case PRIMARY_TLM_STATUS_FRAME_ID:
             return NULL;
         default:
             // LOG_write(LOGLEVEL_WARN, "[CANMSG/getMetadata] Unknown message id: 0x%X", id);

@@ -20,31 +20,37 @@ void _DAS_update_brake_impl(float apps, float bse);
 bool _DAS_is_control_feasible();
 
 bool _DAS_is_control_feasible() {
-    static uint8_t counter = 0;
+    static uint8_t conditions_counter = 0;
+    // Avoid overflow
+    if(conditions_counter > CONTROL_FAIL_COUNT) {
+        conditions_counter = CONTROL_FAIL_COUNT;
+    }
 
+    // Driver turned off the controls
     if (equal_d_threshold(CANMSG_SteerStatus.data.map_tv, 0.0, 0.05) &&
         equal_d_threshold(CANMSG_SteerStatus.data.map_sc, 0.0, 0.05)) {
+        conditions_counter = CONTROL_FAIL_COUNT;
         return false;
     }
 
+    // Check on control watchdog
     if(HAL_GetTick() - CANMSG_CtrlOut.info.timestamp > PRIMARY_INTERVAL_CONTROL_OUTPUT * 3) {
-        counter ++;
+        conditions_counter ++;
     }
     if(HAL_GetTick() - CANMSG_CtrlState.info.timestamp > SECONDARY_INTERVAL_CONTROL_STATE * 3) {
-        counter ++;
-    }
-
-    if (equal_d_threshold(CANMSG_CtrlState.data.map_pw, CANMSG_SteerStatus.data.map_pw, 0.05) && 
-        equal_d_threshold(CANMSG_CtrlState.data.map_tv, CANMSG_SteerStatus.data.map_tv, 0.05) && 
-        equal_d_threshold(CANMSG_CtrlState.data.map_sc, CANMSG_SteerStatus.data.map_sc, 0.05)) {
-        counter = 0;
+        conditions_counter ++;
     } else {
-        if(counter < CONTROL_FAIL_COUNT) {
-            counter ++;
+        // Check control and steering maps
+        if (equal_d_threshold(CANMSG_CtrlState.data.map_pw, CANMSG_SteerStatus.data.map_pw, 0.05) && 
+            equal_d_threshold(CANMSG_CtrlState.data.map_tv, CANMSG_SteerStatus.data.map_tv, 0.05) && 
+            equal_d_threshold(CANMSG_CtrlState.data.map_sc, CANMSG_SteerStatus.data.map_sc, 0.05)) {
+            conditions_counter = 0;
+        } else {
+            conditions_counter ++;
         }
     }
 
-    return (counter < CONTROL_FAIL_COUNT) ? true : false;
+    return (conditions_counter < CONTROL_FAIL_COUNT) ? true : false;
 }
 
 void DAS_do_drive_routine() {

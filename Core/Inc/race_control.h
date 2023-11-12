@@ -7,13 +7,8 @@
 #define ENABLE_CONTROLS (true)
 #define CONTROL_FAIL_COUNT 10
 
-static bool equal_d(float a, float b) {
-    return fabs(a - b) < 0.0001;
-}
-
-static bool equal_d_threshold(float a, float b, double threshold) {
-    return fabs(a - b) < threshold;
-}
+bool equal_d(float a, float b);
+bool equal_d_threshold(float a, float b, double threshold);
 
 /**
  * @brief     Perform everything that is needed to read the driver's input and

@@ -95,14 +95,14 @@ void _sd_feedbacks(uint16_t argc, char **argv, char *out){
 void _pedals(uint16_t argc, char **argv, char *out){
     snprintf(out,
     CLI_TX_BUF_LEN,
-    "APPS1: %lu\r\n"
-    "APPS2: %lu\r\n"
-    "BPPS1: %lu\r\n"
-    "BPPS2: %lu\r\n"
-    "BRKF: %lu\r\n"
-    "BRKR: %lu\r\n"
-    "ACC: %lu\r\n"
-    "BRK: %lu\r\n",
+    "APPS1: %" PRIu32 "\r\n"
+    "APPS2: %" PRIu32 "\r\n"
+    "BPPS1: %" PRIu32 "\r\n"
+    "BPPS2: %" PRIu32 "\r\n"
+    "BRKF: %" PRIu32 "\r\n"
+    "BRKR: %" PRIu32 "\r\n"
+    "ACC: %f\r\n"
+    "BRK: %f\r\n",
     ADC_get_APPS1(),
     ADC_get_APPS2(),
     ADC_get_BPPS1(),

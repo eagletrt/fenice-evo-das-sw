@@ -17,6 +17,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#define _XOPEN_SOURCE 
 #include "main.h"
 #include "adc.h"
 #include "can.h"
@@ -51,6 +52,7 @@
 #include "usart.h"
 #include "time_constraints.h"
 #include <inttypes.h>
+#include <time.h>
 #include "cli_ecu.h"
 /* USER CODE END Includes */
 
@@ -170,6 +172,9 @@ int main(void)
   
   LOG_write(LOGLEVEL_INFO, "\e[1;1H\e[2J");
   // LOG_print_fenice_logo("            -    D A S   f i r m w a r e   v 2 . 0   -            ");
+  struct tm timeinfo;
+  strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &timeinfo);
+  CANMSG_DASVersion.data.component_build_time = mktime(&timeinfo);
 
   /* Signal Startup */
   pwm_start_channel(&htim8, TIM_CHANNEL_4);

@@ -19,6 +19,13 @@ float _DAS_get_driver_request();
 void _DAS_update_brake_impl(float apps, float bse);
 bool _DAS_is_control_feasible();
 
+bool equal_d(float a, float b) {
+    return fabs(a - b) < 0.0001;
+}
+bool equal_d_threshold(float a, float b, double threshold) {
+    return fabs(a - b) < threshold;
+}
+
 bool _DAS_is_control_feasible() {
     static uint8_t conditions_counter = 0;
     // Avoid overflow

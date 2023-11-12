@@ -342,6 +342,47 @@ void INV_read_next_register() {
     }
 }
 
+
+// CUTOFF
+float INV_I_mot_peak() {
+    return MOT_TORQUE_PEAK / MOT_TORQUE_COEFF;
+}
+float INV_I_mot_max(const float rpm) {
+    return P_MOT_MAX / MOT_TORQUE_COEFF * RADS_TO_RPM_COEFF / rpm;
+}
+float INV_I_batt_max(const float rpm, const float torque_ratio) {
+    return P_BAT_MAX * torque_ratio / MOT_TORQUE_COEFF * RADS_TO_RPM_COEFF / rpm;
+}
+float _INV_compute_current_limit(float rpm, float torque_ratio) {
+    float I_mot_peak = INV_I_mot_peak();
+    float I_mot_max = INV_I_mot_max(rpm);
+    float I_batt_max = INV_I_batt_max(rpm, torque_ratio);
+    return fmin(I_mot_peak, fmin(I_mot_max, I_batt_max));
+}
+void INV_apply_cutoff(const float rpm_l, const float rpm_r, float *torque_l, float *torque_r) {
+    float torque_ratio_l = *torque_l / (*torque_l + *torque_r);
+    torque_ratio_l = clamp(torque_ratio_l, 0.0, 1.0);
+    float torque_ratio_r = 1.0 - torque_ratio_l;
+
+    // Avoid division by zero
+    if(rpm_l > 1.0) {
+        float I_cutoff_l = _INV_compute_current_limit(rpm_l, torque_ratio_l);
+        *torque_l = fmin(*torque_l, INV_current_to_torque(I_cutoff_l));
+    }
+    // Avoid division by zero
+    if(rpm_r > 1.0) {
+        float I_cutoff_r = _INV_compute_current_limit(rpm_r, torque_ratio_r);
+        *torque_r = fmin(*torque_r, INV_current_to_torque(I_cutoff_r));
+    }
+}
+
+/**
+ * Convert the torque in Nm to the current in A_rms
+*/
+float INV_current_to_torque(float current){
+    return current * MOT_TORQUE_COEFF;
+}
+
 /**
  * Convert the torque in Nm to the current in A_rms
 */
@@ -349,25 +390,10 @@ float INV_torque_to_current(float torque){
     return torque / MOT_TORQUE_COEFF;
 }
 
-/**
- * @brief     Ensure that power doesn't exceed 40kW per motor by damping the current request with RPMs
- * @param[in] request The requested current in Nm
- * @param[in] rpm     The motor RPMs
- * @return    The current in Nm after the power limit has been applied
- */
-float INV_cutoff_torque(float request, float rpm) {
-    if (rpm < INV_CUTOFF_RPM)
-        return request;
-        
-    float lim_Nm = INV_CUTOFF_COEFF_TORQUE / rpm;
-
-    return (request > lim_Nm && lim_Nm > 0) ? lim_Nm : request;
-}
-
 int16_t INV_current_to_num(float current) {
     /* Check Inverter datasheet */
     //A maximum value of 32.768 equals to INV_CURR_PEAK_REAL max absorbed
-    float num = (current / INV_CURR_PEAK_REAL) * INT16_MAX;
+    float num = (current / INV_I_MAX) * INT16_MAX;
     return (int16_t)clamp(num, INT16_MIN + 1, INT16_MAX - 1);
 }
 
@@ -385,7 +411,7 @@ float INV_get_motor_temp(INV_SideTypeDef side) {
 float INV_get_RPM(INV_SideTypeDef side) {
     float raw_rpm = (side == INV_LEFT) ? - _INV_l_recv.n_actual_filt : _INV_r_recv.n_actual_filt;
     raw_rpm *= 10.0f; // DBC conversion backward
-    return raw_rpm * (MOT_RPM_LIMIT_REAL / INT16_MAX);
+    return raw_rpm * (MOT_RPM_MAX / INT16_MAX);
 }
 
 bool INV_is_drive_enabled(INV_SideTypeDef side) {

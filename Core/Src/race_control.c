@@ -63,8 +63,7 @@ void DAS_do_drive_routine() {
     } else {
         torque_l_Nm = torque_r_Nm = _DAS_get_driver_request();
     }
-    torque_l_Nm = INV_cutoff_torque(torque_l_Nm, INV_get_RPM(INV_LEFT));
-    torque_r_Nm = INV_cutoff_torque(torque_r_Nm, INV_get_RPM(INV_RIGHT));
+    INV_apply_cutoff(INV_get_RPM(INV_LEFT), INV_get_RPM(INV_RIGHT), &torque_l_Nm, &torque_r_Nm);
 
     INV_set_torque_Nm(INV_LEFT, torque_l_Nm);
     INV_set_torque_Nm(INV_RIGHT, torque_r_Nm);

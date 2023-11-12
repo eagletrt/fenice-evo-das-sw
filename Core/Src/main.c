@@ -241,8 +241,6 @@ int main(void)
     /* Parse all RX'd messages */
     CANMSG_process_RX_queue();
 
-    _DAS_is_control_feasible();
-
 
     /* USER CODE END WHILE */
 
@@ -440,7 +438,7 @@ void _MAIN_process_ped_calib_msg() {
  * @brief     Update ECU Feedback 
  */
 void _update_ecu_feedbacks(){
-  if(HAL_GetTick() - CANMSG_EcuFeedbacks.info.timestamp >= PRIMARY_ECU_FEEDBACKS_CYCLE_TIME_MS){
+  if(HAL_GetTick() - CANMSG_EcuFeedbacks.info.timestamp >= 100){
       CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_cock_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB0()));
       CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_fb1 = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB1()));
       CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_bots_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB2()));

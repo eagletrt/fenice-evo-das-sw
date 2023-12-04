@@ -23,14 +23,14 @@ typedef enum {
 /* Register IDs for which updates will be activated */
 #define INV_CMD_TX_REQ     0x3D
 
-#define P_BAT_MAX 80 // kW
-#define P_MOT_MAX 60 // kW
-#define MOT_TORQUE_PEAK 100 // Nm
+#define P_BAT_MAX 80*1e3 // W
+#define P_MOT_MAX 60*1e3 // W
+#define MOT_TORQUE_PEAK 100.0f // Nm
 #define MOT_TORQUE_COEFF 0.54f // Nm/Arms
 #define RPM_TO_RADS_COEFF (2*M_PI/60.0f)
 #define RADS_TO_RPM_COEFF (60.0f/(2*M_PI))
-#define INV_I_MAX 400 // Arms
-#define MOT_RPM_MAX 6500 // RPM
+#define INV_I_MAX 400.0f // Arms
+#define MOT_RPM_MAX 6500.0f // RPM
 
 float INV_I_mot_peak();
 float INV_I_mot_max(const float rpm);

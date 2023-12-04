@@ -153,8 +153,8 @@ void ENC_send_vals_in_CAN() {
 
     CANMSG_Speed.data.encoder_l = ENC_L_get_radsec();
     CANMSG_Speed.data.encoder_r = ENC_R_get_radsec();
-    CANMSG_Speed.data.inverter_l = INV_get_RPM(INV_LEFT);
-    CANMSG_Speed.data.inverter_r = INV_get_RPM(INV_RIGHT);
+    CANMSG_Speed.data.inverter_l = (M_PI / 60.0) * INV_get_RPM(INV_LEFT);
+    CANMSG_Speed.data.inverter_r = (M_PI / 60.0) * INV_get_RPM(INV_RIGHT);
     CANMSG_Speed.info.is_new = true;
 }
 

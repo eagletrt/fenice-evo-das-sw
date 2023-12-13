@@ -196,7 +196,8 @@ void _CANMSG_primary_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
             primary_control_output_raw_to_conversion_struct(&(CANMSG_CtrlOut.data), &raw_control_output);
             CANMSG_CtrlOut.info.hcan = msg.hcan;
             break;
-        case PRIMARY_TLM_STATUS_FRAME_ID:
+        }
+        case PRIMARY_TLM_STATUS_FRAME_ID: {
             primary_tlm_status_t raw_tlm_status;
             primary_tlm_status_unpack(&raw_tlm_status, msg.data, PRIMARY_TLM_STATUS_BYTE_SIZE);
             primary_tlm_status_raw_to_conversion_struct(&(CANMSG_TLMStatus.data), &raw_tlm_status);

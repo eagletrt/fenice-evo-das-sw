@@ -24,6 +24,9 @@
         "race_control.h": "c",
         "adc_fsm.h": "c",
         "tractive_system.h": "c",
-        "fsm.h": "c"
+        "fsm.h": "c",
+        "regen_control.h": "c",
+        "encoders.h": "c",
+        "logger.h": "c"
     }
 }

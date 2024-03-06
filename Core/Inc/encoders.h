@@ -19,7 +19,7 @@
 #define ENC_C_SPI hspi2 /*< Center encoder SPI */
 
 #define ENC_ROLLAVG_SIZE 5
-
+#define ENC_WHEEL_RADIUS 0.203
 
 #define ENC_SPEED_FREQ_HZ  1000 /* 1000Hz */
 #define ENC_SPEED_PERIOD_MS  1000/ENC_SPEED_FREQ_HZ /* 1ms */

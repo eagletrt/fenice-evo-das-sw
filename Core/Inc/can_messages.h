@@ -129,4 +129,6 @@ CANMSG_MetadataTypeDef* CANMSG_get_secondary_metadata_from_id(CAN_IdTypeDef id);
 CANMSG_MetadataTypeDef* CANMSG_get_InvL_metadata_from_mux_id(CAN_IdTypeDef id);
 CANMSG_MetadataTypeDef* CANMSG_get_InvR_metadata_from_mux_id(CAN_IdTypeDef id);
 
+void CAN_send_debug_msg(float field_1, float field_2, float field_3, float field_4);
+
 #endif

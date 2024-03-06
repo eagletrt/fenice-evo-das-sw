@@ -589,3 +589,14 @@ bool _CANMSG_secondary_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef 
 
     return true;
 }
+
+void CAN_send_debug_msg(float field_1, float field_2, float field_3, float field_4) {
+    secondary_debug_signal_t debug_signal;
+    secondary_debug_signal_conversion_to_raw(&debug_signal, field_1, field_2, field_3, field_4);
+    CAN_MessageTypeDef msg;
+    msg.id = SECONDARY_DEBUG_SIGNAL_FRAME_ID;
+    msg.size = secondary_debug_signal_pack(msg.data, &debug_signal, SECONDARY_DEBUG_SIGNAL_BYTE_SIZE);
+    if(CAN_send(&msg, &CAN_SECONDARY_NETWORK) != HAL_OK){
+        LOG_write(LOGLEVEL_ERR, "CAN SEND ERROR SECONDARY: 0x%X", msg.id);
+    }
+}

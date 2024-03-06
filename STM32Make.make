@@ -37,14 +37,22 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 Core/Lib/can/lib/bms/bms_network.c \
+Core/Lib/can/lib/bms/bms_utils_c.c \
 Core/Lib/can/lib/bms/bms_watchdog.c \
+Core/Lib/can/lib/hv_current/hv_current_network.c \
+Core/Lib/can/lib/hv_current/hv_current_utils_c.c \
+Core/Lib/can/lib/hv_current/hv_current_watchdog.c \
 Core/Lib/can/lib/inverters/inverters_network.c \
+Core/Lib/can/lib/inverters/inverters_utils_c.c \
 Core/Lib/can/lib/inverters/inverters_watchdog.c \
 Core/Lib/can/lib/primary/primary_network.c \
+Core/Lib/can/lib/primary/primary_utils_c.c \
 Core/Lib/can/lib/primary/primary_watchdog.c \
 Core/Lib/can/lib/secondary/secondary_network.c \
+Core/Lib/can/lib/secondary/secondary_utils_c.c \
 Core/Lib/can/lib/secondary/secondary_watchdog.c \
 Core/Lib/can/lib/simulator/simulator_network.c \
+Core/Lib/can/lib/simulator/simulator_utils_c.c \
 Core/Lib/can/lib/simulator/simulator_watchdog.c \
 Core/Lib/micro-libs/can-fifo-queue/can_fifo_queue.c \
 Core/Lib/micro-libs/cli/cli.c \
@@ -70,6 +78,7 @@ Core/Src/inverters.c \
 Core/Src/main.c \
 Core/Src/pedals.c \
 Core/Src/race_control.c \
+Core/Src/regen_control.c \
 Core/Src/spi.c \
 Core/Src/stm32f4xx_hal_msp.c \
 Core/Src/stm32f4xx_it.c \
@@ -118,7 +127,7 @@ PREFIX = arm-none-eabi-
 POSTFIX = "
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
-GCC_PATH="/bin
+GCC_PATH="/home/filippo/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-none-eabi-gcc/12.2.1-1.2.1/.content/bin
 ifdef GCC_PATH
 CXX = $(GCC_PATH)/$(PREFIX)g++$(POSTFIX)
 CC = $(GCC_PATH)/$(PREFIX)gcc$(POSTFIX)
@@ -173,6 +182,7 @@ AS_INCLUDES = \
 C_INCLUDES =  \
 -ICore/Inc \
 -ICore/Lib/can/lib/bms \
+-ICore/Lib/can/lib/hv_current \
 -ICore/Lib/can/lib/inverters \
 -ICore/Lib/can/lib/primary \
 -ICore/Lib/can/lib/secondary \
@@ -245,7 +255,6 @@ OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
 
 # list of ASM program objects
-# list of ASM program objects
 UPPER_CASE_ASM_SOURCES = $(filter %.S,$(ASM_SOURCES))
 LOWER_CASE_ASM_SOURCES = $(filter %.s,$(ASM_SOURCES))
 
@@ -285,13 +294,13 @@ $(BUILD_DIR):
 # flash
 #######################################
 flash: $(BUILD_DIR)/$(TARGET).elf
-	"/usr/local/bin/openocd" -f ./openocd.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+	"/home/filippo/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.12.0-1.1/.content/bin/openocd" -f ./openocd.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
 
 #######################################
 # erase
 #######################################
 erase: $(BUILD_DIR)/$(TARGET).elf
-	"/usr/local/bin/openocd" -f ./openocd.cfg -c "init; reset halt; stm32f4x mass_erase 0; exit"
+	"/home/filippo/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.12.0-1.1/.content/bin/openocd" -f ./openocd.cfg -c "init; reset halt; stm32f4x mass_erase 0; exit"
 
 #######################################
 # clean up

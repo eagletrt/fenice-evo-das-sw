@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdbool.h>
 
+#define ENABLE_REGEN (false)
 #define ENABLE_CONTROLS (true)
 #define CONTROL_FAIL_COUNT 10
 
@@ -15,6 +16,9 @@ bool equal_d_threshold(float a, float b, double threshold);
  *            actuate the motors accordingly.
  */
 void DAS_do_drive_routine();
+
+double _DAS_get_speed_ref();
+double _DAS_get_torque_ref();
 
 float DAS_get_pwr_map();
 float DAS_get_sc_map();

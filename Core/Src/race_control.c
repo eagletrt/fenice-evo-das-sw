@@ -24,6 +24,17 @@ bool equal_d_threshold(float a, float b, double threshold)
   return fabs(a - b) < threshold;
 }
 
+bool _DAS_is_regen_feasible()
+{
+  float APPS_percent = PED_get_accelerator_percent();
+  float BSE_percent = PED_get_brake_bar(); // Max pressure (front, read)
+  if (APPS_percent < 5.0f && BSE_percent < 1.0f)
+  {
+    return true;
+  }
+  return false;
+}
+
 bool _DAS_is_control_feasible()
 {
   static uint8_t conditions_counter = 0;
@@ -74,41 +85,53 @@ bool _DAS_is_control_feasible()
 
 double _DAS_get_speed_ref()
 {
-  return CANMSG_SteerStatus.data.map_sc;
+  return 10.0;
+  // return CANMSG_SteerStatus.data.map_sc;
 }
 double _DAS_get_torque_ref()
 {
-  return -CANMSG_SteerStatus.data.map_tv;
+  return -1.0;
+  // return -CANMSG_SteerStatus.data.map_tv;
 }
 
-void DAS_do_drive_routine()
+void DAS_get_torques(double *torque_l, double *torque_r)
 {
-  float torque_l_Nm, torque_r_Nm;
-
+  CANMSG_CarStatus.data.controls_slip = 0.0f;
+  CANMSG_CarStatus.data.controls_torque_vectoring = 0.0f;
+  CANMSG_CarStatus.data.controls_regen = 0.0f;
   // Check on control watchdog, control power maps and control torque vectoring.
   if (ENABLE_CONTROLS && _DAS_is_control_feasible())
   {
-    // if (ENABLE_CONTROLS) {
-    torque_l_Nm = CANMSG_CtrlOut.data.torque_l;
-    torque_r_Nm = CANMSG_CtrlOut.data.torque_r;
     CANMSG_CarStatus.data.controls_slip = CANMSG_CtrlState.data.map_sc > 0.0f;
     CANMSG_CarStatus.data.controls_torque_vectoring =
         CANMSG_CtrlState.data.map_tv > 0.0f;
+    *torque_l = CANMSG_CtrlOut.data.torque_l;
+    *torque_r = CANMSG_CtrlOut.data.torque_r;
+    return;
   }
-  else
+
+  if (ENABLE_REGEN && _DAS_is_regen_feasible())
   {
     regen_set_speed_ref(&regen_data, _DAS_get_speed_ref());
     regen_set_torque_ref(&regen_data, _DAS_get_torque_ref());
     double regen_torque = regen_get_command(&regen_data);
-    if (ENABLE_REGEN && regen_torque < 0.0f)
-    {
-      torque_l_Nm = torque_r_Nm = regen_torque;
-    }
-    else
-    {
-      torque_l_Nm = torque_r_Nm = _DAS_get_driver_request();
-    }
+    *torque_r = regen_torque;
+    *torque_l = regen_torque;
+    CANMSG_CarStatus.data.controls_regen = 1;
+    return;
   }
+
+  CANMSG_CarStatus.data.controls_regen = 0;
+  *torque_r = _DAS_get_driver_request();
+  *torque_l = *torque_r;
+  return;
+}
+
+void DAS_do_drive_routine()
+{
+  double torque_l_Nm, torque_r_Nm;
+  DAS_get_torques(&torque_l_Nm, &torque_r_Nm);
+
   INV_apply_cutoff(INV_get_RPM(INV_LEFT), INV_get_RPM(INV_RIGHT), &torque_l_Nm,
                    &torque_r_Nm);
 

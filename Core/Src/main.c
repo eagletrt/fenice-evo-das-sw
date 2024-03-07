@@ -284,13 +284,12 @@ int main(void)
     /* Send ECU feedbacks */
     _update_ecu_feedbacks();
 
-    regen_set_speed_ref(&regen_data, _DAS_get_speed_ref());
-    regen_set_torque_ref(&regen_data, _DAS_get_torque_ref());
-
     if (HAL_GetTick() - last_send_debug > 100)
     {
+      double torque_l, torque_r;
+      DAS_get_torques(&torque_l, &torque_r);
       last_send_debug = HAL_GetTick();
-      CAN_send_debug_msg(regen_data.speed_filtered[REG_FILTERED_BUFFER_SIZE - 1] / 10.0, regen_get_command(&regen_data), regen_data.speed_filtered_diff, 0);
+      CAN_send_debug_msg(regen_data.speed_filtered[REG_FILTERED_BUFFER_SIZE - 1] / 10.0, regen_data.speed_filtered_diff, torque_l, 0);
     }
 
     /* Send pedal and steer values to the steering wheel for visualization */

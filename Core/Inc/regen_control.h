@@ -2,6 +2,7 @@
 #define __REGEN_CONTROL_H
 
 #include "encoders.h"
+#include "inverters.h"
 
 #define REG_CONTROL_RATE 100 // 100 Hz
 #define REG_FILTER_COEFFICIENT 0.1
@@ -22,6 +23,8 @@ typedef struct regen_data_t
 
     double speed_ref;
     double torque_ref;
+
+    double torque_cutoff;
 } regen_data_t;
 
 extern regen_data_t regen_data;

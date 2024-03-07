@@ -50,6 +50,7 @@ int16_t INV_current_to_num(float current);
 float INV_get_IGBT_temp(INV_SideTypeDef side);
 float INV_get_motor_temp(INV_SideTypeDef side);
 float INV_get_RPM(INV_SideTypeDef side);
+float INV_get_RADS(INV_SideTypeDef side);
 bool INV_is_drive_enabled(INV_SideTypeDef side);
 bool INV_get_RFE_state(INV_SideTypeDef side);
 bool INV_get_FRG_state(INV_SideTypeDef side);

@@ -230,6 +230,7 @@ int main(void)
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
 
   uint32_t last_send_debug = 0;
+  uint32_t last_regen_speed_sample = 0;
 
   regen_control_init(&regen_data);
   regen_set_speed_ref(&regen_data, 2.0);
@@ -289,7 +290,13 @@ int main(void)
       double torque_l, torque_r;
       DAS_get_torques(&torque_l, &torque_r);
       last_send_debug = HAL_GetTick();
-      CAN_send_debug_msg(regen_data.speed_filtered[REG_FILTERED_BUFFER_SIZE - 1] / 10.0, regen_data.speed_filtered_diff, torque_l, 0);
+      CAN_send_debug_msg(regen_data.speed / 10.0, regen_data.speed_diff, torque_l, 0);
+    }
+
+    if (HAL_GetTick() - last_regen_speed_sample > 10)
+    {
+      last_regen_speed_sample = HAL_GetTick();
+      regen_add_speed_sample_rads(&regen_data, (INV_get_RADS(INV_LEFT) + INV_get_RADS(INV_RIGHT)) / 2.0);
     }
 
     /* Send pedal and steer values to the steering wheel for visualization */
@@ -512,7 +519,6 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
       ENC_R_push_speed_rads();
       ENC_L_push_speed_rads();
       last_speed_sample = get_time();
-      regen_add_speed_sample_rads(&regen_data, (ENC_L_get_radsec() + ENC_R_get_radsec()) / 2.0);
     }
 
     if ((true) && (get_time() - last_angle_sample > ENC_STEER_PERIOD_MS))

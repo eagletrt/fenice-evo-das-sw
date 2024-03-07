@@ -18,32 +18,12 @@ static int _thresholded_check(double value, double limit, double threshold)
     }
 }
 
-double _median_filter(regen_data_t *reg)
-{
-    double sorted[REG_FILTER_SAMPLES];
-    // bubble sort
-    for (int i = 0; i < REG_FILTER_SAMPLES; i++)
-    {
-        sorted[i] = reg->speed[i];
-    }
-    for (int i = 0; i < REG_FILTER_SAMPLES; i++)
-    {
-        for (int j = 0; j < REG_FILTER_SAMPLES - i - 1; j++)
-        {
-            if (sorted[j] > sorted[j + 1])
-            {
-                double temp = sorted[j];
-                sorted[j] = sorted[j + 1];
-                sorted[j + 1] = temp;
-            }
-        }
-    }
-    return sorted[REG_FILTER_SAMPLES / 2];
-}
 
 void regen_control_init(regen_data_t *reg)
 {
-    reg->speed_filtered_diff = 0.0;
+    reg->speed = 0.0;
+    reg->speed_prev = 0.0;
+    reg->speed_diff = 0.0;
     reg->speed_ref = 0.0;
     reg->torque_ref = 0.0;
     reg->previous_torque = 0.0;
@@ -53,20 +33,11 @@ void regen_add_speed_sample_rads(regen_data_t *reg, double speed_rads)
 {
     regen_add_speed_sample(reg, speed_rads * ENC_WHEEL_RADIUS);
 }
-void regen_add_speed_sample(regen_data_t *reg, double speed)
+void regen_add_speed_sample(regen_data_t *reg, double speed_ms)
 {
-    for (int i = 0; i < REG_FILTERED_BUFFER_SIZE - 1; i++)
-    {
-        reg->speed_filtered[i] = reg->speed_filtered[i + 1];
-    }
-    for (int i = 0; i < REG_FILTER_SAMPLES - 1; i++)
-    {
-        reg->speed[i] = reg->speed[i + 1];
-    }
-    reg->speed[REG_FILTER_SAMPLES - 1] = speed;
-
-    reg->speed_filtered[REG_FILTERED_BUFFER_SIZE - 1] = _median_filter(reg);
-    reg->speed_filtered_diff = reg->speed_filtered[REG_FILTERED_BUFFER_SIZE - 1] - reg->speed_filtered[0];
+    reg->speed_prev = reg->speed;
+    reg->speed = speed_ms * REG_FILTER_COEFFICIENT + reg->speed_prev * (1 - REG_FILTER_COEFFICIENT);
+    reg->speed_diff = (reg->speed - reg->speed_prev) * REG_FILTER_COEFFICIENT + reg->speed_diff * (1 - REG_FILTER_COEFFICIENT);
 }
 void regen_set_speed_ref(regen_data_t *reg, double speed_ref)
 {
@@ -78,7 +49,7 @@ void regen_set_torque_ref(regen_data_t *reg, double torque_ref)
 }
 double _command_impl(regen_data_t *reg, double speed)
 {
-    switch (_thresholded_check(reg->speed_filtered_diff, -REG_ACC_THRESHOLD, REG_ACC_THRESHOLD))
+    switch (_thresholded_check(reg->speed_diff, -REG_ACC_THRESHOLD, REG_ACC_THRESHOLD))
     {
     case -1: // lower than threshold (decelerating)
         reg->acceleration_condition_should_regenerate = 1;
@@ -107,6 +78,6 @@ double _command_impl(regen_data_t *reg, double speed)
 }
 double regen_get_command(regen_data_t *reg)
 {
-    reg->previous_torque = _command_impl(reg, reg->speed_filtered[REG_FILTERED_BUFFER_SIZE - 1]);
+    reg->previous_torque = _command_impl(reg, reg->speed);
     return reg->previous_torque;
 }

@@ -413,6 +413,9 @@ float INV_get_RPM(INV_SideTypeDef side) {
     raw_rpm *= 10.0f; // DBC conversion backward
     return raw_rpm * (MOT_RPM_MAX / INT16_MAX);
 }
+float INV_get_RADS(INV_SideTypeDef side) {
+    return INV_get_RPM(side) * M_PI / 30.0f;
+}
 
 bool INV_is_drive_enabled(INV_SideTypeDef side) {
     return (side == INV_LEFT) ? _INV_l_recv.ena64 : _INV_r_recv.ena64;

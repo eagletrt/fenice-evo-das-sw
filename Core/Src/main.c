@@ -290,7 +290,7 @@ int main(void)
       double torque_l, torque_r;
       DAS_get_torques(&torque_l, &torque_r);
       last_send_debug = HAL_GetTick();
-      CAN_send_debug_msg(regen_data.speed / 10.0, regen_data.speed_diff, torque_l, 0);
+      CAN_send_debug_msg(regen_data.speed / (regen_data.speed_ref * 1.1), regen_data.speed_diff, torque_l / regen_data.torque_ref, 0);
     }
 
     if (HAL_GetTick() - last_regen_speed_sample > 10)

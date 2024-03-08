@@ -23,8 +23,6 @@ typedef struct regen_data_t
 
     double speed_ref;
     double torque_ref;
-
-    double torque_cutoff;
 } regen_data_t;
 
 extern regen_data_t regen_data;

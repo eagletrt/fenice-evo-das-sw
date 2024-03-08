@@ -23,7 +23,11 @@ typedef enum {
 /* Register IDs for which updates will be activated */
 #define INV_CMD_TX_REQ     0x3D
 
+#define HV_MAX_REGEN_CURRENT -24.0f
+#define HV_MIN_CELL_VOLTAGE 2.8f
+#define HV_CELL_COUNT 108
 #define P_BAT_MAX 80*1e3 // W
+#define P_BAT_MIN (HV_MAX_REGEN_CURRENT * HV_MIN_CELL_VOLTAGE * HV_CELL_COUNT)
 #define P_MOT_MAX 60*1e3 // W
 #define MOT_TORQUE_PEAK 100.0f // Nm
 #define MOT_TORQUE_COEFF 0.54f // Nm/Arms
@@ -35,7 +39,7 @@ typedef enum {
 float INV_I_mot_peak();
 float INV_I_mot_max(const float rpm);
 float INV_I_batt_max(const float rpm, const float torque_ratio);
-void INV_apply_cutoff(const float rpm_l, const float rpm_r, float *torque_l, float *torque_r);
+void INV_apply_cutoff(float rpm_l, float rpm_r, float *torque_l, float *torque_r);
 
 void INV_enable_regid_updates(uint16_t regid, uint8_t interval);
 void INV_parse_CAN_msg(CAN_IdTypeDef id, uint8_t *buf, uint8_t len);

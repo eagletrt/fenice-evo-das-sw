@@ -350,29 +350,70 @@ float INV_I_mot_peak() {
 float INV_I_mot_max(const float rpm) {
     return P_MOT_MAX / MOT_TORQUE_COEFF * RADS_TO_RPM_COEFF / rpm;
 }
-float INV_I_batt_max(const float rpm, const float torque_ratio) {
+float INV_I_batt_max_positive(const float rpm, const float torque_ratio) {
     return P_BAT_MAX * torque_ratio / MOT_TORQUE_COEFF * RADS_TO_RPM_COEFF / rpm;
 }
-float _INV_compute_current_limit(float rpm, float torque_ratio) {
+float INV_I_batt_min_negative(const float rpm, const float torque_ratio) {
+    return P_BAT_MIN * torque_ratio / MOT_TORQUE_COEFF * RADS_TO_RPM_COEFF / rpm;
+}
+float _INV_compute_current_positive_limit(float rpm, float torque_ratio) {
     float I_mot_peak = INV_I_mot_peak();
     float I_mot_max = INV_I_mot_max(rpm);
-    float I_batt_max = INV_I_batt_max(rpm, torque_ratio);
+    float I_batt_max = INV_I_batt_max_positive(rpm, torque_ratio);
     return fmin(I_mot_peak, fmin(I_mot_max, I_batt_max));
 }
-void INV_apply_cutoff(const float rpm_l, const float rpm_r, float *torque_l, float *torque_r) {
-    float torque_ratio_l = *torque_l / (*torque_l + *torque_r);
+float _INV_compute_current_negative_limit(float rpm, float torque_ratio) {
+    float I_mot_peak = -INV_I_mot_peak();
+    float I_mot_max = INV_I_mot_max(rpm);
+    float I_batt_min = INV_I_batt_min_negative(rpm, torque_ratio);
+    return fmax(I_mot_peak, fmax(I_mot_max, I_batt_min));
+}
+float _INV_avoid_zero_division(float rpm, float pos_threshold) {
+    if(rpm > -pos_threshold && rpm < pos_threshold) {
+        if(rpm > 0) {
+            return pos_threshold;
+        } else {
+            return -pos_threshold;
+        }
+    }
+    return rpm;
+}
+void INV_apply_cutoff(float rpm_l, float rpm_r, float *torque_l, float *torque_r) {
+    float torque_ratio_l = fabs(*torque_l) / (fabs(*torque_l) + fabs(*torque_r));
     torque_ratio_l = clamp(torque_ratio_l, 0.0, 1.0);
     float torque_ratio_r = 1.0 - torque_ratio_l;
 
-    // Avoid division by zero
-    if(rpm_l > 1.0) {
-        float I_cutoff_l = _INV_compute_current_limit(rpm_l, torque_ratio_l);
-        *torque_l = fmin(*torque_l, INV_current_to_torque(I_cutoff_l));
+    const float speed_threshold = 0.1;
+    rpm_l = _INV_avoid_zero_division(rpm_l, speed_threshold);
+    rpm_r = _INV_avoid_zero_division(rpm_r, speed_threshold);
+
+    {
+        float I_positive_cutoff_l = _INV_compute_current_positive_limit(rpm_l, torque_ratio_l);
+        float I_negative_cutoff_l = _INV_compute_current_negative_limit(rpm_l, torque_ratio_l);
+        if(I_positive_cutoff_l > 0) {
+            *torque_l = fmin(*torque_l, INV_current_to_torque(I_positive_cutoff_l));
+        } else {
+            *torque_l = fmax(*torque_l, INV_current_to_torque(I_positive_cutoff_l));
+        }
+        if(I_negative_cutoff_l > 0) {
+            *torque_l = fmin(*torque_l, INV_current_to_torque(I_negative_cutoff_l));
+        } else {
+            *torque_l = fmax(*torque_l, INV_current_to_torque(I_negative_cutoff_l));
+        }
     }
-    // Avoid division by zero
-    if(rpm_r > 1.0) {
-        float I_cutoff_r = _INV_compute_current_limit(rpm_r, torque_ratio_r);
-        *torque_r = fmin(*torque_r, INV_current_to_torque(I_cutoff_r));
+    {
+        float I_positive_cutoff_r = _INV_compute_current_positive_limit(rpm_r, torque_ratio_r);
+        float I_negative_cutoff_r = _INV_compute_current_negative_limit(rpm_r, torque_ratio_r);
+        if(I_positive_cutoff_r > 0) {
+            *torque_r = fmin(*torque_r, INV_current_to_torque(I_positive_cutoff_r));
+        } else {
+            *torque_r = fmax(*torque_r, INV_current_to_torque(I_positive_cutoff_r));
+        }
+        if(I_negative_cutoff_r > 0) {
+            *torque_r = fmin(*torque_r, INV_current_to_torque(I_negative_cutoff_r));
+        } else {
+            *torque_r = fmax(*torque_r, INV_current_to_torque(I_negative_cutoff_r));
+        }
     }
 }
 

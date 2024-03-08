@@ -91,11 +91,12 @@ double _command_impl(regen_data_t *reg, double speed)
 double regen_get_command(regen_data_t *reg)
 {
     double torque = _command_impl(reg, reg->speed);
-    if(reg->torque_cutoff < 0) {
-        reg->previous_torque = torque > reg->torque_cutoff ? torque : reg->torque_cutoff;
-    }
-    if(reg->previous_torque > 0) {
+    if(torque >= 0) {
         reg->previous_torque = 0.0;
+    } else {
+        if(reg->torque_cutoff < 0) {
+            reg->previous_torque = torque > reg->torque_cutoff ? torque : reg->torque_cutoff;
+        }
     }
     return reg->previous_torque;
 }

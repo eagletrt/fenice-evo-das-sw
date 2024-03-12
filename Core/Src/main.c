@@ -53,6 +53,7 @@
 #include <inttypes.h>
 #include <time.h>
 #include "cli_ecu.h"
+#include "steering_actuator.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -83,6 +84,8 @@ uint16_t _MAIN_dbg_uart_line_idx = 0;
 bool _MAIN_update_watchdog = false;   /* Every 10ms TIM1 sets this variable to true */
 uint16_t _MAIN_timer_feedbacks = 0;
 bool _MAIN_last_tlm_status = false;
+bool _MAIN_update_steering_actuator_pid = false;
+bool _MAIN_update_steering_actuator_speed = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -155,6 +158,7 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM6_Init();
   MX_TIM7_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
   /* Initialize logger */
@@ -213,6 +217,9 @@ int main(void)
   // cli_ecu_init();
 
   uint32_t last_enc_calc = 0;
+  
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+  steering_actuator_pid_init(0.0, 0.0, 0.0, 1000.0 * ENC_STEER_PERIOD_MS);
 
   /* USER CODE END 2 */
 
@@ -224,7 +231,7 @@ int main(void)
   
   /* Close the shutdown circuit */
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
-  
+
   while (1)
   {
     _MAIN_last_loop_start_ms = HAL_GetTick();
@@ -351,6 +358,21 @@ int main(void)
      /* Record loop duration */
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
     _MAIN_avg_loop_duration_ms = loop_duration;
+
+    if (_MAIN_update_steering_actuator_pid) {
+      _MAIN_update_steering_actuator_pid = false;
+      steering_actuator_update_pid(ENC_C_get_angle_deg());
+    }
+
+    if (_MAIN_update_steering_actuator_speed) {
+      _MAIN_update_steering_actuator_speed = false;
+      // steering_actuator_set_speed(steering_actuator_computePID());
+    }
+  
+    /* test steering wheel actuator driver */
+    int tick_mod = HAL_GetTick() % 10001 - 5000;
+    steering_actuator_set_speed((float)tick_mod / 5000);
+    // steering_actuator_set_speed((float)0.7);
     
     #ifdef DEBUG_CLI
       cli_watch_flush_handler();
@@ -457,7 +479,7 @@ void _update_ecu_feedbacks(){
 }
 
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
-  static uint64_t last_speed_sample = 0, last_angle_sample = 0;
+  static uint64_t last_speed_sample = 0, last_angle_sample = 0, last_steering_actuator_update = 0;
   if (htim->Instance == htim1.Instance) {
     _MAIN_update_watchdog = true;
     BUZ_timer_callback();
@@ -470,8 +492,15 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
       
       if ((true) && (get_time() - last_angle_sample > ENC_STEER_PERIOD_MS)){
         ENC_C_push_angle_deg();
+        _MAIN_update_steering_actuator_pid = true;
         last_angle_sample = get_time();
       }
+
+      if (get_time() - last_steering_actuator_update > STEERING_ACTUATOR_PERIOD_MS) {
+        _MAIN_update_steering_actuator_speed = true;
+        last_steering_actuator_update = get_time();
+      }
+
   } else if (htim->Instance == htim13.Instance) {
       time_base_elapsed();
   } 

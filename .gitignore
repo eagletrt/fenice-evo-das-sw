@@ -5,6 +5,7 @@ build/
 *.hex
 *.map
 .mxproject
+.DS_Store
 
 **/.vscode/*
 !**/.vscode/settings.json

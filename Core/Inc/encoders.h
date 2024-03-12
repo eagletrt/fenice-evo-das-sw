@@ -27,6 +27,9 @@
 #define ENC_STEER_FREQ_HZ  200 /* 200Hz */
 #define ENC_STEER_PERIOD_MS  1000/ENC_STEER_FREQ_HZ /* 5ms */
 
+#define STEERING_ACTUATOR_FREQ_HZ  10 /* 10Hz */
+#define STEERING_ACTUATOR_PERIOD_MS  1000/STEERING_ACTUATOR_FREQ_HZ /* 100ms */
+
 
 /**
  * @brief     Compute the speed of the front-left wheel in radians/second

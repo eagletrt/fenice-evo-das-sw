@@ -81,6 +81,10 @@ void Error_Handler(void);
 #define AUX_BUZZER_GPIO_Port GPIOC
 #define RTD_BUZZER_Pin GPIO_PIN_8
 #define RTD_BUZZER_GPIO_Port GPIOA
+#define STEERING_REVERSE_Pin GPIO_PIN_4
+#define STEERING_REVERSE_GPIO_Port GPIOB
+#define STEERING_PWM_Pin GPIO_PIN_7
+#define STEERING_PWM_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

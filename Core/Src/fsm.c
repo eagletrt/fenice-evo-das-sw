@@ -53,54 +53,54 @@ state_func_t *const VFSM_state_table[VFSM_NUM_STATES] = {
 
 /* utility function to update the CAN status message */
 void _VFSM_update_CarStatus(VFSM_state_t curr_state) {
-  primary_car_status_car_status s;
+  primary_ecu_status_status s;
 
   switch (curr_state) {
     case VFSM_STATE_INIT:
-      s = primary_car_status_car_status_INIT;
+      s = primary_ecu_status_status_init;
       break;
     case VFSM_STATE_ENABLE_INV_UPDATES:
-      s = primary_car_status_car_status_ENABLE_INV_UPDATES;
+      s = primary_ecu_status_status_enable_inv_updates;
       break;
     case VFSM_STATE_CHECK_INV_SETTINGS:
-      s = primary_car_status_car_status_CHECK_INV_SETTINGS;
+      s = primary_ecu_status_status_check_inv_settings;
       break;
     case VFSM_STATE_IDLE:
-      s = primary_car_status_car_status_IDLE;
+      s = primary_ecu_status_status_idle;
       break;
     case VFSM_STATE_START_TS_PRECHARGE:
-      s = primary_car_status_car_status_START_TS_PRECHARGE;
+      s = primary_ecu_status_status_start_ts_precharge;
       break;
     case VFSM_STATE_WAIT_TS_PRECHARGE:
-      s = primary_car_status_car_status_WAIT_TS_PRECHARGE;
+      s = primary_ecu_status_status_wait_ts_precharge;
       break;
     case VFSM_STATE_WAIT_DRIVER:
-      s = primary_car_status_car_status_WAIT_DRIVER;
+      s = primary_ecu_status_status_wait_driver;
       break;
     case VFSM_STATE_ENABLE_INV_DRIVE:
-      s = primary_car_status_car_status_ENABLE_INV_DRIVE;
+      s = primary_ecu_status_status_enable_inv_drive;
       break;
     case VFSM_STATE_DRIVE:
-      s = primary_car_status_car_status_DRIVE;
+      s = primary_ecu_status_status_drive;
       break;
     case VFSM_STATE_DISABLE_INV_DRIVE:
-      s = primary_car_status_car_status_DISABLE_INV_DRIVE;
+      s = primary_ecu_status_status_disable_inv_drive;
       break;
     case VFSM_STATE_START_TS_DISCHARGE:
-      s = primary_car_status_car_status_START_TS_DISCHARGE;
+      s = primary_ecu_status_status_start_ts_discharge;
       break;
     case VFSM_STATE_WAIT_TS_DISCHARGE:
-      s = primary_car_status_car_status_WAIT_TS_DISCHARGE;
+      s = primary_ecu_status_status_wait_ts_discharge;
       break;
     case VFSM_STATE_FATAL_ERROR:
-      s = primary_car_status_car_status_FATAL_ERROR;
+      s = primary_ecu_status_status_fatal_error;
       break;
     default:
-      s = primary_car_status_car_status_IDLE;
+      s = primary_ecu_status_status_idle;
   }
 
-  CANMSG_CarStatus.data.car_status = s;
-  CANMSG_CarStatus.info.is_new = true;
+  ecumsg_ecu_status_state.data.status = s;
+  ecumsg_ecu_status_state.info.is_new = true;
 }
 
 /*  ____  _        _       
@@ -281,8 +281,8 @@ VFSM_state_t VFSM_do_idle(VFSM_state_data_t *data) {
 
   /* Ensure the TS is OFF */
   TS_power_off();
-  CANMSG_SetInvConnStatus.data.status = primary_set_inverter_connection_status_status_OFF;
-  CANMSG_SetInvConnStatus.info.is_new = true;
+  ecumsg_lv_set_inverter_connection_status_state.data.status = primary_lv_set_inverter_connection_status_status_off;
+  ecumsg_lv_set_inverter_connection_status_state.info.is_new = true;
   
   if(reset_inverters == 0U){
     /* Ensure the inverters' power outputs are disabled */
@@ -292,14 +292,14 @@ VFSM_state_t VFSM_do_idle(VFSM_state_data_t *data) {
   }
   
   /* Check for a TS-ON request */
-  if (CANMSG_SetCarStatus.data.car_status_set == primary_set_car_status_car_status_set_READY && CANMSG_SetCarStatus.info.is_new) {
+  if (ecumsg_ecu_set_status_state.data.status == primary_ecu_set_status_status_ready && ecumsg_ecu_set_status_state.info.is_new) {
     next_state = VFSM_STATE_START_TS_PRECHARGE;
-    CANMSG_SetCarStatus.info.is_new = false;
+    ecumsg_ecu_set_status_state.info.is_new = false;
 
     /* Check when SD is open (and therefore I have to go in discharge) */
     if(!is_SD_closed())
       next_state = VFSM_STATE_IDLE;
-    else if (CANMSG_HVFeedbacks.info.is_new && !CANMSG_HVFeedbacks.data.feedback_sd_end)
+    else if (ecumsg_hv_feedback_status_state.info.is_new && !ecumsg_hv_feedback_status_state.data.feedbacks_sd_end)
       next_state = VFSM_STATE_IDLE;
   }
   
@@ -386,7 +386,7 @@ VFSM_state_t VFSM_do_start_ts_precharge(VFSM_state_data_t *data) {
   /* Check when SD is open (and therefore I have to go in discharge) */
   if(!is_SD_closed())
     next_state = VFSM_STATE_START_TS_DISCHARGE;
-  else if (!CANMSG_HVFeedbacks.data.feedback_sd_end)
+  else if (!ecumsg_hv_feedback_status_state.data.feedbacks_sd_end)
     next_state = VFSM_STATE_START_TS_DISCHARGE;
 
   #if WTCHDG_DEBUG
@@ -483,18 +483,18 @@ VFSM_state_t VFSM_do_wait_driver(VFSM_state_data_t *data) {
   if (TS_get_status() != TS_STATUS_ON) {
     /* Abort sequence */
     next_state = VFSM_STATE_START_TS_DISCHARGE;
-  } else if (CANMSG_SetCarStatus.info.is_new) {
-    primary_set_car_status_car_status_set s = CANMSG_SetCarStatus.data.car_status_set;
+  } else if (ecumsg_ecu_set_status_state.info.is_new) {
+    primary_ecu_set_status_status s = ecumsg_ecu_set_status_state.data.status;
 
-    if (s == primary_set_car_status_car_status_set_IDLE) {
+    if (s == primary_ecu_set_status_status_idle) {
       /* New set IDLE message */
       next_state = VFSM_STATE_START_TS_DISCHARGE;
-    } else if (s == primary_set_car_status_car_status_set_DRIVE && PED_get_brake_bar() >= BRK_THRESHOLD_HIGH) {
+    } else if (s == primary_ecu_set_status_status_drive && PED_get_brake_bar() >= BRK_THRESHOLD_HIGH) {
       /* New set DRIVE message */
       next_state = VFSM_STATE_ENABLE_INV_DRIVE;
     }
 
-    CANMSG_SetCarStatus.info.is_new = false;
+    ecumsg_ecu_set_status_state.info.is_new = false;
   }
 
   #if WTCHDG_DEBUG
@@ -534,12 +534,12 @@ VFSM_state_t VFSM_do_enable_inv_drive(VFSM_state_data_t *data) {
   bool RUN_on = INV_get_FRG_state(INV_LEFT) && INV_get_FRG_state(INV_RIGHT);
   bool DRV_on = INV_is_drive_enabled(INV_LEFT) && INV_is_drive_enabled(INV_RIGHT);
 
-  if (CANMSG_SetCarStatus.data.car_status_set == primary_set_car_status_car_status_set_IDLE && CANMSG_SetCarStatus.info.is_new) {
-    CANMSG_SetCarStatus.info.is_new = false;
+  if (ecumsg_ecu_set_status_state.data.status == primary_ecu_set_status_status_idle && ecumsg_ecu_set_status_state.info.is_new) {
+    ecumsg_ecu_set_status_state.info.is_new = false;
     next_state = VFSM_STATE_DISABLE_INV_DRIVE;
   } else if (!RFE_on || !RUN_on) {
-    CANMSG_SetInvConnStatus.data.status = primary_set_inverter_connection_status_status_ON;
-    CANMSG_SetInvConnStatus.info.is_new = true;
+    ecumsg_lv_set_inverter_connection_status_state.data.status = primary_lv_set_inverter_connection_status_status_on;
+    ecumsg_lv_set_inverter_connection_status_state.info.is_new = true;
   } else if (!DRV_on) {
     if(!INV_is_drive_enabled(INV_LEFT))
       INV_enable_drive(INV_LEFT);
@@ -593,8 +593,8 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
   //   return next_state;
   // }
 
-  if (CANMSG_SetCarStatus.data.car_status_set == primary_set_car_status_car_status_set_IDLE && CANMSG_SetCarStatus.info.is_new) {
-    CANMSG_SetCarStatus.info.is_new = false;
+  if (ecumsg_ecu_set_status_state.data.status == primary_ecu_set_status_status_idle && ecumsg_ecu_set_status_state.info.is_new) {
+    ecumsg_ecu_set_status_state.info.is_new = false;
     next_state = VFSM_STATE_DISABLE_INV_DRIVE;
   } else {
     if(HAL_GetTick() - last_drive_send >= 10){
@@ -709,7 +709,7 @@ VFSM_state_t VFSM_do_wait_ts_discharge(VFSM_state_data_t *data) {
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
 
   /* Wait until the BMS-HV no longer reports more than 60 Volts */
-  if (!CANMSG_HVFeedbacks.data.feedback_ts_over_60v_status) {
+  if (!ecumsg_hv_feedback_status_state.data.feedbacks_ts_over_60v_status) {
     next_state = VFSM_NO_CHANGE;
   } else {
     /* Go to idle and close back the SD circuit */

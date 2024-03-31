@@ -148,14 +148,14 @@ float ENC_C_get_angle_deg() {
 }
 
 void ENC_send_vals_in_CAN() {
-    CANMSG_SteerVal.data.angle = ENC_C_get_angle_deg();
-    CANMSG_SteerVal.info.is_new = true;
+    ecumsg_steer_angle_state.data.angle = ENC_C_get_angle_deg();
+    ecumsg_steer_angle_state.info.is_new = true;
 
-    CANMSG_Speed.data.encoder_l = ENC_L_get_radsec();
-    CANMSG_Speed.data.encoder_r = ENC_R_get_radsec();
-    CANMSG_Speed.data.inverter_l = (M_PI / 60.0) * INV_get_RPM(INV_LEFT);
-    CANMSG_Speed.data.inverter_r = (M_PI / 60.0) * INV_get_RPM(INV_RIGHT);
-    CANMSG_Speed.info.is_new = true;
+    ecumsg_speed_state.data.fl = ENC_L_get_radsec();
+    ecumsg_speed_state.data.fr = ENC_R_get_radsec();
+    // ecumsg_speed_state.data.inverter_l = (M_PI / 60.0) * INV_get_RPM(INV_LEFT);
+    // ecumsg_speed_state.data.inverter_r = (M_PI / 60.0) * INV_get_RPM(INV_RIGHT);
+    ecumsg_speed_state.info.is_new = true;
 }
 
 float _ENC_ms_to_radsec(float vel) {

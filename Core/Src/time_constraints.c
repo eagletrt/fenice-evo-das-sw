@@ -10,8 +10,8 @@
 
 primary_watchdog _WDG_CAN_watchdog;
 CAN_IdTypeDef _WDG_CAN_ids_to_watch[] = {
-    PRIMARY_STEER_STATUS_FRAME_ID,
-    PRIMARY_TS_STATUS_FRAME_ID,
+    PRIMARY_ECU_SET_POWER_MAPS_FRAME_ID,
+    PRIMARY_HV_STATUS_FRAME_ID,
     PRIMARY_INV_L_RESPONSE_FRAME_ID,
     PRIMARY_INV_R_RESPONSE_FRAME_ID
 };
@@ -50,17 +50,17 @@ void WDG_update_and_check_timestamps() {
         if (!timed_out) continue;
 
         switch (_WDG_CAN_ids_to_watch[i]) {
-            case PRIMARY_TS_STATUS_FRAME_ID:
-                CANMSG_DASErrors.data.das_error_ts_tout = 1;
+            case PRIMARY_HV_STATUS_FRAME_ID:
+                ecumsg_ecu_errors_state.data.error_ts_tout = 1;
                 break;
             case PRIMARY_INV_L_RESPONSE_FRAME_ID:
-                CANMSG_DASErrors.data.das_error_invl_tout = 1;
+                ecumsg_ecu_errors_state.data.error_invl_tout = 1;
                 break;
             case PRIMARY_INV_R_RESPONSE_FRAME_ID:
-                CANMSG_DASErrors.data.das_error_invr_tout = 1;
+                ecumsg_ecu_errors_state.data.error_invr_tout = 1;
                 break;
-            case PRIMARY_STEER_STATUS_FRAME_ID:
-                CANMSG_DASErrors.data.das_error_steer_tout = 1;
+            case PRIMARY_ECU_SET_POWER_MAPS_FRAME_ID:
+                ecumsg_ecu_errors_state.data.error_steer_tout = 1;
                 break;
             default:
                 LOG_write(LOGLEVEL_WARN, "[WDG] Timeout for unknown CAN message id 0x%02X", _WDG_CAN_ids_to_watch[i]);
@@ -73,12 +73,12 @@ bool WDG_is_car_in_safe_state() {
     WDG_update_and_check_timestamps(HAL_GetTick());
 
     bool critical_error = false;
-    critical_error |= CANMSG_DASErrors.data.das_error_ts_tout;
-    critical_error |= CANMSG_DASErrors.data.das_error_invl_tout;
-    // critical_error |= CANMSG_DASErrors.data.das_error_invr_tout;
-    // critical_error |= CANMSG_DASErrors.data.das_error_steer_tout;
-    critical_error |= CANMSG_DASErrors.data.das_error_pedal_adc;
-    critical_error |= CANMSG_DASErrors.data.das_error_pedal_implausibility;
+    critical_error |= ecumsg_ecu_errors_state.data.error_ts_tout;
+    critical_error |= ecumsg_ecu_errors_state.data.error_invl_tout;
+    // critical_error |= ecumsg_ecu_errors_state.data.das_error_invr_tout;
+    // critical_error |= ecumsg_ecu_errors_state.data.das_error_steer_tout;
+    critical_error |= ecumsg_ecu_errors_state.data.error_pedal_adc;
+    critical_error |= ecumsg_ecu_errors_state.data.error_pedal_implausibility;
 
     return (!critical_error);
 }

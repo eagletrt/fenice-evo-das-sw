@@ -11,23 +11,23 @@ char* TS_state_names[] = { "UNK", "OFF", "PRE", "ON", "FAIL" };
  * @brief     Retrieve the status of the BMS-HV from the corresponding CAN message
  */
 TS_StatusTypeDef TS_get_status() {
-    if (CANMSG_TSStatus.info.is_new) {
-        CANMSG_TSStatus.info.is_new = false;
+    if (ecumsg_hv_status_state.info.is_new) {
+        ecumsg_hv_status_state.info.is_new = false;
 
-        switch (CANMSG_TSStatus.data.ts_status) {
-            case primary_ts_status_ts_status_FATAL_ERROR:
+        switch (ecumsg_hv_status_state.data.status) {
+            case primary_hv_status_status_fatal_error:
                 _TS_status = TS_STATUS_FATAL;
                 break;
-            case primary_ts_status_ts_status_TS_ON:
+            case primary_hv_status_status_ts_on:
                 _TS_status = TS_STATUS_ON;
                 break;
-            case primary_ts_status_ts_status_INIT:
-            case primary_ts_status_ts_status_IDLE:
+            case primary_hv_status_status_init:
+            case primary_hv_status_status_idle:
                 _TS_status = TS_STATUS_OFF;
                 break;
-            case primary_ts_status_ts_status_AIRN_CLOSE:
-            case primary_ts_status_ts_status_PRECHARGE:
-            case primary_ts_status_ts_status_AIRP_CLOSE:
+            case primary_hv_status_status_airn_close:
+            case primary_hv_status_status_precharge:
+            case primary_hv_status_status_airp_close:
                 _TS_status = TS_STATUS_PRECHARGE;
                 break;
         }
@@ -43,14 +43,14 @@ TS_StatusTypeDef TS_get_status() {
  * @brief     Send a TS-ON message to the BMS-HV
  */
 void TS_power_on() {
-    CANMSG_SetTSStatus.data.ts_status_set = primary_set_ts_status_das_ts_status_set_ON;
-    CANMSG_SetTSStatus.info.is_new = true;
+    ecumsg_hv_set_status_ecu_state.data.hv_status_set = primary_hv_set_status_ecu_hv_status_set_on;
+    ecumsg_hv_set_status_ecu_state.info.is_new = true;
 }
 
 /**
  * @brief     Send a TS-OFF message to the BMS-HV
  */
 void TS_power_off() {
-    CANMSG_SetTSStatus.data.ts_status_set = primary_set_ts_status_das_ts_status_set_OFF;
-    CANMSG_SetTSStatus.info.is_new = true;
+    ecumsg_hv_set_status_ecu_state.data.hv_status_set = primary_hv_set_status_ecu_hv_status_set_off;
+    ecumsg_hv_set_status_ecu_state.info.is_new = true;
 }

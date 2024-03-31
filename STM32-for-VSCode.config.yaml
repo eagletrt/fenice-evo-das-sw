@@ -98,15 +98,16 @@ includeDirectories:
 sourceFiles:  
   - Src/**
   - Core/Src/**
-  - Core/Lib/can/lib/**
+  - Core/Lib/can/lib/**/*_network.c
+  - Core/Lib/can/lib/**/*_watchdog.c
   - Core/Lib/micro-libs/logger/**
   - Core/Lib/micro-libs/pwm/**
   - Core/Lib/micro-libs/timer-utils/**
   - Core/Lib/micro-libs/m95256/**
   - Core/Lib/micro-libs/eeprom-config/**
   - Core/Lib/micro-libs/can-fifo-queue/**
-  - Core/Lib/can/lib/primary/**
-  - Core/Lib/can/lib/secondary/**
+  # - Core/Lib/can/lib/primary/**
+  # - Core/Lib/can/lib/secondary/**
   - Core/Lib/micro-libs/cli/**
   - Core/Lib/micro-libs/llist/**
 

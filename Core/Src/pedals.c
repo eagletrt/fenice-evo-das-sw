@@ -92,7 +92,7 @@ float PED_get_accelerator_percent() {
 }
 
 float PED_get_accelerator_torque(float acc_percent){
-    float mp = CANMSG_SteerStatus.data.map_pw;
+    float mp = ecumsg_ecu_set_power_maps_state.data.map_pw;
     mp = mp > 0.0 ? mp : 0.0;
     mp = mp > 1.0 ? 1.0 : mp;
     return (PED_MAX_TORQUE * acc_percent / 100.0f) * mp;
@@ -173,10 +173,11 @@ void PED_send_vals_in_CAN() {
     float bf_bar = ((brk_f/4096.0 * 3.3 - 0.3)/ 4.0) * 100.0;
     float br_bar = ((brk_r/4096.0 * 3.3 - 0.35)/4.0) * 100.0;
 
-    CANMSG_PedVals.data.apps = PED_get_accelerator_percent();
-    CANMSG_PedVals.data.bse_front = bf_bar;
-    CANMSG_PedVals.data.bse_rear = br_bar;
-    CANMSG_PedVals.info.is_new = true;
+    ecumsg_pedal_throttle_state.data.throttle = PED_get_accelerator_percent();
+    ecumsg_pedal_throttle_state.info.is_new = true;
+    ecumsg_pedal_brakes_pressure_state.data.front = bf_bar;
+    ecumsg_pedal_brakes_pressure_state.data.rear = br_bar;
+    ecumsg_pedal_brakes_pressure_state.info.is_new = true;
 }
 
 void PED_calibrate(PED_CalibTypeDef calib) {

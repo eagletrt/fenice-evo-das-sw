@@ -173,7 +173,7 @@ int main(void)
   // LOG_print_fenice_logo("            -    D A S   f i r m w a r e   v 2 . 0   -            ");
   struct tm timeinfo;
   strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &timeinfo);
-  CANMSG_DASVersion.data.component_build_time = mktime(&timeinfo);
+  ecumsg_ecu_version_state.data.component_build_time = mktime(&timeinfo);
 
   /* Signal Startup */
   pwm_start_channel(&htim8, TIM_CHANNEL_4);
@@ -258,15 +258,15 @@ int main(void)
     PED_update_plausibility_check();
     if (PED_errors.implausibility_err) {
       // HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
-      // CANMSG_DASErrors.data.das_error_pedal_implausibility = 1;
+      // ecumsg_ecu_errors_state.data.das_error_pedal_implausibility = 1;
     }
     if (PED_errors.ADC_DMA_error || PED_errors.ADC_internal || PED_errors.ADC_overrun) {
       // HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
-      // CANMSG_DASErrors.data.das_error_pedal_adc = 1;
+      // ecumsg_ecu_errors_state.data.das_error_pedal_adc = 1;
     }
     if (!PED_is_brake_ok()) {
       HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
-      CANMSG_DASErrors.data.das_error_pedal_implausibility = 1;
+      ecumsg_ecu_errors_state.data.error_pedal_implausibility = 1;
     }
 
     /* Send ECU feedbacks */
@@ -280,31 +280,31 @@ int main(void)
     float brk_percent = PED_get_brake_bar();
     BKL_set_curve(brk_percent);
 
-    if(HAL_GetTick() - PRIMARY_SPEED_CYCLE_TIME_MS >= last_enc_calc) {
+    if(HAL_GetTick() - SECONDARY_SPEED_CYCLE_TIME_MS >= last_enc_calc) {
       last_enc_calc = HAL_GetTick();
       ENC_send_vals_in_CAN();
     }
 
     /* Check if we have PUSH TO TALK messages to process */
-    if (CANMSG_SetPTTStatus.info.is_new){
-      if (CANMSG_SetPTTStatus.data.status != CANMSG_PTTStatus.data.status) {
-        if (CANMSG_SetPTTStatus.data.status == primary_set_ptt_status_status_ON){
+    if (ecumsg_ecu_set_ptt_status_state.info.is_new){
+      if (ecumsg_ecu_set_ptt_status_state.data.status != ecumsg_ecu_ptt_status_state.data.status) {
+        if (ecumsg_ecu_set_ptt_status_state.data.status == primary_ecu_set_ptt_status_status_on){
           HAL_GPIO_WritePin(PTT_GPIO_Port, PTT_Pin, GPIO_PIN_SET);
-          CANMSG_PTTStatus.data.status = primary_ptt_status_status_ON;
-          CANMSG_PTTStatus.info.is_new = true;
-        } else if (CANMSG_SetPTTStatus.data.status == primary_set_ptt_status_status_OFF){
+          ecumsg_ecu_ptt_status_state.data.status = primary_ecu_ptt_status_status_on;
+          ecumsg_ecu_ptt_status_state.info.is_new = true;
+        } else if (ecumsg_ecu_set_ptt_status_state.data.status == primary_ecu_set_ptt_status_status_off){
           HAL_GPIO_WritePin(PTT_GPIO_Port, PTT_Pin, GPIO_PIN_RESET);
-          CANMSG_PTTStatus.data.status = primary_ptt_status_status_OFF;
-          CANMSG_PTTStatus.info.is_new = true;
+          ecumsg_ecu_ptt_status_state.data.status = primary_ecu_ptt_status_status_off;
+          ecumsg_ecu_ptt_status_state.info.is_new = true;
         }
       }
-      CANMSG_SetPTTStatus.info.is_new = false;
+      ecumsg_ecu_set_ptt_status_state.info.is_new = false;
     }
 
-    if(CANMSG_TLMStatus.info.is_new){
+    if(ecumsg_tlm_status_state.info.is_new){
       static int count = 0;
       static uint32_t last_ms = 0;
-      if(CANMSG_TLMStatus.data.tlm_status == primary_tlm_status_tlm_status_ON){
+      if(ecumsg_tlm_status_state.data.status == primary_tlm_status_status_on){
         if(!_MAIN_last_tlm_status){
           if(count % 50 == 0) {
             if(count % 100 == 0) {
@@ -342,11 +342,11 @@ int main(void)
     
 
     /* Check if we have calibration messages to process */
-    if (CANMSG_SetPedalsCalibration.info.is_new) {
+    /* if (CANMSG_SetPedalsCalibration.info.is_new) {
       LOG_write(LOGLEVEL_DEBUG, "[MAIN] Processing pedal calibration message");
       _MAIN_process_ped_calib_msg();
       CANMSG_SetPedalsCalibration.info.is_new = false;
-    }
+    } */
     
      /* Record loop duration */
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
@@ -419,6 +419,7 @@ void SystemClock_Config(void)
  * @brief     Read the CAN calibration message and call the PED module
  */
 void _MAIN_process_ped_calib_msg() {
+  /* 
   PED_CalibTypeDef calib = 0U;
   primary_set_pedal_calibration_t *msg = &(CANMSG_SetPedalsCalibration.data);
 
@@ -435,24 +436,24 @@ void _MAIN_process_ped_calib_msg() {
       calib = PED_CALIB_BSE_MIN;  
   }
   PED_calibrate(calib);
-
+ */
 }
 
 /**
  * @brief     Update ECU Feedback 
  */
 void _update_ecu_feedbacks(){
-  if(HAL_GetTick() - CANMSG_EcuFeedbacks.info.timestamp >= 100){
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_cock_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB0()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_fb1 = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB1()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_bots_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB2()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_interial_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB3()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_fb4 = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB4()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_in = ADC_is_closed(ADC_to_voltage(ADC_get_SD_IN()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_out = ADC_is_closed(ADC_to_voltage(ADC_get_SD_OUT()));
-      CANMSG_EcuFeedbacks.data.ecu_feedbacks_sd_ctrl_pin = HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin);
+  if(HAL_GetTick() - ecumsg_ecu_feedbacks_state.info.timestamp >= 100){
+      ecumsg_ecu_feedbacks_state.data.feedbacks_sd_cock_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB0()));
+      ecumsg_ecu_feedbacks_state.data.feedbacks_sd_fb1 = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB1()));
+      ecumsg_ecu_feedbacks_state.data.feedbacks_sd_bots_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB2()));
+      ecumsg_ecu_feedbacks_state.data.feedbacks_sd_interial_fb = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB3()));
+      ecumsg_ecu_feedbacks_state.data.feedbacks_sd_fb4 = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB4()));
+      ecumsg_ecu_feedbacks_state.data.feedbacks_sd_in = ADC_is_closed(ADC_to_voltage(ADC_get_SD_IN()));
+      ecumsg_ecu_feedbacks_state.data.feedbacks_sd_out = ADC_is_closed(ADC_to_voltage(ADC_get_SD_OUT()));
+      ecumsg_ecu_feedbacks_state.data.feedbacks_sd_ctrl_pin = HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin);
 
-      CANMSG_EcuFeedbacks.info.is_new = true;
+      ecumsg_ecu_feedbacks_state.info.is_new = true;
     }
 }
 
@@ -521,11 +522,11 @@ void MAIN_print_dbg_info() {
       _MAIN_print_dbg_line("MAIN", buf);
       break;
     case 3:
-      snprintf(buf, buf_len, " %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d ", "fsm", CANMSG_DASErrors.data.das_error_fsm, "imu", CANMSG_DASErrors.data.das_error_imu_tout, "invl", CANMSG_DASErrors.data.das_error_invl_tout, "invr", CANMSG_DASErrors.data.das_error_invr_tout, "irts",  CANMSG_DASErrors.data.das_error_irts_tout);
+      snprintf(buf, buf_len, " %8s: %d %8s: %d %8s: %d %8s: %d %8s: %d ", "fsm", ecumsg_ecu_errors_state.data.error_fsm, "imu", ecumsg_ecu_errors_state.data.error_imu_tout, "invl", ecumsg_ecu_errors_state.data.error_invl_tout, "invr", ecumsg_ecu_errors_state.data.error_invr_tout, "irts",  ecumsg_ecu_errors_state.data.error_irts_tout);
       _MAIN_print_dbg_line("", buf);
       break;
     case 4:
-      snprintf(buf, buf_len, " %8s: %d %8s: %d %8s: %d %8s: %d", "ped adc", CANMSG_DASErrors.data.das_error_pedal_adc, "ped imp", CANMSG_DASErrors.data.das_error_pedal_implausibility, "steer", CANMSG_DASErrors.data.das_error_steer_tout, "ts err", CANMSG_DASErrors.data.das_error_ts_tout);
+      snprintf(buf, buf_len, " %8s: %d %8s: %d %8s: %d %8s: %d", "ped adc", ecumsg_ecu_errors_state.data.error_pedal_adc, "ped imp", ecumsg_ecu_errors_state.data.error_pedal_implausibility, "steer", ecumsg_ecu_errors_state.data.error_steer_tout, "ts err", ecumsg_ecu_errors_state.data.error_ts_tout);
       _MAIN_print_dbg_line("", buf);
       break;
     
@@ -547,7 +548,7 @@ void MAIN_print_dbg_info() {
       break;
     case 9:
     //   snprintf(buf, buf_len, "%8s: %-6s %8s: 0x%06X %8s: 0x%06X",
-    //     "Status", TS_state_names[TS_get_status()], "Errors", CANMSG_HVErrors.data.errors_can, "Warns", CANMSG_HVErrors.data.errors_can);
+    //     "Status", TS_state_names[TS_get_status()], "Errors", ecumsg_hv_errors_state.data.errors_can, "Warns", ecumsg_hv_errors_state.data.errors_can);
     //   _MAIN_print_dbg_line("BMS-HV", buf);
       break;
     case 10:

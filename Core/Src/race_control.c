@@ -34,23 +34,23 @@ bool _DAS_is_control_feasible() {
     }
 
     // Driver turned off the controls
-    if (equal_d_threshold(CANMSG_SteerStatus.data.map_tv, 0.0, 0.05) &&
-        equal_d_threshold(CANMSG_SteerStatus.data.map_sc, 0.0, 0.05)) {
+    if (equal_d_threshold(ecumsg_ecu_set_power_maps_state.data.map_tv, 0.0, 0.05) &&
+        equal_d_threshold(ecumsg_ecu_set_power_maps_state.data.map_sc, 0.0, 0.05)) {
         conditions_counter = CONTROL_FAIL_COUNT;
         return false;
     }
 
     // Check on control watchdog
-    if(HAL_GetTick() - CANMSG_CtrlOut.info.timestamp > PRIMARY_INTERVAL_CONTROL_OUTPUT * 3) {
+    if(HAL_GetTick() - ecumsg_control_output_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_OUTPUT * 3) {
         conditions_counter ++;
     }
-    if(HAL_GetTick() - CANMSG_CtrlState.info.timestamp > SECONDARY_INTERVAL_CONTROL_STATE * 3) {
+    if(HAL_GetTick() - ecumsg_control_status_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_STATUS * 3) {
         conditions_counter ++;
     } else {
         // Check control and steering maps
-        if (equal_d_threshold(CANMSG_CtrlState.data.map_pw, CANMSG_SteerStatus.data.map_pw, 0.05) && 
-            equal_d_threshold(CANMSG_CtrlState.data.map_tv, CANMSG_SteerStatus.data.map_tv, 0.05) && 
-            equal_d_threshold(CANMSG_CtrlState.data.map_sc, CANMSG_SteerStatus.data.map_sc, 0.05)) {
+        if (equal_d_threshold(ecumsg_control_status_state.data.map_pw, ecumsg_ecu_set_power_maps_state.data.map_pw, 0.05) && 
+            equal_d_threshold(ecumsg_control_status_state.data.map_tv, ecumsg_ecu_set_power_maps_state.data.map_tv, 0.05) && 
+            equal_d_threshold(ecumsg_control_status_state.data.map_sc, ecumsg_ecu_set_power_maps_state.data.map_sc, 0.05)) {
             conditions_counter = 0;
         } else {
             conditions_counter ++;
@@ -65,8 +65,8 @@ void DAS_do_drive_routine() {
     
     // Check on control watchdog, control power maps and control torque vectoring.
     if(ENABLE_CONTROLS && _DAS_is_control_feasible()) {
-        torque_l_Nm = CANMSG_CtrlOut.data.torque_l;
-        torque_r_Nm = CANMSG_CtrlOut.data.torque_r;
+        torque_l_Nm = ecumsg_control_output_state.data.torque_l;
+        torque_r_Nm = ecumsg_control_output_state.data.torque_r;
     } else {
         torque_l_Nm = torque_r_Nm = _DAS_get_driver_request();
     }
@@ -109,13 +109,13 @@ void _DAS_update_brake_impl(float apps, float bse) {
 }
 
 float DAS_get_pwr_map() {
-    return CANMSG_SteerStatus.data.map_pw;
+    return ecumsg_ecu_set_power_maps_state.data.map_pw;
 }
 
 float DAS_get_sc_map() {
-    return CANMSG_SteerStatus.data.map_sc;
+    return ecumsg_ecu_set_power_maps_state.data.map_sc;
 }
 
 float DAS_get_tv_map() {
-    return CANMSG_SteerStatus.data.map_tv;
+    return ecumsg_ecu_set_power_maps_state.data.map_tv;
 }

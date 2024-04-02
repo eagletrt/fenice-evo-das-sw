@@ -65,6 +65,8 @@ void Error_Handler(void);
 #define MUX_2_GPIO_Port GPIOC
 #define MUX_3_Pin GPIO_PIN_0
 #define MUX_3_GPIO_Port GPIOC
+#define STEER_ACT_CURR_Pin GPIO_PIN_1
+#define STEER_ACT_CURR_GPIO_Port GPIOC
 #define CS_EEPROM_Pin GPIO_PIN_4
 #define CS_EEPROM_GPIO_Port GPIOC
 #define SD_CLOSE_Pin GPIO_PIN_1

@@ -219,8 +219,10 @@ int main(void)
 
   uint32_t last_enc_calc = 0;
   
+#if AS_STEERING_ACTUATOR_ENABLED == 1
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
   steering_actuator_pid_init(0.0, 0.0, 0.0, 1000.0 * ENC_STEER_PERIOD_MS);
+#endif
 
   /* USER CODE END 2 */
 
@@ -360,20 +362,26 @@ int main(void)
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
     _MAIN_avg_loop_duration_ms = loop_duration;
 
+#if AS_STEERING_ACTUATOR_ENABLED == 1 
     if (_MAIN_update_steering_actuator_pid) {
       _MAIN_update_steering_actuator_pid = false;
       steering_actuator_update_pid(ENC_C_get_angle_deg());
     }
+#endif
 
+#if AS_STEERING_ACTUATOR_ENABLED == 1
     if (_MAIN_update_steering_actuator_speed) {
       _MAIN_update_steering_actuator_speed = false;
       // steering_actuator_set_speed(steering_actuator_computePID());
     }
+#endif
   
     /* test steering wheel actuator driver */
     int tick_mod = HAL_GetTick() % 10001 - 5000;
+#if AS_STEERING_ACTUATOR_ENABLED == 1
     steering_actuator_set_speed((float)tick_mod / 5000);
     // steering_actuator_set_speed((float)0.7);
+#endif
     
     #ifdef DEBUG_CLI
       cli_watch_flush_handler();
@@ -494,12 +502,16 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
       
       if ((true) && (get_time() - last_angle_sample > ENC_STEER_PERIOD_MS)){
         ENC_C_push_angle_deg();
+#if AS_STEERING_ACTUATOR_ENABLED == 1 
         _MAIN_update_steering_actuator_pid = true;
+#endif
         last_angle_sample = get_time();
       }
 
       if (get_time() - last_steering_actuator_update > STEERING_ACTUATOR_PERIOD_MS) {
+#if AS_STEERING_ACTUATOR_ENABLED == 1 
         _MAIN_update_steering_actuator_speed = true;
+#endif
         last_steering_actuator_update = get_time();
       }
 

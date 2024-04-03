@@ -1,5 +1,7 @@
 #include "steering_actuator.h"
 
+#ifndef AS_STEERING_ACTUATOR_ENABLED == 1
+
 struct PIDController {
     float kp;
     float ki;
@@ -68,3 +70,5 @@ float steering_actuator_computePID() {
     }
     return value;
 }
+
+#endif

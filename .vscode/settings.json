@@ -24,6 +24,7 @@
         "race_control.h": "c",
         "adc_fsm.h": "c",
         "tractive_system.h": "c",
-        "fsm.h": "c"
+        "fsm.h": "c",
+        "pid.h": "c"
     }
 }

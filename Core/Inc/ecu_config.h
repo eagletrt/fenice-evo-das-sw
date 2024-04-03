@@ -1,0 +1,7 @@
+#ifndef ECU_CONFIG_H
+#define ECU_CONFIG_H
+
+#define AS_STEERING_ACTUATOR_ENABLED 0
+
+#endif // ECU_CONFIG_H
+

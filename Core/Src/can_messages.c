@@ -377,15 +377,21 @@ void CANMSG_flush_TX() {
         if (tx_count < primary_ids_len) {
             id = primary_ids_to_send[tx_count];
             info = CANMSG_get_primary_metadata_from_id(id);
+            if(info == NULL){
+                continue;
+            }
             info->hcan = &CAN_PRIMARY_NETWORK;
         } else {
             id = secondary_ids_to_send[tx_count - primary_ids_len];
             info = CANMSG_get_secondary_metadata_from_id(id);
+            if(info == NULL){
+                continue;
+            }
             info->hcan = &CAN_SECONDARY_NETWORK;
         }
 
         /* Send if interval is elapsed or interval is "once" and msg is new */
-        if (info != NULL && _CANMSG_needs_to_be_sent(id, info->hcan)) {
+        if (_CANMSG_needs_to_be_sent(id, info->hcan)) {
             CAN_MessageTypeDef msg;
 
             if(info->hcan == &CAN_PRIMARY_NETWORK){
@@ -424,10 +430,19 @@ bool _CANMSG_needs_to_be_sent(CAN_IdTypeDef id, CAN_HandleTypeDef* nwk) {
     } else {
         info = CANMSG_get_secondary_metadata_from_id(id);
     }
+    if(info == NULL){
+        return false;
+    }
     int32_t interval = (nwk == &CAN_PRIMARY_NETWORK) ? primary_watchdog_interval_from_id(id) : secondary_watchdog_interval_from_id(id);
     int32_t elapsed = HAL_GetTick() - info->timestamp;
-    return (interval == -1 && info->is_new) ||
-           (elapsed >= interval && interval != -1);
+    if(!info->is_new) {
+        return false;
+    }
+    if(interval == -1 && elapsed > 50){
+        return true;
+    } else {
+        return (elapsed >= interval && interval != -1);
+    }
 }
 
 bool _CANMSG_primary_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *msg) {

@@ -85,11 +85,11 @@ bool _DAS_is_control_feasible()
 
 double _DAS_get_speed_ref()
 {
-  return CANMSG_SteerStatus.data.map_sc * 60.0 / 3.6;
+  return CANMSG_SteerStatus.data.map_sc * 900.0 / 3.6;
 }
 double _DAS_get_torque_ref()
 {
-  return -CANMSG_SteerStatus.data.map_tv * 20.0;
+  return -CANMSG_SteerStatus.data.map_tv * 50.0;
 }
 
 void DAS_get_torques(double *torque_l, double *torque_r)

@@ -55,7 +55,7 @@ double _command_impl(regen_data_t *reg, double speed)
         reg->acceleration_condition_should_regenerate = 0;
         break;
     }
-    if (speed < REG_MIN_SPEED || reg->acceleration_condition_should_regenerate == 0)
+    if (speed < REG_MIN_SPEED)
     {
         return 0.0;
     }

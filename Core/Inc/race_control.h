@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #define ENABLE_REGEN (false)
-#define ENABLE_CONTROLS (false)
+#define ENABLE_CONTROLS (true)
 #define CONTROL_FAIL_COUNT 10
 
 bool equal_d(float a, float b);

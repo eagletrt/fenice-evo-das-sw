@@ -79,6 +79,7 @@ ecumsg_pedal_brakes_pressure_t ecumsg_pedal_brakes_pressure_state = { {0U, false
 // ecumsg_imu_acceleration_t         CANMSG_IMUAcc         = { {0U, false, 0U}, { 0U } };
 // ecumsg_imu_angular_rate_t         CANMSG_IMUAng         = { {0U, false, 0U}, { 0U } };
 ecumsg_control_status_t      ecumsg_control_status_state      = { {0U, false, 0U}, { 0U } };
+ecumsg_ecu_control_status_t     ecumsg_ecu_control_status_state  = { {0U, false, 0U}, { 0U } };
 
 /* Inverter automatic message */
 CANMSG_INVResponseTypeDef CANMSG_InvL_I_CMD_RAMP = {{0U, false, 0U}}; 
@@ -208,6 +209,8 @@ CANMSG_MetadataTypeDef* CANMSG_get_primary_metadata_from_id(CAN_IdTypeDef id) {
             return &(ecumsg_ecu_feedbacks_state.info);
         case PRIMARY_ECU_SET_STATUS_FRAME_ID:
             return &(ecumsg_ecu_set_status_state.info);
+        case PRIMARY_ECU_CONTROL_STATUS_FRAME_ID:
+            return &(ecumsg_ecu_control_status_state.info);
         case PRIMARY_HV_SET_STATUS_ECU_FRAME_ID:
             return &(ecumsg_hv_set_status_ecu_state.info);
         case PRIMARY_HV_STATUS_FRAME_ID:
@@ -351,6 +354,7 @@ void CANMSG_flush_TX() {
         PRIMARY_ECU_ERRORS_FRAME_ID,
         PRIMARY_ECU_STATUS_FRAME_ID,
         PRIMARY_ECU_FEEDBACKS_FRAME_ID,
+        PRIMARY_ECU_CONTROL_STATUS_FRAME_ID,
         PRIMARY_HV_SET_STATUS_ECU_FRAME_ID,
         PRIMARY_LV_SET_INVERTER_CONNECTION_STATUS_FRAME_ID,
         // PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID,
@@ -453,6 +457,7 @@ bool _CANMSG_primary_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *m
         ECU_CANLIB_PACK(ecu_errors, primary, ECU_ERRORS, PRIMARY);
         ECU_CANLIB_PACK(ecu_status, primary, ECU_STATUS, PRIMARY);
         ECU_CANLIB_PACK(ecu_feedbacks, primary, ECU_FEEDBACKS, PRIMARY);
+        ECU_CANLIB_PACK(ecu_control_status, primary, ECU_CONTROL_STATUS, PRIMARY);
         ECU_CANLIB_PACK(hv_set_status_ecu, primary, HV_SET_STATUS_ECU, PRIMARY);
         ECU_CANLIB_PACK(lv_set_inverter_connection_status, primary, LV_SET_INVERTER_CONNECTION_STATUS, PRIMARY);
         // case PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID:

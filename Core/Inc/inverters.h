@@ -23,7 +23,11 @@ typedef enum {
 /* Register IDs for which updates will be activated */
 #define INV_CMD_TX_REQ     0x3D
 
+#define HV_MAX_REGEN_CURRENT -24.0f
+#define HV_MIN_CELL_VOLTAGE 2.8f
+#define HV_CELL_COUNT 108
 #define P_BAT_MAX 80*1e3 // W
+#define P_BAT_MIN (HV_MAX_REGEN_CURRENT * HV_MIN_CELL_VOLTAGE * HV_CELL_COUNT)
 #define P_MOT_MAX 60*1e3 // W
 #define MOT_TORQUE_PEAK 100.0f // Nm
 #define MOT_TORQUE_COEFF 0.54f // Nm/Arms

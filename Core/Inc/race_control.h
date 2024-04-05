@@ -15,6 +15,7 @@ bool equal_d_threshold(float a, float b, double threshold);
  *            actuate the motors accordingly.
  */
 void DAS_do_drive_routine();
+float _DAS_get_driver_request();
 
 float DAS_get_pwr_map();
 float DAS_get_sc_map();

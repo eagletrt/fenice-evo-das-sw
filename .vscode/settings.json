@@ -25,6 +25,7 @@
         "adc_fsm.h": "c",
         "tractive_system.h": "c",
         "fsm.h": "c",
-        "pid.h": "c"
+        "pid.h": "c",
+        "encoders.h": "c"
     }
 }

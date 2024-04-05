@@ -15,7 +15,6 @@ torque needs to stay at 0 Nm until APPS is <= 5% */
 bool _DAS_is_brake_impl_on = false;
 
 
-float _DAS_get_driver_request();
 void _DAS_update_brake_impl(float apps, float bse);
 bool _DAS_is_control_feasible();
 
@@ -102,10 +101,7 @@ float _DAS_get_driver_request() {
     PED_update_plausibility_check();
     _DAS_update_brake_impl(APPS_percent, BSE_percent);
 
-    if (_DAS_is_brake_impl_on || PED_errors.implausibility_err)
-        return 0.0f;
-    else
-        return PED_get_accelerator_torque(APPS_percent);
+    return PED_get_accelerator_torque(APPS_percent);
 }
 
 /**

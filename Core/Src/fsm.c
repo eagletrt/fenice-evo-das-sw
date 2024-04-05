@@ -299,7 +299,7 @@ VFSM_state_t VFSM_do_idle(VFSM_state_data_t *data) {
     /* Check when SD is open (and therefore I have to go in discharge) */
     if(!is_SD_closed())
       next_state = VFSM_STATE_IDLE;
-    else if (ecumsg_hv_feedback_status_state.info.is_new && !ecumsg_hv_feedback_status_state.data.feedbacks_sd_end)
+    else if (ecumsg_hv_feedback_status_state.info.is_new && !ecumsg_hv_feedback_status_state.data.feedback_sd_end)
       next_state = VFSM_STATE_IDLE;
   }
   
@@ -386,7 +386,7 @@ VFSM_state_t VFSM_do_start_ts_precharge(VFSM_state_data_t *data) {
   /* Check when SD is open (and therefore I have to go in discharge) */
   if(!is_SD_closed())
     next_state = VFSM_STATE_START_TS_DISCHARGE;
-  else if (!ecumsg_hv_feedback_status_state.data.feedbacks_sd_end)
+  else if (!ecumsg_hv_feedback_status_state.data.feedback_sd_end)
     next_state = VFSM_STATE_START_TS_DISCHARGE;
 
   #if WTCHDG_DEBUG
@@ -709,7 +709,7 @@ VFSM_state_t VFSM_do_wait_ts_discharge(VFSM_state_data_t *data) {
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
 
   /* Wait until the BMS-HV no longer reports more than 60 Volts */
-  if (!ecumsg_hv_feedback_status_state.data.feedbacks_ts_over_60v_status) {
+  if (!ecumsg_hv_feedback_status_state.data.feedback_ts_over_60v_status) {
     next_state = VFSM_NO_CHANGE;
   } else {
     /* Go to idle and close back the SD circuit */

@@ -48,7 +48,7 @@ ecumsg_ecu_set_power_maps_t           ecumsg_ecu_set_power_maps_state    = { {0U
 ecumsg_ecu_status_t             ecumsg_ecu_status_state      = { {0U, false, 0U}, { .status = primary_ecu_status_status_idle } };
 ecumsg_ecu_feedbacks_t          ecumsg_ecu_feedbacks_state   = { {0U, false, 0U}, { 0 }};
 ecumsg_ecu_set_status_t          ecumsg_ecu_set_status_state   = { {0U, false, 0U}, { .status = primary_ecu_set_status_status_idle } };
-ecumsg_speed_t                 ecumsg_speed_state          = { {0U, false, 0U}, { .fl = 0, .fr = 0} };
+ecumsg_angular_velocity_t                 ecumsg_angular_velocity_state          = { {0U, false, 0U}, {0} };
 // CANMSG_HVVoltageTypeDef             CANMSG_HVVoltage      = { {0U, false, 0U}, { 0U } };
 // CANMSG_HVCurrentTypeDef             CANMSG_HVCurrent      = { {0U, false, 0U}, { 0U } };
 // CANMSG_HVTemperatureTypeDef         CANMSG_HVTemperature  = { {0U, false, 0U}, { 0U } };
@@ -266,8 +266,8 @@ CANMSG_MetadataTypeDef* CANMSG_get_primary_metadata_from_id(CAN_IdTypeDef id) {
  */
 CANMSG_MetadataTypeDef* CANMSG_get_secondary_metadata_from_id(CAN_IdTypeDef id) {
     switch(id) {
-        case SECONDARY_SPEED_FRAME_ID:
-            return &(ecumsg_speed_state.info);
+        case SECONDARY_ANGULAR_VELOCITY_FRAME_ID:
+            return &(ecumsg_angular_velocity_state.info);
         case SECONDARY_PEDAL_BRAKES_PRESSURE_FRAME_ID:
             return &(ecumsg_pedal_brakes_pressure_state.info);
         case SECONDARY_PEDAL_THROTTLE_FRAME_ID:
@@ -363,7 +363,7 @@ void CANMSG_flush_TX() {
         // PRIMARY_CONTROL_OUTPUT_FRAME_ID,
     };
     static CAN_IdTypeDef secondary_ids_to_send[] = {
-        SECONDARY_SPEED_FRAME_ID,
+        SECONDARY_ANGULAR_VELOCITY_FRAME_ID,
         SECONDARY_PEDAL_BRAKES_PRESSURE_FRAME_ID,
         SECONDARY_PEDAL_THROTTLE_FRAME_ID,
         SECONDARY_STEER_ANGLE_FRAME_ID,
@@ -498,7 +498,7 @@ bool _CANMSG_secondary_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef 
     msg->id = id;
     
     switch (id) {
-        ECU_CANLIB_PACK(speed, secondary, SPEED, SECONDARY);
+        ECU_CANLIB_PACK(angular_velocity, secondary, ANGULAR_VELOCITY, SECONDARY);
         ECU_CANLIB_PACK(pedal_throttle, secondary, PEDAL_THROTTLE, SECONDARY);
         ECU_CANLIB_PACK(pedal_brakes_pressure, secondary, PEDAL_BRAKES_PRESSURE, SECONDARY);
         ECU_CANLIB_PACK(steer_angle, secondary, STEER_ANGLE, SECONDARY);

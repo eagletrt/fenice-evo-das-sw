@@ -57,6 +57,7 @@ typedef struct { CANMSG_MetadataTypeDef info; primary_lv_set_inverter_connection
 typedef struct { CANMSG_MetadataTypeDef info; primary_control_output_converted_t data; } ecumsg_control_output_t;
 typedef struct { CANMSG_MetadataTypeDef info; primary_tlm_status_converted_t data; } ecumsg_tlm_status_t;
 typedef struct { CANMSG_MetadataTypeDef info; primary_control_status_converted_t data; } ecumsg_control_status_t;
+typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_control_status_converted_t data; } ecumsg_ecu_control_status_t;
 
 /* Secondary Network */
 typedef struct { CANMSG_MetadataTypeDef info; secondary_speed_converted_t data; } ecumsg_speed_t;
@@ -76,6 +77,7 @@ extern ecumsg_ecu_set_power_maps_t      ecumsg_ecu_set_power_maps_state;
 extern ecumsg_ecu_status_t        ecumsg_ecu_status_state;
 extern ecumsg_ecu_feedbacks_t     ecumsg_ecu_feedbacks_state;
 extern ecumsg_ecu_set_status_t     ecumsg_ecu_set_status_state;
+extern ecumsg_ecu_control_status_t     ecumsg_ecu_control_status_state;
 extern ecumsg_speed_t            ecumsg_speed_state;
 // extern CANMSG_HVVoltageTypeDef        CANMSG_HVVoltage;
 // extern CANMSG_HVCurrentTypeDef        CANMSG_HVCurrent;

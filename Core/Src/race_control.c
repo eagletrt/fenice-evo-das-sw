@@ -33,19 +33,26 @@ bool _DAS_is_control_feasible() {
         conditions_counter = CONTROL_FAIL_COUNT;
     }
 
+    ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 0;
+    ecumsg_ecu_control_status_state.data.control_errors_wrong_maps = 0;
+    ecumsg_ecu_control_status_state.data.control_errors_forced_off = 0;
+
     // Driver turned off the controls
     if (equal_d_threshold(ecumsg_ecu_set_power_maps_state.data.map_tv, 0.0, 0.05) &&
         equal_d_threshold(ecumsg_ecu_set_power_maps_state.data.map_sc, 0.0, 0.05)) {
         conditions_counter = CONTROL_FAIL_COUNT;
+        ecumsg_ecu_control_status_state.data.control_errors_forced_off = 1;
         return false;
     }
 
     // Check on control watchdog
     if(HAL_GetTick() - ecumsg_control_output_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_OUTPUT * 3) {
         conditions_counter ++;
+        ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 1;
     }
     if(HAL_GetTick() - ecumsg_control_status_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_STATUS * 3) {
         conditions_counter ++;
+        ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 1;
     } else {
         // Check control and steering maps
         if (equal_d_threshold(ecumsg_control_status_state.data.map_pw, ecumsg_ecu_set_power_maps_state.data.map_pw, 0.05) && 
@@ -54,6 +61,7 @@ bool _DAS_is_control_feasible() {
             conditions_counter = 0;
         } else {
             conditions_counter ++;
+            ecumsg_ecu_control_status_state.data.control_errors_wrong_maps = 1;
         }
     }
 
@@ -62,6 +70,9 @@ bool _DAS_is_control_feasible() {
 
 void DAS_do_drive_routine() {
     float torque_l_Nm, torque_r_Nm;
+
+    ecumsg_ecu_control_status_state.data.control_enabled = ENABLE_CONTROLS;
+    ecumsg_ecu_control_status_state.info.is_new = 1;
     
     // Check on control watchdog, control power maps and control torque vectoring.
     if(ENABLE_CONTROLS && _DAS_is_control_feasible()) {

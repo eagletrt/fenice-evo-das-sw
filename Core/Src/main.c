@@ -255,7 +255,6 @@ int main(void)
     /* Parse all RX'd messages */
     CANMSG_process_RX_queue();
 
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

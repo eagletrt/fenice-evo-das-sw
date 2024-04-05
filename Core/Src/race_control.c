@@ -32,10 +32,7 @@ bool _DAS_is_control_feasible() {
     if(conditions_counter > CONTROL_FAIL_COUNT) {
         conditions_counter = CONTROL_FAIL_COUNT;
     }
-
-    ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 0;
-    ecumsg_ecu_control_status_state.data.control_errors_wrong_maps = 0;
-    ecumsg_ecu_control_status_state.data.control_errors_forced_off = 0;
+        ecumsg_ecu_control_status_state.data.control_errors_forced_off = 0;
 
     // Driver turned off the controls
     if (equal_d_threshold(ecumsg_ecu_set_power_maps_state.data.map_tv, 0.0, 0.05) &&
@@ -65,7 +62,16 @@ bool _DAS_is_control_feasible() {
         }
     }
 
-    return (conditions_counter < CONTROL_FAIL_COUNT) ? true : false;
+    if(conditions_counter < CONTROL_FAIL_COUNT) {
+        if(conditions_counter == 0) {
+            ecumsg_ecu_control_status_state.data.control_errors_forced_off = 0;
+            ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 0;
+            ecumsg_ecu_control_status_state.data.control_errors_wrong_maps = 0;
+        }
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void DAS_do_drive_routine() {

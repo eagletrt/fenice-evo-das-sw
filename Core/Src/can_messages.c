@@ -241,6 +241,8 @@ CANMSG_MetadataTypeDef* CANMSG_get_primary_metadata_from_id(CAN_IdTypeDef id) {
             // return &(CANMSG_AmbientTemperature.info);
         case PRIMARY_CONTROL_OUTPUT_FRAME_ID:
             return &(ecumsg_control_output_state.info);
+        case PRIMARY_CONTROL_STATUS_FRAME_ID:
+            return &(ecumsg_control_status_state.info);
         case PRIMARY_TLM_STATUS_FRAME_ID:
             return &(ecumsg_tlm_status_state.info);
         // case PRIMARY_SET_CELL_BALANCING_STATUS_FRAME_ID:

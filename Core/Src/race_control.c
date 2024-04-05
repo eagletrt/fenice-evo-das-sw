@@ -32,7 +32,6 @@ bool _DAS_is_control_feasible() {
     if(conditions_counter > CONTROL_FAIL_COUNT) {
         conditions_counter = CONTROL_FAIL_COUNT;
     }
-        ecumsg_ecu_control_status_state.data.control_errors_forced_off = 0;
 
     // Driver turned off the controls
     if (equal_d_threshold(ecumsg_ecu_set_power_maps_state.data.map_tv, 0.0, 0.05) &&

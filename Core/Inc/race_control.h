@@ -16,6 +16,7 @@ bool equal_d_threshold(float a, float b, double threshold);
  */
 void DAS_do_drive_routine();
 float _DAS_get_driver_request();
+bool _DAS_is_control_feasible();
 
 float DAS_get_pwr_map();
 float DAS_get_sc_map();

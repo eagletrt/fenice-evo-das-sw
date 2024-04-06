@@ -249,6 +249,10 @@ int main(void)
     /* Iterate over inverter registers */
     INV_read_next_register();
 
+    _DAS_is_control_feasible();
+    ecumsg_ecu_control_status_state.data.control_enabled = ENABLE_CONTROLS;
+    ecumsg_ecu_control_status_state.info.is_new = 1;
+
     /* Flush CAN TX queue */
     CANMSG_flush_TX();
 

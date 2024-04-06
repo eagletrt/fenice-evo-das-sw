@@ -16,7 +16,6 @@ bool _DAS_is_brake_impl_on = false;
 
 
 void _DAS_update_brake_impl(float apps, float bse);
-bool _DAS_is_control_feasible();
 
 bool equal_d(float a, float b) {
     return fabs(a - b) < 0.0001;
@@ -41,11 +40,11 @@ bool _DAS_is_control_feasible() {
     }
 
     // Check on control watchdog
-    if(HAL_GetTick() - ecumsg_control_output_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_OUTPUT * 3) {
+    if(HAL_GetTick() - ecumsg_control_output_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_OUTPUT * 4) {
         conditions_counter ++;
         ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 1;
     }
-    if(HAL_GetTick() - ecumsg_control_status_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_STATUS * 3) {
+    if(HAL_GetTick() - ecumsg_control_status_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_STATUS * 4) {
         conditions_counter ++;
         ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 1;
     } else {
@@ -75,11 +74,12 @@ bool _DAS_is_control_feasible() {
 void DAS_do_drive_routine() {
     float torque_l_Nm, torque_r_Nm;
 
-    ecumsg_ecu_control_status_state.data.control_enabled = ENABLE_CONTROLS;
     ecumsg_ecu_control_status_state.info.is_new = 1;
+    ecumsg_ecu_control_status_state.data.control_enabled = false;
     
     // Check on control watchdog, control power maps and control torque vectoring.
     if(ENABLE_CONTROLS && _DAS_is_control_feasible()) {
+        ecumsg_ecu_control_status_state.data.control_enabled = true;
         torque_l_Nm = ecumsg_control_output_state.data.torque_l;
         torque_r_Nm = ecumsg_control_output_state.data.torque_r;
     } else {

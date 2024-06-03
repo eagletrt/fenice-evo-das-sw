@@ -1,6 +1,6 @@
 #include "steering_actuator.h"
 
-#ifndef AS_STEERING_ACTUATOR_ENABLED == 1
+#if AS_STEERING_ACTUATOR_ENABLED == 1
 
 struct PIDController {
     float kp;

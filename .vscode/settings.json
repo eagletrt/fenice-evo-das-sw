@@ -1,6 +1,6 @@
 {
-    "cortex-debug.armToolchainPath": "/home/filippo/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-none-eabi-gcc/12.2.1-1.2.1/.content/bin",
-    "cortex-debug.openocdPath": "/home/filippo/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.12.0-1.1/.content/bin/openocd",
+    "cortex-debug.armToolchainPath": "/home/gmazzucchi/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-none-eabi-gcc/13.2.1-1.1.1/.content/bin",
+    "cortex-debug.openocdPath": "/home/gmazzucchi/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.12.0-2.1/.content/bin/openocd",
     "files.associations": {
         "*.css": "tailwindcss",
         "main.h": "c",
@@ -26,6 +26,8 @@
         "tractive_system.h": "c",
         "fsm.h": "c",
         "pid.h": "c",
-        "encoders.h": "c"
+        "encoders.h": "c",
+        "steering_actuator.h": "c",
+        "ecu_config.h": "c"
     }
 }

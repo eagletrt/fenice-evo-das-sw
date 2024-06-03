@@ -477,7 +477,7 @@ bool _CANMSG_primary_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *m
         default:
             LOG_write(LOGLEVEL_ERR, "[CANMSG/Serialize] Unknown message id: 0x%X", msg->id); 
 
-            uint8_t* name[30] = { 0U };
+            char name[30] = { 0U };
             primary_message_name_from_id(id, name);
             LOG_write(LOGLEVEL_WARN, "[CANMSG/Serialize]     > primary nwk decoding: [%s]", name);
             
@@ -507,7 +507,7 @@ bool _CANMSG_secondary_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef 
         default:
             LOG_write(LOGLEVEL_ERR, "[CANMSG/Serialize] Unknown message id: 0x%X", msg->id); 
 
-            uint8_t* name[30] = { 0U };
+            char name[30] = { 0U };
             primary_message_name_from_id(id, name);
             LOG_write(LOGLEVEL_WARN, "[CANMSG/Serialize]     > primary nwk decoding: [%s]", name);
             

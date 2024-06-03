@@ -380,7 +380,7 @@ int main(void)
 #endif
   
     /* test steering wheel actuator driver */
-    int tick_mod = HAL_GetTick() % 10001 - 5000;
+    // int tick_mod = HAL_GetTick() % 10001 - 5000;
 #if AS_STEERING_ACTUATOR_ENABLED == 1
     steering_actuator_set_speed((float)tick_mod / 5000);
     // steering_actuator_set_speed((float)0.7);

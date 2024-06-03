@@ -1,6 +1,6 @@
 #include "ecu_config.h"
 
-#ifndef AS_STEERING_ACTUATOR_ENABLED == 1
+#if AS_STEERING_ACTUATOR_ENABLED == 1
 
 #include "../Lib/micro-libs/pid/pid.h"
 #include "encoders.h"

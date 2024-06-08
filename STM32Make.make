@@ -48,10 +48,10 @@ Core/Lib/can/lib/secondary/secondary_network.c \
 Core/Lib/can/lib/secondary/secondary_watchdog.c \
 Core/Lib/can/lib/simulator/simulator_network.c \
 Core/Lib/can/lib/simulator/simulator_watchdog.c \
-Core/Lib/micro-libs/can-fifo-queue/can_fifo_queue.c \
-Core/Lib/micro-libs/cli/cli.c \
+Core/Lib/micro-libs/can-fifo-queue-legacy/can_fifo_queue.c \
+Core/Lib/micro-libs/cli-legacy/cli.c \
 Core/Lib/micro-libs/eeprom-config/eeprom-config.c \
-Core/Lib/micro-libs/llist/llist.c \
+Core/Lib/micro-libs/llist-legacy/llist.c \
 Core/Lib/micro-libs/logger/logger.c \
 Core/Lib/micro-libs/m95256/m95256.c \
 Core/Lib/micro-libs/pwm/pwm.c \
@@ -182,10 +182,10 @@ C_INCLUDES =  \
 -ICore/Lib/can/lib/primary \
 -ICore/Lib/can/lib/secondary \
 -ICore/Lib/can/lib/simulator \
--ICore/Lib/micro-libs/can-fifo-queue \
--ICore/Lib/micro-libs/cli \
+-ICore/Lib/micro-libs/can-fifo-queue-legacy \
+-ICore/Lib/micro-libs/cli-legacy \
 -ICore/Lib/micro-libs/eeprom-config \
--ICore/Lib/micro-libs/llist \
+-ICore/Lib/micro-libs/llist-legacy \
 -ICore/Lib/micro-libs/logger \
 -ICore/Lib/micro-libs/m95256 \
 -ICore/Lib/micro-libs/pwm \

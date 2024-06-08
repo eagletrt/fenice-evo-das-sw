@@ -54,6 +54,9 @@
 #include <time.h>
 #include "cli_ecu.h"
 #include "steering_actuator.h"
+
+#define _XOPEN_SOURCE
+#include <time.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -176,9 +179,6 @@ int main(void)
   
   LOG_write(LOGLEVEL_INFO, "\e[1;1H\e[2J");
   // LOG_print_fenice_logo("            -    D A S   f i r m w a r e   v 2 . 0   -            ");
-  struct tm timeinfo;
-  strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &timeinfo);
-  ecumsg_ecu_version_state.data.component_build_time = mktime(&timeinfo);
 
   /* Signal Startup */
   pwm_start_channel(&htim8, TIM_CHANNEL_4);
@@ -234,10 +234,18 @@ int main(void)
   
   /* Close the shutdown circuit */
   HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
+  
+  struct tm timeinfo;
+  strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &timeinfo);
+  ecumsg_ecu_version_state.data.canlib_build_time = CANLIB_BUILD_TIME;
+  ecumsg_ecu_version_state.data.component_build_time = mktime(&timeinfo);
 
   while (1)
   {
     _MAIN_last_loop_start_ms = HAL_GetTick();
+
+    ecumsg_ecu_version_state.info.is_new = true;
+
     /* Step forward the FSM */
     vfsm_current_state = VFSM_run_state(vfsm_current_state, NULL);
     

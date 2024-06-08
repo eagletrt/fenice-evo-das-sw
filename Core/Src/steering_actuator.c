@@ -1,73 +1,105 @@
 #include "steering_actuator.h"
+#include "stdbool.h"
+#include "stdio.h"
+#include "can_messages.h"
+#include "can_user_functions.h"
+#include "math.h"
 
-#ifndef AS_STEERING_ACTUATOR_ENABLED == 1
+#if AS_STEER_ACTUATOR_ENABLED == 1
 
-struct PIDController {
-    float kp;
-    float ki;
-    float kd;
-    float integrator;
-    float prevError;
-    float error;
-    float sampleTime;
-    float setPoint;
-} pid;
+PidController_t pid;
 
-void steering_actuator_pid_init(float kp, float ki, float kd, float sampleTime) {
-    // PIDInit(&steering_actuator_pid, kp, ki, kd, 1.000 * ENC_STEER_PERIOD_MS);
+bool steer_actuator_enabled = false;
+
+void steer_actuator_pid_init(float kp, float ki, float kd, float sample_time, float anti_windUp, size_t n_prev_errors) {
     pid.kp = kp;
     pid.ki = ki;
     pid.kd = kd;
     pid.integrator = 0.0;
-    pid.prevError = 0.0;
+    // pid.prev_error = 0.0;
+    pid.n_prev_errors = n_prev_errors;
+    pid.prev_error_index = pid.n_prev_errors - 1;
+    for (int i = 0; i < pid.n_prev_errors; ++i) {
+        pid.prev_errors[i] = 0.0;
+    }
     pid.error = 0.0;
-    pid.setPoint = 0.0;
-    pid.sampleTime = sampleTime;
+    pid.set_point = 0.0;
+    pid.sample_time = sample_time;
+    pid.anti_windUp = anti_windUp;
 }
 
-void steering_actuator_update_set_point(float setPoint) {
-    pid.setPoint = setPoint;
+void steer_actuator_update_set_point(float set_point) {
+    pid.set_point = set_point;
 }
 
-void steering_actuator_update_pid(float status) {
-    pid.prevError = pid.error;
-    pid.error = pid.setPoint - status;
-    pid.integrator += pid.error * pid.sampleTime;
-    if (pid.integrator > 0.5) {
-        pid.integrator = 0.5;
-    } else if (pid.setPoint < -0.5) {
-        pid.integrator = -0.5;
+void steer_actuator_pid_reset() {
+    pid.integrator = 0.0;
+    for (int i = 0; i < pid.n_prev_errors; ++i) {
+        pid.prev_errors[i] = 0.0;
     }
 }
 
-bool steering_actuator_set_speed(float speed)
+void steer_actuator_enable() {
+    steer_actuator_pid_reset();
+    steer_actuator_enabled = true;
+}
+
+void steer_actuator_disable() {
+    steer_actuator_enabled = false;
+    steer_actuator_set_speed(0.0);
+}
+
+void steer_actuator_update_pid(float status) {
+    pid.prev_error_index = (pid.prev_error_index + 1) % pid.n_prev_errors;
+    pid.prev_errors[pid.prev_error_index] = pid.error;
+    pid.error = pid.set_point - status;
+    pid.integrator += pid.error * pid.sample_time;
+}
+
+void steer_actuator_set_speed(float speed)
 {
-    if (speed < 0.0) {
-        if (speed >= -1.0) {
-            HAL_GPIO_WritePin(STEERING_REVERSE_GPIO_Port, STEERING_REVERSE_Pin, 1);
-            TIM4->CCR2 = (uint32_t)(65535 * (-speed));
-            return true;
-        }
+    float speed_limit = 5.0;
+    float angle_limit = 90.0;
+    float steering_angle = ENC_C_get_angle_deg();
+
+    if (fabs(steering_angle) > angle_limit) speed = 0.0;
+
+    if (fabs(speed) > speed_limit){
+        if (speed > 0.0) speed = speed_limit;
+        else speed = -speed_limit;
     }
-    else {
-        if (speed <= 1.0) {
-            HAL_GPIO_WritePin(STEERING_REVERSE_GPIO_Port, STEERING_REVERSE_Pin, 0);
-            TIM4->CCR2 = (uint32_t)(65535 * speed);
-            return true;
-        }
-    }
-    return false;
+    
+    HAL_GPIO_WritePin(STEERING_REVERSE_GPIO_Port, STEERING_REVERSE_Pin, speed < 0.0 ? 1 : 0);
+    TIM4->CCR2 = (uint32_t)(65535 * (fabs(speed) / speed_limit));
 }
 
-float steering_actuator_computePID() {
-    float derivator = (pid.error - pid.prevError) / pid.sampleTime;
-    float value = pid.kp * pid.error + pid.ki * pid.integrator + pid.kd * derivator;
-    if (value > 0.5) {
-        return 0.5;
+float steer_actuator_computePID() {
+    float derivative = (pid.error - pid.prev_errors[(pid.prev_error_index + 1) % pid.n_prev_errors]) / (pid.sample_time * pid.n_prev_errors);
+    float integral = pid.ki * pid.integrator;
+    if (integral > pid.anti_windUp) {
+        integral = pid.anti_windUp;
+    } else if (integral < -pid.anti_windUp) {
+        integral = -pid.anti_windUp;
     }
-    if (value < -0.5) {
-        return -0.5;
-    }
+    float value = pid.kp * pid.error + integral + pid.kd * derivative;
+
+
+    secondary_debug_signal_1_converted_t msg;
+    secondary_debug_signal_1_t raw;
+    msg.field_1 = value / 5.0;
+    msg.field_2 = pid.kp * pid.error / 5.0;
+    msg.field_3 = integral / 5.0;
+    msg.field_4 = pid.kd * derivative / 5.0;
+
+    CAN_MessageTypeDef can_msg;
+    can_msg.id = SECONDARY_DEBUG_SIGNAL_1_FRAME_ID;
+    can_msg.size = SECONDARY_DEBUG_SIGNAL_1_BYTE_SIZE;
+
+    secondary_debug_signal_1_conversion_to_raw_struct(&raw, &msg);
+    secondary_debug_signal_1_pack(can_msg.data, &raw, SECONDARY_DEBUG_SIGNAL_1_BYTE_SIZE);
+
+    CAN_send(&can_msg, &hcan2);
+
     return value;
 }
 

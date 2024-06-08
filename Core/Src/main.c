@@ -63,7 +63,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define DEBUG 1
+#define DEBUG 0
 #define MAIN_DBG_BUF_LEN 256
 /* USER CODE END PD */
 
@@ -78,20 +78,21 @@ uint32_t _MAIN_last_loop_start_ms = 0;
 uint32_t _MAIN_avg_loop_duration_ms = 0;
 uint32_t _MAIN_last_ms_showed = 0;
 
-uint8_t _MAIN_dbg_uart_buf[MAIN_DBG_BUF_LEN];
+char _MAIN_dbg_uart_buf[MAIN_DBG_BUF_LEN];
 bool _MAIN_is_dbg_uart_free = true;
 uint16_t _MAIN_dbg_uart_line_idx = 0;
 bool _MAIN_update_watchdog = false;   /* Every 10ms TIM1 sets this variable to true */
 uint16_t _MAIN_timer_feedbacks = 0;
 bool _MAIN_last_tlm_status = false;
-bool _MAIN_update_steering_actuator_pid = false;
-bool _MAIN_update_steering_actuator_speed = false;
+bool _MAIN_update_steer_actuator_pid = false;
+bool _MAIN_update_steer_actuator_speed = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void _MAIN_print_dbg_line(char *title, char *txt);
+void steer_actuator_update();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -217,11 +218,13 @@ int main(void)
   /* Initialize CLI */
   // cli_ecu_init();
 
-  uint32_t last_enc_calc = 0;
+  uint32_t last_enc_calc = 0U, last_as_steer_actuator_status = 0U;
   
-#if AS_STEERING_ACTUATOR_ENABLED == 1
+#if AS_STEER_ACTUATOR_ENABLED == 1
+  #define OSC_PULSE 13.1 //rad/s
+  #define KP_MAX 0.25
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
-  steering_actuator_pid_init(0.0, 0.0, 0.0, 1000.0 * ENC_STEER_PERIOD_MS);
+  steer_actuator_pid_init(0.65 * KP_MAX, 0.35 * KP_MAX, 0.012, ENC_STEER_PERIOD_MS / 1000.0, 5.0, N_PREV_ERRORS);
 #endif
 
   /* USER CODE END 2 */
@@ -298,6 +301,15 @@ int main(void)
       ENC_send_vals_in_CAN();
     }
 
+    #if AS_STEER_ACTUATOR_ENABLED == 1
+    if(HAL_GetTick() - PRIMARY_ECU_STEER_ACTUATOR_STATUS_CYCLE_TIME_MS >= last_as_steer_actuator_status) {
+      last_as_steer_actuator_status = HAL_GetTick();
+      // TODO metti is_new = true;
+      ecumsg_ecu_steer_actuator_status_state.data.status = steer_actuator_enabled;
+      ecumsg_ecu_steer_actuator_status_state.info.is_new = true;
+    }
+    #endif
+
     /* Check if we have PUSH TO TALK messages to process */
     if (ecumsg_ecu_set_ptt_status_state.info.is_new){
       if (ecumsg_ecu_set_ptt_status_state.data.status != ecumsg_ecu_ptt_status_state.data.status) {
@@ -365,26 +377,9 @@ int main(void)
     uint32_t loop_duration = HAL_GetTick() - _MAIN_last_loop_start_ms;
     _MAIN_avg_loop_duration_ms = loop_duration;
 
-#if AS_STEERING_ACTUATOR_ENABLED == 1 
-    if (_MAIN_update_steering_actuator_pid) {
-      _MAIN_update_steering_actuator_pid = false;
-      steering_actuator_update_pid(ENC_C_get_angle_deg());
-    }
-#endif
-
-#if AS_STEERING_ACTUATOR_ENABLED == 1
-    if (_MAIN_update_steering_actuator_speed) {
-      _MAIN_update_steering_actuator_speed = false;
-      // steering_actuator_set_speed(steering_actuator_computePID());
-    }
-#endif
-  
-    /* test steering wheel actuator driver */
-    int tick_mod = HAL_GetTick() % 10001 - 5000;
-#if AS_STEERING_ACTUATOR_ENABLED == 1
-    steering_actuator_set_speed((float)tick_mod / 5000);
-    // steering_actuator_set_speed((float)0.7);
-#endif
+    #if AS_STEER_ACTUATOR_ENABLED == 1
+      steer_actuator_update();
+    #endif
     
     #ifdef DEBUG_CLI
       cli_watch_flush_handler();
@@ -492,31 +487,35 @@ void _update_ecu_feedbacks(){
 }
 
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
-  static uint64_t last_speed_sample = 0, last_angle_sample = 0, last_steering_actuator_update = 0;
+  static uint64_t last_speed_sample = 0, last_angle_sample = 0;
+  #if AS_STEER_ACTUATOR_ENABLED == 1
+    static uint64_t last_steer_actuator_speed_update = 0;
+  #endif
+  
   if (htim->Instance == htim1.Instance) {
     _MAIN_update_watchdog = true;
     BUZ_timer_callback();
   } else if(htim->Instance == htim10.Instance){
-      if ((true) && (get_time() - last_speed_sample > ENC_SPEED_PERIOD_MS)){
-        ENC_R_push_speed_rads();
-        ENC_L_push_speed_rads();
-        last_speed_sample = get_time();
-      }
-      
-      if ((true) && (get_time() - last_angle_sample > ENC_STEER_PERIOD_MS)){
-        ENC_C_push_angle_deg();
-#if AS_STEERING_ACTUATOR_ENABLED == 1 
-        _MAIN_update_steering_actuator_pid = true;
-#endif
-        last_angle_sample = get_time();
-      }
+    if ((true) && (get_time() - last_speed_sample > ENC_SPEED_PERIOD_MS)){
+      ENC_R_push_speed_rads();
+      ENC_L_push_speed_rads();
+      last_speed_sample = get_time();
+    }
+    
+    if ((true) && (get_time() - last_angle_sample > ENC_STEER_PERIOD_MS)){
+      ENC_C_push_angle_deg();
+      #if AS_STEER_ACTUATOR_ENABLED == 1
+        _MAIN_update_steer_actuator_pid = true;
+      #endif
+      last_angle_sample = get_time();
+    }
 
-      if (get_time() - last_steering_actuator_update > STEERING_ACTUATOR_PERIOD_MS) {
-#if AS_STEERING_ACTUATOR_ENABLED == 1 
-        _MAIN_update_steering_actuator_speed = true;
-#endif
-        last_steering_actuator_update = get_time();
-      }
+  #if AS_STEER_ACTUATOR_ENABLED == 1 
+    if (get_time() - last_steer_actuator_speed_update > STEER_ACTUATOR_PERIOD_MS) {
+      _MAIN_update_steer_actuator_speed = true;
+      last_steer_actuator_speed_update = get_time();
+    }
+  #endif
 
   } else if (htim->Instance == htim13.Instance) {
       time_base_elapsed();
@@ -535,7 +534,7 @@ void _MAIN_print_dbg_line(char *title, char *txt) {
   uint16_t n_bytes = snprintf(_MAIN_dbg_uart_buf, MAIN_DBG_BUF_LEN, "%10s | %s\033[K\r\n", title, txt);
 
   _MAIN_is_dbg_uart_free = false;
-  HAL_UART_Transmit_IT(&huart2, _MAIN_dbg_uart_buf, n_bytes);
+  HAL_UART_Transmit_IT(&huart2, (const uint8_t*)_MAIN_dbg_uart_buf, n_bytes);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
@@ -669,6 +668,56 @@ void MAIN_print_dbg_info() {
   }
 
   _MAIN_dbg_uart_line_idx = (_MAIN_dbg_uart_line_idx + 1) % 21;
+}
+
+void steer_actuator_update() {
+  if (ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.info.is_new){
+    if (ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.data.status != steer_actuator_enabled) {
+      if (ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.data.status) {
+        steer_actuator_enable();
+      } else {
+        steer_actuator_disable();
+      }
+    }
+    ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.info.is_new = false;
+  }
+
+  if (ecumsg_ecu_set_steer_actuator_status_tlm_state.info.is_new){
+    if (ecumsg_ecu_set_steer_actuator_status_tlm_state.data.status != steer_actuator_enabled) {
+      if (ecumsg_ecu_set_steer_actuator_status_tlm_state.data.status) {
+        steer_actuator_enable();
+      } else {
+        steer_actuator_disable();
+      }
+    }
+    ecumsg_ecu_set_steer_actuator_status_tlm_state.info.is_new = false;
+  }
+
+  if (ecumsg_ecu_set_steer_actuator_angle_state.info.is_new) {
+    steer_actuator_update_set_point(ecumsg_ecu_set_steer_actuator_angle_state.data.angle);
+    ecumsg_ecu_set_steer_actuator_angle_state.info.is_new = false;
+  }
+
+	if (_MAIN_update_steer_actuator_pid) {
+		_MAIN_update_steer_actuator_pid = false;
+    if (steer_actuator_enabled) {
+		  float steering_angle = ENC_C_get_angle_deg();
+		  steer_actuator_update_pid(steering_angle);
+    }
+	}
+
+  if (_MAIN_update_steer_actuator_speed) {
+    _MAIN_update_steer_actuator_speed = false;
+
+    const int period = 1000; //ms
+    const float amplitude = 40.0;
+    float target = sin((float)(HAL_GetTick() % period) / period * 2 * M_PI) * amplitude;
+    steer_actuator_update_set_point(target);
+    
+    if (steer_actuator_enabled) {
+        steer_actuator_set_speed(steer_actuator_computePID());
+    }
+  }
 }
 
 /* USER CODE END 4 */

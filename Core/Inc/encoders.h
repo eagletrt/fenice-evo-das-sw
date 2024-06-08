@@ -18,17 +18,17 @@
 #define ENC_R_TIM htim5 /*< Right encoder timer */
 #define ENC_C_SPI hspi2 /*< Center encoder SPI */
 
-#define ENC_ROLLAVG_SIZE 5
+#define ENC_ROLLAVG_SIZE 1
 
 
 #define ENC_SPEED_FREQ_HZ  1000 /* 1000Hz */
 #define ENC_SPEED_PERIOD_MS  1000/ENC_SPEED_FREQ_HZ /* 1ms */
 
-#define ENC_STEER_FREQ_HZ  200 /* 200Hz */
-#define ENC_STEER_PERIOD_MS  1000/ENC_STEER_FREQ_HZ /* 5ms */
+#define ENC_STEER_FREQ_HZ  500.0 /* 200Hz */
+#define ENC_STEER_PERIOD_MS  1000.0/ENC_STEER_FREQ_HZ /* 5ms */
 
-#define STEERING_ACTUATOR_FREQ_HZ  10 /* 10Hz */
-#define STEERING_ACTUATOR_PERIOD_MS  1000/STEERING_ACTUATOR_FREQ_HZ /* 100ms */
+#define STEER_ACTUATOR_FREQ_HZ  500 /* 200Hz */
+#define STEER_ACTUATOR_PERIOD_MS  1000/STEER_ACTUATOR_FREQ_HZ /* 100ms */
 
 
 /**

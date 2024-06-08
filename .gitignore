@@ -8,5 +8,4 @@ build/
 .DS_Store
 
 **/.vscode/*
-!**/.vscode/settings.json
-!**/.vscode/extensions.json
+STM32Make.make

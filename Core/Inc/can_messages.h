@@ -58,6 +58,10 @@ typedef struct { CANMSG_MetadataTypeDef info; primary_control_output_converted_t
 typedef struct { CANMSG_MetadataTypeDef info; primary_tlm_status_converted_t data; } ecumsg_tlm_status_t;
 typedef struct { CANMSG_MetadataTypeDef info; primary_control_status_converted_t data; } ecumsg_control_status_t;
 typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_control_status_converted_t data; } ecumsg_ecu_control_status_t;
+typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_steer_actuator_status_converted_t data; } ecumsg_ecu_steer_actuator_status_t;
+typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_set_steer_actuator_status_steering_wheel_converted_t data; } ecumsg_ecu_set_steer_actuator_status_steering_wheel_t;
+typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_set_steer_actuator_status_tlm_converted_t data; } ecumsg_ecu_set_steer_actuator_status_tlm_t;
+typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_set_steer_actuator_angle_converted_t data; } ecumsg_ecu_set_steer_actuator_angle_t;
 
 /* Secondary Network */
 typedef struct { CANMSG_MetadataTypeDef info; secondary_angular_velocity_converted_t data; } ecumsg_angular_velocity_t;
@@ -110,6 +114,10 @@ extern ecumsg_control_status_t        ecumsg_control_status_state;
 extern CANMSG_INVResponseTypeDef      CANMSG_InvL_I_CMD_RAMP, CANMSG_InvL_I_CMD, CANMSG_InvL_IQ_ACTUAL, CANMSG_InvL_T_MOTOR, CANMSG_InvL_T_IGBT, CANMSG_InvL_N_ACTUAL_FILT, CANMSG_InvL_M_CMD_RAMP, CANMSG_InvL_VDC_BUS;
 extern CANMSG_INVResponseTypeDef      CANMSG_InvR_I_CMD_RAMP, CANMSG_InvR_I_CMD, CANMSG_InvR_IQ_ACTUAL, CANMSG_InvR_T_MOTOR, CANMSG_InvR_T_IGBT, CANMSG_InvR_N_ACTUAL_FILT, CANMSG_InvR_M_CMD_RAMP, CANMSG_InvR_VDC_BUS;
 
+extern ecumsg_ecu_steer_actuator_status_t              ecumsg_ecu_steer_actuator_status_state;
+extern ecumsg_ecu_set_steer_actuator_status_steering_wheel_t           ecumsg_ecu_set_steer_actuator_status_steering_wheel_state;
+extern ecumsg_ecu_set_steer_actuator_status_tlm_t           ecumsg_ecu_set_steer_actuator_status_tlm_state;
+extern ecumsg_ecu_set_steer_actuator_angle_t           ecumsg_ecu_set_steer_actuator_angle_state;
 
 /**
  * Implementation of CAN messages

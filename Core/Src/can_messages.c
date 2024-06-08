@@ -66,6 +66,10 @@ ecumsg_ecu_ptt_status_t             ecumsg_ecu_ptt_status_state      = { {0U, fa
 // CANMSG_PedalCalibrationAckTypeDef  CANMSG_PedalsCalibrationAck  = { {0U, false, 0U}, { 0U } };
 ecumsg_lv_set_inverter_connection_status_t      ecumsg_lv_set_inverter_connection_status_state = { {0U, false, 0U}, { 0U } };
 ecumsg_tlm_status_t            ecumsg_tlm_status_state      = { {0U, false, 0U}, { 0U } };
+ecumsg_ecu_steer_actuator_status_t              ecumsg_ecu_steer_actuator_status_state = { {0U, false, 0U}, { 0U } };
+ecumsg_ecu_set_steer_actuator_status_steering_wheel_t           ecumsg_ecu_set_steer_actuator_status_steering_wheel_state = { {0U, false, 0U}, { 0U } };
+ecumsg_ecu_set_steer_actuator_status_tlm_t           ecumsg_ecu_set_steer_actuator_status_tlm_state = { {0U, false, 0U}, { 0U } };
+ecumsg_ecu_set_steer_actuator_angle_t           ecumsg_ecu_set_steer_actuator_angle_state = { {0U, false, 0U}, { 0U } };
 
 
 // CANMSG_AmbientTemperatureTypeDef CANMSG_AmbientTemperature  = { {0U, false, 0U}, { 0U } };
@@ -161,6 +165,9 @@ void _CANMSG_primary_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
         ECU_CANLIB_UNPACK(control_output, primary, CONTROL_OUTPUT, PRIMARY);
         ECU_CANLIB_UNPACK(control_status, primary, CONTROL_STATUS, PRIMARY);
         ECU_CANLIB_UNPACK(tlm_status, primary, TLM_STATUS, PRIMARY);
+        ECU_CANLIB_UNPACK(ecu_set_steer_actuator_status_steering_wheel, primary, ECU_SET_STEER_ACTUATOR_STATUS_STEERING_WHEEL, PRIMARY);
+        ECU_CANLIB_UNPACK(ecu_set_steer_actuator_status_tlm, primary, ECU_SET_STEER_ACTUATOR_STATUS_TLM, PRIMARY);
+        ECU_CANLIB_UNPACK(ecu_set_steer_actuator_angle, primary, ECU_SET_STEER_ACTUATOR_ANGLE, PRIMARY);
         default:
             // LOG_write(LOGLEVEL_ERR, "[CANMSG/Deserialize] Unknown message id: 0x%X", msg.id);
             break;
@@ -245,6 +252,12 @@ CANMSG_MetadataTypeDef* CANMSG_get_primary_metadata_from_id(CAN_IdTypeDef id) {
             return &(ecumsg_control_status_state.info);
         case PRIMARY_TLM_STATUS_FRAME_ID:
             return &(ecumsg_tlm_status_state.info);
+        case PRIMARY_ECU_SET_STEER_ACTUATOR_STATUS_STEERING_WHEEL_FRAME_ID:
+            return &(ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.info);
+        case PRIMARY_ECU_SET_STEER_ACTUATOR_STATUS_TLM_FRAME_ID:
+            return &(ecumsg_ecu_set_steer_actuator_status_tlm_state.info);
+        case PRIMARY_ECU_SET_STEER_ACTUATOR_ANGLE_FRAME_ID:
+            return &(ecumsg_ecu_set_steer_actuator_angle_state.info);
         // case PRIMARY_SET_CELL_BALANCING_STATUS_FRAME_ID:
         // case PRIMARY_HANDCART_SETTINGS_SET_FRAME_ID:
         // case PRIMARY_TLM_VERSION_FRAME_ID:
@@ -361,6 +374,7 @@ void CANMSG_flush_TX() {
         PRIMARY_LV_SET_INVERTER_CONNECTION_STATUS_FRAME_ID,
         // PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID,
         PRIMARY_ECU_PTT_STATUS_FRAME_ID,
+        PRIMARY_ECU_STEER_ACTUATOR_STATUS_FRAME_ID,
 
         // PRIMARY_CONTROL_OUTPUT_FRAME_ID,
     };
@@ -474,10 +488,11 @@ bool _CANMSG_primary_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *m
         // case PRIMARY_PEDAL_CALIBRATION_ACK_FRAME_ID:
             // msg->size = primary_pedal_calibration_ack_pack(msg->data, &(CANMSG_PedalsCalibrationAck.data), PRIMARY_PEDAL_CALIBRATION_ACK_BYTE_SIZE);
             // break;
+        ECU_CANLIB_PACK(ecu_steer_actuator_status, primary, ECU_STEER_ACTUATOR_STATUS, PRIMARY)
         default:
             LOG_write(LOGLEVEL_ERR, "[CANMSG/Serialize] Unknown message id: 0x%X", msg->id); 
 
-            uint8_t* name[30] = { 0U };
+            char name[30] = { 0U }; // TODO: sistemare lunghezza in un define, magari avere un buffer comune (?) e con grandezze decenti
             primary_message_name_from_id(id, name);
             LOG_write(LOGLEVEL_WARN, "[CANMSG/Serialize]     > primary nwk decoding: [%s]", name);
             
@@ -507,7 +522,7 @@ bool _CANMSG_secondary_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef 
         default:
             LOG_write(LOGLEVEL_ERR, "[CANMSG/Serialize] Unknown message id: 0x%X", msg->id); 
 
-            uint8_t* name[30] = { 0U };
+            char name[30] = { 0U };
             primary_message_name_from_id(id, name);
             LOG_write(LOGLEVEL_WARN, "[CANMSG/Serialize]     > primary nwk decoding: [%s]", name);
             

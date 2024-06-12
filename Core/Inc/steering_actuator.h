@@ -3,43 +3,30 @@
 
 #include "ecu_config.h"
 
-#include "../Lib/micro-libs/pid/pid.h"
-#include "encoders.h"
 #include "main.h"
+#include "encoders.h"
 
-#define N_PREV_ERRORS 5
+#define PID_ERRORS_VECTOR
+#define N_PID_PREV_ERRORS 5
+#include "../Lib/micro-libs/pid/pid.h"
 
-extern bool steer_actuator_enabled;
-
-typedef struct pidController_t{
-    float kp;
-    float ki;
-    float kd;
-    float integrator;
-    // float prev_error;
-    float error;
-    float sample_time;
-    float set_point;
-    float anti_windUp;
-    size_t n_prev_errors;
-    float prev_errors[N_PREV_ERRORS];
-    int prev_error_index;
-} PidController_t;
-
-void steer_actuator_pid_init(float kp, float ki, float kd, float sample_time, float anti_windUp, size_t n_prev_errors);
+#define STEER_ACTUATOR_SPEED_LIMIT 5.0
+#define STEER_ACTUATOR_ANGLE_LIMIT 90.0
 
 void steer_actuator_update_set_point(float setPoint);
 
-void steer_actuator_pid_reset();
+bool steer_actuator_is_enabled();
 
 void steer_actuator_enable();
 
 void steer_actuator_disable();
 
-void steer_actuator_update_pid(float status);
-
 void steer_actuator_set_speed(float speed);
 
-float steer_actuator_computePID();
+void steer_actuator_pid_init(float kp, float ki, float kd, float sample_time, float anti_windup);  // TODO? spostare questi valori in ecu config e liberare il main
+
+void steer_actuator_update_pid();
+
+void steer_actuator_update_speed();
 
 #endif

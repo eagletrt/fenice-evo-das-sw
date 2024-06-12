@@ -84,6 +84,7 @@ includeDirectories:
   - Core/Lib/micro-libs/m95256/**
   - Core/Lib/micro-libs/eeprom-config/**
   - Core/Lib/micro-libs/can-fifo-queue/**
+  - Core/Lib/micro-libs/pid/**
   - Core/Lib/can/lib/primary/**
   - Core/Lib/can/lib/secondary/**
   - Core/Lib/micro-libs/cli/**
@@ -106,6 +107,7 @@ sourceFiles:
   - Core/Lib/micro-libs/m95256/**
   - Core/Lib/micro-libs/eeprom-config/**
   - Core/Lib/micro-libs/can-fifo-queue/**
+  - Core/Lib/micro-libs/pid/**
   # - Core/Lib/can/lib/primary/**
   # - Core/Lib/can/lib/secondary/**
   - Core/Lib/micro-libs/cli/**

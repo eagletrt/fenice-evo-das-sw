@@ -63,6 +63,35 @@ void steer_actuator_update_speed() {
     }
 }
 
+void steer_actuator_update_can() {
+    if (ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.info.is_new){
+    if (ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.data.status != steer_actuator_enabled) {
+      if (ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.data.status) {
+        steer_actuator_enable();
+      } else {
+        steer_actuator_disable();
+      }
+    }
+    ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.info.is_new = false;
+  }
+
+  if (ecumsg_ecu_set_steer_actuator_status_tlm_state.info.is_new){
+    if (ecumsg_ecu_set_steer_actuator_status_tlm_state.data.status != steer_actuator_enabled) {
+      if (ecumsg_ecu_set_steer_actuator_status_tlm_state.data.status) {
+        steer_actuator_enable();
+      } else {
+        steer_actuator_disable();
+      }
+    }
+    ecumsg_ecu_set_steer_actuator_status_tlm_state.info.is_new = false;
+  }
+
+  if (ecumsg_ecu_set_steer_actuator_angle_state.info.is_new) {
+    steer_actuator_update_set_point(ecumsg_ecu_set_steer_actuator_angle_state.data.angle);
+    ecumsg_ecu_set_steer_actuator_angle_state.info.is_new = false;
+  }
+}
+
 // float steer_actuator_compute_pid() {
 //     float derivative = (pid.error - pid.prev_errors[(pid.prev_error_index + 1) % pid.n_prev_errors]) / (pid.sample_time * pid.n_prev_errors);
 //     float integral = pid.ki * pid.integrator;

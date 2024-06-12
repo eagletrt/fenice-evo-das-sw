@@ -670,32 +670,7 @@ void MAIN_print_dbg_info() {
 }
 
 void steer_actuator_update() {
-  if (ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.info.is_new){
-    if (ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.data.status != steer_actuator_is_enabled()) {
-      if (ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.data.status) {
-        steer_actuator_enable();
-      } else {
-        steer_actuator_disable();
-      }
-    }
-    ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.info.is_new = false;
-  }
-
-  if (ecumsg_ecu_set_steer_actuator_status_tlm_state.info.is_new){
-    if (ecumsg_ecu_set_steer_actuator_status_tlm_state.data.status != steer_actuator_is_enabled()) {
-      if (ecumsg_ecu_set_steer_actuator_status_tlm_state.data.status) {
-        steer_actuator_enable();
-      } else {
-        steer_actuator_disable();
-      }
-    }
-    ecumsg_ecu_set_steer_actuator_status_tlm_state.info.is_new = false;
-  }
-
-  if (ecumsg_ecu_set_steer_actuator_angle_state.info.is_new) {
-    steer_actuator_update_set_point(ecumsg_ecu_set_steer_actuator_angle_state.data.angle);
-    ecumsg_ecu_set_steer_actuator_angle_state.info.is_new = false;
-  }
+  steer_actuator_update_can();
 
 	if (_MAIN_update_steer_actuator_pid) {
 		_MAIN_update_steer_actuator_pid = false;

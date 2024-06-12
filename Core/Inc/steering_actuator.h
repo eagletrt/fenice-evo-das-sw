@@ -29,4 +29,6 @@ void steer_actuator_update_pid();
 
 void steer_actuator_update_speed();
 
+void steer_actuator_update_can();
+
 #endif

@@ -8,7 +8,7 @@
 
 #define PID_ERRORS_VECTOR
 #define N_PID_PREV_ERRORS 5
-#include "../Lib/micro-libs/pid/pid.h"
+#include "pid.h"
 
 #define STEER_ACTUATOR_SPEED_LIMIT 5.0
 #define STEER_ACTUATOR_ANGLE_LIMIT 90.0

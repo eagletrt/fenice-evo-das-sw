@@ -1,11 +1,13 @@
 #include "steering_actuator.h"
-#include "stdbool.h"
-#include "stdio.h"
-#include "can_messages.h"
-#include "can_user_functions.h"
-#include "math.h"
+
 
 #if AS_STEER_ACTUATOR_ENABLED == 1
+
+#include "can_messages.h"
+#include "can_user_functions.h"
+#include <math.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 float pid_prev_errors[N_PID_PREV_ERRORS];
 PidController_t pid_controller;

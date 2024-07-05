@@ -119,7 +119,7 @@ void ENC_R_push_speed_rads() {
  * @brief     Calculate the ground speed from steering wheel encoder
  */
 void ENC_C_push_angle_deg(){
-    float calib_center_ang = 280.9f;
+    float calib_center_ang = 199.35f;
     uint16_t buf = 0;
 
     /* Clock rate must be <= 4 MHz (from datasheet) */
@@ -133,7 +133,7 @@ void ENC_C_push_angle_deg(){
     float raw = 360.0f / 4095.f * buf;
     float angle = raw - calib_center_ang;
     angle *= -1.0;
-    if(angle > 180.0f) angle -= 360.0f;
+    if(angle < -120.0f) angle += 180.0f;
 
     /* Update array of values*/
     static const float a = 1.0f/ENC_ROLLAVG_SIZE;

@@ -135,6 +135,8 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
+  while(1) {}
+
   /* USER CODE END Init */
 
   /* Configure the system clock */

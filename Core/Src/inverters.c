@@ -364,23 +364,23 @@ float _INV_avoid_zero_division(float rpm, float pos_threshold) {
     return rpm;
 }
 void INV_apply_cutoff(float rpm_l, float rpm_r, float *torque_l, float *torque_r) {
-    float torque_ratio_l = fabs(*torque_l) / (fabs(*torque_l) + fabs(*torque_r) + 0.001);
-    torque_ratio_l = clamp(torque_ratio_l, 0.0, 1.0);
-    float torque_ratio_r = 1.0 - torque_ratio_l;
+    float torque_ratio_l = fabs(*torque_l) / (fabs(*torque_l) + fabs(*torque_r) + 0.001f);
+    torque_ratio_l = clamp(torque_ratio_l, 0.0f, 1.0f);
+    float torque_ratio_r = 1.0f - torque_ratio_l;
 
-    const float speed_threshold = 0.1;
+    const float speed_threshold = 0.1f;
     rpm_l = _INV_avoid_zero_division(rpm_l, speed_threshold);
     rpm_r = _INV_avoid_zero_division(rpm_r, speed_threshold);
 
     {
         float I_positive_cutoff_l = _INV_compute_current_positive_limit(rpm_l, torque_ratio_l);
         float I_negative_cutoff_l = _INV_compute_current_negative_limit(rpm_l, torque_ratio_l);
-        if(I_positive_cutoff_l > 0) {
+        if(I_positive_cutoff_l > 0.0f) {
             *torque_l = fmin(*torque_l, INV_current_to_torque(I_positive_cutoff_l));
         } else {
             *torque_l = fmax(*torque_l, INV_current_to_torque(I_positive_cutoff_l));
         }
-        if(I_negative_cutoff_l > 0) {
+        if(I_negative_cutoff_l > 0.0f) {
             *torque_l = fmin(*torque_l, INV_current_to_torque(I_negative_cutoff_l));
         } else {
             *torque_l = fmax(*torque_l, INV_current_to_torque(I_negative_cutoff_l));
@@ -389,17 +389,29 @@ void INV_apply_cutoff(float rpm_l, float rpm_r, float *torque_l, float *torque_r
     {
         float I_positive_cutoff_r = _INV_compute_current_positive_limit(rpm_r, torque_ratio_r);
         float I_negative_cutoff_r = _INV_compute_current_negative_limit(rpm_r, torque_ratio_r);
-        if(I_positive_cutoff_r > 0) {
+        if(I_positive_cutoff_r > 0.0f) {
             *torque_r = fmin(*torque_r, INV_current_to_torque(I_positive_cutoff_r));
         } else {
             *torque_r = fmax(*torque_r, INV_current_to_torque(I_positive_cutoff_r));
         }
-        if(I_negative_cutoff_r > 0) {
+        if(I_negative_cutoff_r > 0.0f) {
             *torque_r = fmin(*torque_r, INV_current_to_torque(I_negative_cutoff_r));
         } else {
             *torque_r = fmax(*torque_r, INV_current_to_torque(I_negative_cutoff_r));
         }
     }
+}
+
+bool INV_apply_bspd_limits(float *torque_l_Nm, float *torque_r_Nm, float brake_pressure) {
+    const float safety_factor = 1.1f;
+    if ((brake_pressure * safety_factor) >= BSPD_BRAKE_PRESSURE_LIMIT) {
+        float hv_total_voltage = ecumsg_hv_total_voltage_state.data.pack == 0.0f ? 600.0f : ecumsg_hv_total_voltage_state.data.pack;
+        float current_limit = (BSPD_POWER_LIMIT) / (hv_total_voltage * safety_factor);
+        *torque_l_Nm = fminf(*torque_l_Nm, INV_current_to_torque(current_limit / 2.0f));
+        *torque_r_Nm = fminf(*torque_r_Nm, INV_current_to_torque(current_limit / 2.0f));
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -464,15 +476,14 @@ void INV_enable_drive(INV_SideTypeDef side) {
         _INV_l_send.km_frg_off = 0;
         _INV_send_CAN_msg(INV_LEFT);
     } else {
-        
-    }
-    _INV_r_send.send_mux = INVERTERS_INV_R_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
+        _INV_r_send.send_mux = INVERTERS_INV_R_SEND_SEND_MUX_ID_51_KERN_MODE_STATE_CHOICE;
 
         //_INV_r_send.km_frg_off = 1;
         //_INV_send_CAN_msg(INV_RIGHT);
         HAL_Delay(1);
         _INV_r_send.km_frg_off = 0;
         _INV_send_CAN_msg(INV_RIGHT);
+    }
 }
 
 void INV_disable_drive(INV_SideTypeDef side) {

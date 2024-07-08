@@ -489,9 +489,14 @@ VFSM_state_t VFSM_do_wait_driver(VFSM_state_data_t *data) {
     if (s == primary_ecu_set_status_status_idle) {
       /* New set IDLE message */
       next_state = VFSM_STATE_START_TS_DISCHARGE;
-    } else if (s == primary_ecu_set_status_status_drive && PED_get_brake_bar() >= BRK_THRESHOLD_HIGH) {
-      /* New set DRIVE message */
-      next_state = VFSM_STATE_ENABLE_INV_DRIVE;
+    } else if (s == primary_ecu_set_status_status_drive) {
+      if (PED_get_brake_bar() >= BRK_THRESHOLD_HIGH) {
+        /* New set DRIVE message */
+        next_state = VFSM_STATE_ENABLE_INV_DRIVE;
+      } else {
+        /* Send message to alert the driver to press the brake pedal */
+        ecumsg_ecu_errors_state.data.error_no_brake_to_rtd = 1;
+      }
     }
 
     ecumsg_ecu_set_status_state.info.is_new = false;
@@ -530,9 +535,9 @@ VFSM_state_t VFSM_do_enable_inv_drive(VFSM_state_data_t *data) {
   _VFSM_update_CarStatus(VFSM_STATE_ENABLE_INV_DRIVE);
 
   
-  bool RFE_on = INV_get_RFE_state(INV_RIGHT); // INV_get_RFE_state(INV_LEFT) &&
-  bool RUN_on = INV_get_FRG_state(INV_RIGHT); // INV_get_FRG_state(INV_LEFT) &&
-  bool DRV_on = INV_is_drive_enabled(INV_RIGHT); // INV_is_drive_enabled(INV_LEFT) &&
+  bool RFE_on = INV_get_RFE_state(INV_LEFT) && INV_get_RFE_state(INV_RIGHT);
+  bool RUN_on = INV_get_FRG_state(INV_LEFT) && INV_get_FRG_state(INV_RIGHT);
+  bool DRV_on = INV_is_drive_enabled(INV_LEFT) && INV_is_drive_enabled(INV_RIGHT);
 
   if (ecumsg_ecu_set_status_state.data.status == primary_ecu_set_status_status_idle && ecumsg_ecu_set_status_state.info.is_new) {
     ecumsg_ecu_set_status_state.info.is_new = false;
@@ -541,8 +546,8 @@ VFSM_state_t VFSM_do_enable_inv_drive(VFSM_state_data_t *data) {
     ecumsg_lv_set_inverter_connection_status_state.data.status = primary_lv_set_inverter_connection_status_status_on;
     ecumsg_lv_set_inverter_connection_status_state.info.is_new = true;
   } else if (!DRV_on) {
-    // if(!INV_is_drive_enabled(INV_LEFT))
-      // INV_enable_drive(INV_LEFT);
+    if(!INV_is_drive_enabled(INV_LEFT))
+      INV_enable_drive(INV_LEFT);
     if(!INV_is_drive_enabled(INV_RIGHT))
       INV_enable_drive(INV_RIGHT);
   } else { /* RFE_on && RUN_on && DRV_on */
@@ -599,7 +604,10 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
   } else {
     if(HAL_GetTick() - last_drive_send >= 10){
       last_drive_send = HAL_GetTick();
-      DAS_do_drive_routine();
+      if (DAS_do_drive_routine(PED_get_brake_bar())) {
+        /* BSPD limits were applied */
+        ecumsg_ecu_errors_state.data.error_bspd_limits = 1;
+      }
     }
 
     if (TS_get_status() != TS_STATUS_ON) {

@@ -71,7 +71,7 @@ bool _DAS_is_control_feasible() {
     }
 }
 
-void DAS_do_drive_routine() {
+bool DAS_do_drive_routine(float brake_pressure) {
     float torque_l_Nm, torque_r_Nm;
 
     ecumsg_ecu_control_status_state.info.is_new = 1;
@@ -86,9 +86,11 @@ void DAS_do_drive_routine() {
         torque_l_Nm = torque_r_Nm = _DAS_get_driver_request();
     }
     INV_apply_cutoff(INV_get_RPM(INV_LEFT), INV_get_RPM(INV_RIGHT), &torque_l_Nm, &torque_r_Nm);
+    bool applied_bspd_limits = INV_apply_bspd_limits(&torque_l_Nm, &torque_r_Nm, brake_pressure);
 
     INV_set_torque_Nm(INV_LEFT, torque_l_Nm);
     INV_set_torque_Nm(INV_RIGHT, torque_r_Nm);
+    return applied_bspd_limits;
 }
 
 /**

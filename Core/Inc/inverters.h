@@ -35,11 +35,14 @@ typedef enum {
 #define RADS_TO_RPM_COEFF (60.0f/(2*M_PI))
 #define INV_I_MAX 400.0f // Arms
 #define MOT_RPM_MAX 6500.0f // RPM
+#define BSPD_BRAKE_PRESSURE_LIMIT (20.0f) // Bar
+#define BSPD_POWER_LIMIT (5000.0f) // W
 
 float INV_I_mot_peak();
 float INV_I_mot_max(const float rpm);
 float INV_I_batt_max(const float rpm, const float torque_ratio);
 void INV_apply_cutoff(const float rpm_l, const float rpm_r, float *torque_l, float *torque_r);
+bool INV_apply_bspd_limits(float *torque_l_Nm, float *torque_r_Nm, float brake_pressure);
 
 void INV_enable_regid_updates(uint16_t regid, uint8_t interval);
 void INV_parse_CAN_msg(CAN_IdTypeDef id, uint8_t *buf, uint8_t len);

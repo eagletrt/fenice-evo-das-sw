@@ -66,6 +66,7 @@ ecumsg_ecu_ptt_status_t             ecumsg_ecu_ptt_status_state      = { {0U, fa
 // CANMSG_PedalCalibrationAckTypeDef  CANMSG_PedalsCalibrationAck  = { {0U, false, 0U}, { 0U } };
 ecumsg_lv_set_inverter_connection_status_t      ecumsg_lv_set_inverter_connection_status_state = { {0U, false, 0U}, { 0U } };
 ecumsg_tlm_status_t            ecumsg_tlm_status_state      = { {0U, false, 0U}, { 0U } };
+ecumsg_hv_total_voltage_t      ecumsg_hv_total_voltage_state = { {0U, false, 0U}, { 0U } };
 
 
 // CANMSG_AmbientTemperatureTypeDef CANMSG_AmbientTemperature  = { {0U, false, 0U}, { 0U } };
@@ -161,6 +162,7 @@ void _CANMSG_primary_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
         ECU_CANLIB_UNPACK(control_output, primary, CONTROL_OUTPUT, PRIMARY);
         ECU_CANLIB_UNPACK(control_status, primary, CONTROL_STATUS, PRIMARY);
         ECU_CANLIB_UNPACK(tlm_status, primary, TLM_STATUS, PRIMARY);
+        ECU_CANLIB_UNPACK(hv_total_voltage, primary, HV_TOTAL_VOLTAGE, PRIMARY);
         default:
             // LOG_write(LOGLEVEL_ERR, "[CANMSG/Deserialize] Unknown message id: 0x%X", msg.id);
             break;
@@ -215,6 +217,8 @@ CANMSG_MetadataTypeDef* CANMSG_get_primary_metadata_from_id(CAN_IdTypeDef id) {
             return &(ecumsg_hv_set_status_ecu_state.info);
         case PRIMARY_HV_STATUS_FRAME_ID:
             return &(ecumsg_hv_status_state.info);
+        case PRIMARY_HV_TOTAL_VOLTAGE_FRAME_ID:
+            return &(ecumsg_hv_total_voltage_state.info);
         // case PRIMARY_HV_VOLTAGE_FRAME_ID:
             // return &(CANMSG_HVVoltage.info);
         // case PRIMARY_HV_CURRENT_FRAME_ID:

@@ -14,7 +14,7 @@ bool equal_d_threshold(float a, float b, double threshold);
  * @brief     Perform everything that is needed to read the driver's input and
  *            actuate the motors accordingly.
  */
-void DAS_do_drive_routine();
+bool DAS_do_drive_routine(float brake_pressure);
 float _DAS_get_driver_request();
 bool _DAS_is_control_feasible();
 

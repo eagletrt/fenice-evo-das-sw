@@ -279,7 +279,9 @@ int main(void)
     PED_update_plausibility_check();
     if (PED_errors.implausibility_err) {
       // HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
-      // ecumsg_ecu_errors_state.data.das_error_pedal_implausibility = 1;
+      ecumsg_ecu_errors_state.data.error_pedal_implausibility = 1;
+    } else {
+      ecumsg_ecu_errors_state.data.error_pedal_implausibility = 0;
     }
     if (PED_errors.ADC_DMA_error || PED_errors.ADC_internal || PED_errors.ADC_overrun) {
       // HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
@@ -321,6 +323,14 @@ int main(void)
       }
       ecumsg_ecu_set_ptt_status_state.info.is_new = false;
     }
+
+#if 0
+    static uint32_t dalbom1 = 0;
+    if (HAL_GetTick() - dalbom1 > 2000) {
+      dalbom1 = HAL_GetTick();
+      HAL_GPIO_TogglePin(PTT_GPIO_Port, PTT_Pin);
+    }
+#endif
 
     if(ecumsg_tlm_status_state.info.is_new){
       static int count = 0;

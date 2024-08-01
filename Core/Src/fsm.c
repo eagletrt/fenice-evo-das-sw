@@ -15,19 +15,30 @@ Functions and types have been generated with prefix "VFSM_"
 
 #include "fsm.h"
 
+#include "adc_fsm.h"
 #include "buzzer.h"
-#include "logger.h"
 #include "can_messages.h"
+#include "inverters.h"
+#include "logger.h"
 #include "pedals.h"
 #include "tractive_system.h"
-#include "inverters.h"
-#include "adc_fsm.h"
-#include "pedals.h"
 
 VFSM_state_t vfsm_current_state = VFSM_STATE_INIT;
 
 /* State human-readable names */
-const char *VFSM_state_names[] = {"init", "enable_inv_updates", "check_inv_settings", "idle", "fatal_error", "start_ts_precharge", "wait_ts_precharge", "start_ts_discharge", "wait_driver", "enable_inv_drive", "drive", "disable_inv_drive", "wait_ts_discharge"};
+const char *VFSM_state_names[] = {"init",
+                                  "enable_inv_updates",
+                                  "check_inv_settings",
+                                  "idle",
+                                  "fatal_error",
+                                  "start_ts_precharge",
+                                  "wait_ts_precharge",
+                                  "start_ts_discharge",
+                                  "wait_driver",
+                                  "enable_inv_drive",
+                                  "drive",
+                                  "disable_inv_drive",
+                                  "wait_ts_discharge"};
 
 /* Timestamp for checking timeouts in states */
 uint32_t state_entered_timestamp = 0U;
@@ -35,21 +46,20 @@ uint8_t reset_inverters = 0U;
 
 /* List of state functions */
 state_func_t *const VFSM_state_table[VFSM_NUM_STATES] = {
-  VFSM_do_init,               // in state init
-  VFSM_do_enable_inv_updates, // in state enable_inv_updates
-  VFSM_do_check_inv_settings, // in state check_inv_settings
-  VFSM_do_idle,               // in state idle
-  VFSM_do_fatal_error,        // in state fatal_error
-  VFSM_do_start_ts_precharge, // in state start_ts_precharge
-  VFSM_do_wait_ts_precharge,  // in state wait_ts_precharge
-  VFSM_do_start_ts_discharge, // in state start_ts_discharge
-  VFSM_do_wait_driver,        // in state wait_driver
-  VFSM_do_enable_inv_drive,   // in state enable_inv_drive
-  VFSM_do_drive,              // in state drive
-  VFSM_do_disable_inv_drive,  // in state disable_inv_drive
-  VFSM_do_wait_ts_discharge,  // in state wait_ts_discharge
+    VFSM_do_init,                // in state init
+    VFSM_do_enable_inv_updates,  // in state enable_inv_updates
+    VFSM_do_check_inv_settings,  // in state check_inv_settings
+    VFSM_do_idle,                // in state idle
+    VFSM_do_fatal_error,         // in state fatal_error
+    VFSM_do_start_ts_precharge,  // in state start_ts_precharge
+    VFSM_do_wait_ts_precharge,   // in state wait_ts_precharge
+    VFSM_do_start_ts_discharge,  // in state start_ts_discharge
+    VFSM_do_wait_driver,         // in state wait_driver
+    VFSM_do_enable_inv_drive,    // in state enable_inv_drive
+    VFSM_do_drive,               // in state drive
+    VFSM_do_disable_inv_drive,   // in state disable_inv_drive
+    VFSM_do_wait_ts_discharge,   // in state wait_ts_discharge
 };
-
 
 /* utility function to update the CAN status message */
 void _VFSM_update_CarStatus(VFSM_state_t curr_state) {
@@ -103,110 +113,125 @@ void _VFSM_update_CarStatus(VFSM_state_t curr_state) {
   ecumsg_ecu_status_state.info.is_new = true;
 }
 
-/*  ____  _        _       
- * / ___|| |_ __ _| |_ ___ 
+/*  ____  _        _
+ * / ___|| |_ __ _| |_ ___
  * \___ \| __/ _` | __/ _ \
  *  ___) | || (_| | ||  __/
  * |____/ \__\__,_|\__\___|
- *                         
- *   __                  _   _                 
- *  / _|_   _ _ __   ___| |_(_) ___  _ __  ___ 
+ *
+ *   __                  _   _
+ *  / _|_   _ _ __   ___| |_(_) ___  _ __  ___
  * | |_| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
  * |  _| |_| | | | | (__| |_| | (_) | | | \__ \
  * |_|  \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
- */                                             
+ */
 
 // Function to be executed in state init
 VFSM_state_t VFSM_do_init(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_STATE_IDLE;
-  
-  #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state init");
-  #endif
+
+#if FSM_DEBUG
+  LOG_write(LOGLEVEL_DEBUG, "[FSM] In state init");
+#endif
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_INIT);
-  
-  HAL_Delay(100); // #YOLO
+
+  HAL_Delay(100);  // #YOLO
   next_state = VFSM_STATE_ENABLE_INV_UPDATES;
-  
+
   switch (next_state) {
     case VFSM_STATE_ENABLE_INV_UPDATES:
       break;
     default:
-      LOG_write(LOGLEVEL_WARN, "[FSM] Cannot pass from init to %s, remaining in this state", VFSM_state_names[next_state]);
+      LOG_write(LOGLEVEL_WARN,
+                "[FSM] Cannot pass from init to %s, remaining in this state",
+                VFSM_state_names[next_state]);
       next_state = VFSM_NO_CHANGE;
   }
-  
+
   return next_state;
 }
-
 
 // Function to be executed in state enable_inv_updates
 VFSM_state_t VFSM_do_enable_inv_updates(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_NO_CHANGE;
 
-  #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state enable_inv_updates");
-  #endif
+#if FSM_DEBUG
+  LOG_write(LOGLEVEL_DEBUG, "[FSM] In state enable_inv_updates");
+#endif
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_ENABLE_INV_UPDATES);
-  
+
   /* Ensure the inverters' power outputs are disabled */
   INV_disable_drive(INV_LEFT);
   INV_disable_drive(INV_RIGHT);
-  
+
   /* Check if all updates are live */
   uint32_t tout_ms = 100.0f * 1.5f;
-  bool i_cmd_ramp  = (HAL_GetTick() - CANMSG_InvL_I_CMD_RAMP.info.timestamp) < tout_ms;
-       i_cmd_ramp &= (HAL_GetTick() - CANMSG_InvR_I_CMD_RAMP.info.timestamp) < tout_ms;
-  bool i_cmd  = (HAL_GetTick() - CANMSG_InvL_I_CMD.info.timestamp) < tout_ms;
-       i_cmd &= (HAL_GetTick() - CANMSG_InvR_I_CMD.info.timestamp) < tout_ms;
-  bool iq_actual  = (HAL_GetTick() - CANMSG_InvL_IQ_ACTUAL.info.timestamp) < tout_ms;
-       iq_actual &= (HAL_GetTick() - CANMSG_InvR_IQ_ACTUAL.info.timestamp) < tout_ms;
-  bool t_motor  = (HAL_GetTick() - CANMSG_InvL_T_MOTOR.info.timestamp) < tout_ms;
-       t_motor &= (HAL_GetTick() - CANMSG_InvR_T_MOTOR.info.timestamp) < tout_ms;
-  bool t_igbt  = (HAL_GetTick() - CANMSG_InvL_T_IGBT.info.timestamp) < tout_ms;
-       t_igbt &= (HAL_GetTick() - CANMSG_InvR_T_IGBT.info.timestamp) < tout_ms;
-  bool n_actual_filt  = (HAL_GetTick() - CANMSG_InvL_N_ACTUAL_FILT.info.timestamp) < tout_ms;
-       n_actual_filt &= (HAL_GetTick() - CANMSG_InvR_N_ACTUAL_FILT.info.timestamp) < tout_ms;
-  bool m_cmd_ramp  = (HAL_GetTick() - CANMSG_InvL_M_CMD_RAMP.info.timestamp) < tout_ms;
-       m_cmd_ramp &= (HAL_GetTick() - CANMSG_InvR_M_CMD_RAMP.info.timestamp) < tout_ms;
-  bool vdc_bus  = (HAL_GetTick() - CANMSG_InvL_VDC_BUS.info.timestamp) < tout_ms;
-       vdc_bus &= (HAL_GetTick() - CANMSG_InvR_VDC_BUS.info.timestamp) < tout_ms;
-  
+  bool i_cmd_ramp =
+      (HAL_GetTick() - CANMSG_InvL_I_CMD_RAMP.info.timestamp) < tout_ms;
+  i_cmd_ramp &=
+      (HAL_GetTick() - CANMSG_InvR_I_CMD_RAMP.info.timestamp) < tout_ms;
+  bool i_cmd = (HAL_GetTick() - CANMSG_InvL_I_CMD.info.timestamp) < tout_ms;
+  i_cmd &= (HAL_GetTick() - CANMSG_InvR_I_CMD.info.timestamp) < tout_ms;
+  bool iq_actual =
+      (HAL_GetTick() - CANMSG_InvL_IQ_ACTUAL.info.timestamp) < tout_ms;
+  iq_actual &= (HAL_GetTick() - CANMSG_InvR_IQ_ACTUAL.info.timestamp) < tout_ms;
+  bool t_motor = (HAL_GetTick() - CANMSG_InvL_T_MOTOR.info.timestamp) < tout_ms;
+  t_motor &= (HAL_GetTick() - CANMSG_InvR_T_MOTOR.info.timestamp) < tout_ms;
+  bool t_igbt = (HAL_GetTick() - CANMSG_InvL_T_IGBT.info.timestamp) < tout_ms;
+  t_igbt &= (HAL_GetTick() - CANMSG_InvR_T_IGBT.info.timestamp) < tout_ms;
+  bool n_actual_filt =
+      (HAL_GetTick() - CANMSG_InvL_N_ACTUAL_FILT.info.timestamp) < tout_ms;
+  n_actual_filt &=
+      (HAL_GetTick() - CANMSG_InvR_N_ACTUAL_FILT.info.timestamp) < tout_ms;
+  bool m_cmd_ramp =
+      (HAL_GetTick() - CANMSG_InvL_M_CMD_RAMP.info.timestamp) < tout_ms;
+  m_cmd_ramp &=
+      (HAL_GetTick() - CANMSG_InvR_M_CMD_RAMP.info.timestamp) < tout_ms;
+  bool vdc_bus = (HAL_GetTick() - CANMSG_InvL_VDC_BUS.info.timestamp) < tout_ms;
+  vdc_bus &= (HAL_GetTick() - CANMSG_InvR_VDC_BUS.info.timestamp) < tout_ms;
+
   // /* When enabling regular updates, introduce minor delays to unsync them */
-  if(!i_cmd_ramp) {
-    INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE, 10);
+  if (!i_cmd_ramp) {
+    INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_22H_I_CMD_RAMP_CHOICE,
+                             10);
     HAL_Delay(51);
   }
-  if(!i_cmd) {
+  if (!i_cmd) {
     INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_26H_I_CMD_CHOICE, 10);
     HAL_Delay(51);
   }
-  if(!iq_actual) {
-    INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE, 10);
+  if (!iq_actual) {
+    INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE,
+                             10);
     HAL_Delay(51);
   }
-  if(!t_motor) {
-    INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_49H_T_MOTOR_CHOICE, 100);
+  if (!t_motor) {
+    INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_49H_T_MOTOR_CHOICE,
+                             100);
     HAL_Delay(51);
   }
-  if(!t_igbt) {
-    INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_4AH_T_IGBT_CHOICE, 100);
+  if (!t_igbt) {
+    INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_4AH_T_IGBT_CHOICE,
+                             100);
     HAL_Delay(51);
   }
-  if(!n_actual_filt) {
-    INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_A8H_N_ACTUAL_FILT_CHOICE, 10);
+  if (!n_actual_filt) {
+    INV_enable_regid_updates(
+        INVERTERS_INV_L_SEND_READ_ID_A8H_N_ACTUAL_FILT_CHOICE, 10);
     HAL_Delay(51);
   }
-  if(!m_cmd_ramp) {
-    INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_3AH_M_CMD_RAMP_CHOICE, 10);
+  if (!m_cmd_ramp) {
+    INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_3AH_M_CMD_RAMP_CHOICE,
+                             10);
     HAL_Delay(51);
   }
-  if(!vdc_bus) {
-    INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_EBH_VDC_BUS_CHOICE, 10);
+  if (!vdc_bus) {
+    INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_EBH_VDC_BUS_CHOICE,
+                             10);
     HAL_Delay(51);
   }
 
@@ -215,11 +240,12 @@ VFSM_state_t VFSM_do_enable_inv_updates(VFSM_state_data_t *data) {
   //   status_on, ioinfo_on, errors_on, speed_on
   // );
 
-  if (i_cmd_ramp && i_cmd && iq_actual && t_motor && t_igbt && n_actual_filt && m_cmd_ramp && vdc_bus)
+  if (i_cmd_ramp && i_cmd && iq_actual && t_motor && t_igbt && n_actual_filt &&
+      m_cmd_ramp && vdc_bus)
     next_state = VFSM_STATE_CHECK_INV_SETTINGS;
   else
     next_state = VFSM_NO_CHANGE;
-  
+
   next_state = VFSM_STATE_CHECK_INV_SETTINGS;
   switch (next_state) {
     case VFSM_STATE_ENABLE_INV_UPDATES:
@@ -227,88 +253,96 @@ VFSM_state_t VFSM_do_enable_inv_updates(VFSM_state_data_t *data) {
     case VFSM_NO_CHANGE:
       break;
     default:
-      LOG_write(LOGLEVEL_WARN, "[FSM] Cannot pass from enable_inv_updates to %s, remaining in this state", VFSM_state_names[next_state]);
+      LOG_write(LOGLEVEL_WARN,
+                "[FSM] Cannot pass from enable_inv_updates to %s, remaining in "
+                "this state",
+                VFSM_state_names[next_state]);
       next_state = VFSM_NO_CHANGE;
   }
-  
+
   return next_state;
 }
-
 
 // Function to be executed in state check_inv_settings
 VFSM_state_t VFSM_do_check_inv_settings(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_STATE_IDLE;
-  
-  #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state check_inv_settings");
-  #endif
+
+#if FSM_DEBUG
+  LOG_write(LOGLEVEL_DEBUG, "[FSM] In state check_inv_settings");
+#endif
 
   _VFSM_update_CarStatus(VFSM_STATE_CHECK_INV_SETTINGS);
-  
+
   // LOG_write(LOGLEVEL_WARN, "[FSM] !!! Skipping inv. check settings !!!");
-  if(INV_check_settings()){
+  if (INV_check_settings()) {
     LOG_write(LOGLEVEL_WARN, "[FSM] !!! Inverters' settings are correct !!!");
   } else {
-    LOG_write(LOGLEVEL_WARN, "[FSM] !!! Inverters' settings are NOT correct !!!");
+    LOG_write(LOGLEVEL_WARN,
+              "[FSM] !!! Inverters' settings are NOT correct !!!");
   }
-  #warning "TODO: Check inverters' settings"
+#warning "TODO: Check inverters' settings"
   next_state = VFSM_STATE_IDLE;
-  
+
   switch (next_state) {
     case VFSM_STATE_CHECK_INV_SETTINGS:
     case VFSM_STATE_IDLE:
     case VFSM_STATE_FATAL_ERROR:
       break;
     default:
-      LOG_write(LOGLEVEL_WARN, "[FSM] Cannot pass from check_inv_settings to %s, remaining in this state", VFSM_state_names[next_state]);
+      LOG_write(LOGLEVEL_WARN,
+                "[FSM] Cannot pass from check_inv_settings to %s, remaining in "
+                "this state",
+                VFSM_state_names[next_state]);
       next_state = VFSM_NO_CHANGE;
   }
-  
+
   return next_state;
 }
-
 
 // Function to be executed in state idle
 VFSM_state_t VFSM_do_idle(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_NO_CHANGE;
-  
-  #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state idle");
-  #endif
+
+#if FSM_DEBUG
+  LOG_write(LOGLEVEL_DEBUG, "[FSM] In state idle");
+#endif
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_IDLE);
 
   /* Ensure the TS is OFF */
   TS_power_off();
-  ecumsg_lv_set_inverter_connection_status_state.data.status = primary_lv_set_inverter_connection_status_status_off;
+  ecumsg_lv_set_inverter_connection_status_state.data.status =
+      primary_lv_set_inverter_connection_status_status_off;
   ecumsg_lv_set_inverter_connection_status_state.info.is_new = true;
-  
-  if(reset_inverters == 0U){
+
+  if (reset_inverters == 0U) {
     /* Ensure the inverters' power outputs are disabled */
     INV_disable_drive(INV_LEFT);
     INV_disable_drive(INV_RIGHT);
     reset_inverters = 1U;
   }
-  
+
   /* Check for a TS-ON request */
-  if (ecumsg_ecu_set_status_state.data.status == primary_ecu_set_status_status_ready && ecumsg_ecu_set_status_state.info.is_new) {
+  if (ecumsg_ecu_set_status_state.data.status ==
+          primary_ecu_set_status_status_ready &&
+      ecumsg_ecu_set_status_state.info.is_new) {
     next_state = VFSM_STATE_START_TS_PRECHARGE;
     ecumsg_ecu_set_status_state.info.is_new = false;
 
     /* Check when SD is open (and therefore I have to go in discharge) */
-    if(!is_SD_closed())
+    if (!is_SD_closed())
       next_state = VFSM_STATE_IDLE;
-    else if (ecumsg_hv_feedback_status_state.info.is_new && !ecumsg_hv_feedback_status_state.data.feedback_sd_end)
+    else if (ecumsg_hv_feedback_status_state.info.is_new &&
+             !ecumsg_hv_feedback_status_state.data.feedback_sd_end)
       next_state = VFSM_STATE_IDLE;
   }
-  
 
-  #if WTCHDG_DEBUG
-    if(!WDG_is_car_in_safe_state()){
-      next_state = VFSM_STATE_IDLE;
-    }
-  #endif
+#if WTCHDG_DEBUG
+  if (!WDG_is_car_in_safe_state()) {
+    next_state = VFSM_STATE_IDLE;
+  }
+#endif
 
   switch (next_state) {
     case VFSM_NO_CHANGE:
@@ -317,21 +351,22 @@ VFSM_state_t VFSM_do_idle(VFSM_state_data_t *data) {
     case VFSM_STATE_START_TS_PRECHARGE:
       break;
     default:
-      LOG_write(LOGLEVEL_WARN, "[FSM] Cannot pass from idle to %s, remaining in this state", VFSM_state_names[next_state]);
+      LOG_write(LOGLEVEL_WARN,
+                "[FSM] Cannot pass from idle to %s, remaining in this state",
+                VFSM_state_names[next_state]);
       next_state = VFSM_NO_CHANGE;
   }
-  
+
   return next_state;
 }
-
 
 // Function to be executed in state fatal_error
 VFSM_state_t VFSM_do_fatal_error(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_NO_CHANGE;
-  
-  #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state fatal_error");
-  #endif
+
+#if FSM_DEBUG
+  LOG_write(LOGLEVEL_DEBUG, "[FSM] In state fatal_error");
+#endif
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_FATAL_ERROR);
@@ -341,21 +376,23 @@ VFSM_state_t VFSM_do_fatal_error(VFSM_state_data_t *data) {
     case VFSM_STATE_FATAL_ERROR:
       break;
     default:
-      LOG_write(LOGLEVEL_WARN, "[FSM] Cannot pass from fatal_error to %s, remaining in this state", VFSM_state_names[next_state]);
+      LOG_write(
+          LOGLEVEL_WARN,
+          "[FSM] Cannot pass from fatal_error to %s, remaining in this state",
+          VFSM_state_names[next_state]);
       next_state = VFSM_NO_CHANGE;
   }
-  
+
   return next_state;
 }
-
 
 // Function to be executed in state start_ts_precharge
 VFSM_state_t VFSM_do_start_ts_precharge(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_NO_CHANGE;
-  
-  #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state start_ts_precharge");
-  #endif
+
+#if FSM_DEBUG
+  LOG_write(LOGLEVEL_DEBUG, "[FSM] In state start_ts_precharge");
+#endif
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_START_TS_PRECHARGE);
@@ -364,8 +401,8 @@ VFSM_state_t VFSM_do_start_ts_precharge(VFSM_state_data_t *data) {
   if (state_entered_timestamp == 0U) {
     state_entered_timestamp = HAL_GetTick();
   }
-  
-  if ( HAL_GetTick() - state_entered_timestamp > 25*1000) {
+
+  if (HAL_GetTick() - state_entered_timestamp > 25 * 1000) {
     /* We had a timeout, go back */
     state_entered_timestamp = 0U;
     next_state = VFSM_STATE_START_TS_DISCHARGE;
@@ -378,22 +415,22 @@ VFSM_state_t VFSM_do_start_ts_precharge(VFSM_state_data_t *data) {
     } else if (pork == TS_STATUS_OFF) {
       TS_power_on();
       next_state = VFSM_NO_CHANGE;
-    } else if(pork == TS_STATUS_FATAL) {
+    } else if (pork == TS_STATUS_FATAL) {
       next_state = VFSM_STATE_START_TS_DISCHARGE;
     }
   }
 
   /* Check when SD is open (and therefore I have to go in discharge) */
-  if(!is_SD_closed())
+  if (!is_SD_closed())
     next_state = VFSM_STATE_START_TS_DISCHARGE;
   else if (!ecumsg_hv_feedback_status_state.data.feedback_sd_end)
     next_state = VFSM_STATE_START_TS_DISCHARGE;
 
-  #if WTCHDG_DEBUG
-    if(!WDG_is_car_in_safe_state()){
-      next_state = VFSM_STATE_START_TS_DISCHARGE;
-    }
-  #endif
+#if WTCHDG_DEBUG
+  if (!WDG_is_car_in_safe_state()) {
+    next_state = VFSM_STATE_START_TS_DISCHARGE;
+  }
+#endif
 
   switch (next_state) {
     case VFSM_NO_CHANGE:
@@ -402,32 +439,33 @@ VFSM_state_t VFSM_do_start_ts_precharge(VFSM_state_data_t *data) {
     case VFSM_STATE_START_TS_DISCHARGE:
       break;
     default:
-      LOG_write(LOGLEVEL_WARN, "[FSM] Cannot pass from start_ts_precharge to %s, remaining in this state", VFSM_state_names[next_state]);
+      LOG_write(LOGLEVEL_WARN,
+                "[FSM] Cannot pass from start_ts_precharge to %s, remaining in "
+                "this state",
+                VFSM_state_names[next_state]);
       next_state = VFSM_NO_CHANGE;
   }
-  
+
   return next_state;
 }
-
 
 // Function to be executed in state wait_ts_precharge
 VFSM_state_t VFSM_do_wait_ts_precharge(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_NO_CHANGE;
-  
-  #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state wait_ts_precharge");
-  #endif
+
+#if FSM_DEBUG
+  LOG_write(LOGLEVEL_DEBUG, "[FSM] In state wait_ts_precharge");
+#endif
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_WAIT_TS_PRECHARGE);
 
-  
   /* If we have just entered, update the timestamp */
   if (state_entered_timestamp == 0U) {
     state_entered_timestamp = HAL_GetTick();
   }
-  
-  if (HAL_GetTick() - state_entered_timestamp > 30*1000) {
+
+  if (HAL_GetTick() - state_entered_timestamp > 30 * 1000) {
     /* We had a timeout, abort */
     state_entered_timestamp = 0U;
     next_state = VFSM_STATE_START_TS_DISCHARGE;
@@ -446,12 +484,12 @@ VFSM_state_t VFSM_do_wait_ts_precharge(VFSM_state_data_t *data) {
     }
   }
 
-  #if WTCHDG_DEBUG
-    if(!WDG_is_car_in_safe_state()){
-      next_state = VFSM_STATE_START_TS_DISCHARGE;
-    }
-  #endif
-  
+#if WTCHDG_DEBUG
+  if (!WDG_is_car_in_safe_state()) {
+    next_state = VFSM_STATE_START_TS_DISCHARGE;
+  }
+#endif
+
   switch (next_state) {
     case VFSM_NO_CHANGE:
     case VFSM_STATE_WAIT_TS_PRECHARGE:
@@ -459,25 +497,26 @@ VFSM_state_t VFSM_do_wait_ts_precharge(VFSM_state_data_t *data) {
     case VFSM_STATE_START_TS_DISCHARGE:
       break;
     default:
-      LOG_write(LOGLEVEL_WARN, "[FSM] Cannot pass from wait_ts_precharge to %s, remaining in this state", VFSM_state_names[next_state]);
+      LOG_write(LOGLEVEL_WARN,
+                "[FSM] Cannot pass from wait_ts_precharge to %s, remaining in "
+                "this state",
+                VFSM_state_names[next_state]);
       next_state = VFSM_NO_CHANGE;
   }
-  
+
   return next_state;
 }
-
 
 // Function to be executed in state wait_driver
 VFSM_state_t VFSM_do_wait_driver(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_NO_CHANGE;
-  
-  #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state wait_driver");
-  #endif
+
+#if FSM_DEBUG
+  LOG_write(LOGLEVEL_DEBUG, "[FSM] In state wait_driver");
+#endif
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_WAIT_DRIVER);
-
 
   /* Check for relevant events */
   if (TS_get_status() != TS_STATUS_ON) {
@@ -502,11 +541,11 @@ VFSM_state_t VFSM_do_wait_driver(VFSM_state_data_t *data) {
     ecumsg_ecu_set_status_state.info.is_new = false;
   }
 
-  #if WTCHDG_DEBUG
-    if(!!WDG_is_car_in_safe_state()){
-      next_state = VFSM_STATE_START_TS_DISCHARGE;
-    }
-  #endif
+#if WTCHDG_DEBUG
+  if (!!WDG_is_car_in_safe_state()) {
+    next_state = VFSM_STATE_START_TS_DISCHARGE;
+  }
+#endif
 
   switch (next_state) {
     case VFSM_NO_CHANGE:
@@ -515,55 +554,58 @@ VFSM_state_t VFSM_do_wait_driver(VFSM_state_data_t *data) {
     case VFSM_STATE_START_TS_DISCHARGE:
       break;
     default:
-      LOG_write(LOGLEVEL_WARN, "[FSM] Cannot pass from wait_driver to %s, remaining in this state", VFSM_state_names[next_state]);
+      LOG_write(
+          LOGLEVEL_WARN,
+          "[FSM] Cannot pass from wait_driver to %s, remaining in this state",
+          VFSM_state_names[next_state]);
       next_state = VFSM_NO_CHANGE;
   }
-  
+
   return next_state;
 }
-
 
 // Function to be executed in state enable_inv_drive
 VFSM_state_t VFSM_do_enable_inv_drive(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_NO_CHANGE;
-  
-  #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state enable_inv_drive");
-  #endif
+
+#if FSM_DEBUG
+  LOG_write(LOGLEVEL_DEBUG, "[FSM] In state enable_inv_drive");
+#endif
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_ENABLE_INV_DRIVE);
 
-  
-  bool RFE_on = /*INV_get_RFE_state(INV_LEFT) && */INV_get_RFE_state(INV_RIGHT);
-  bool RUN_on = /*INV_get_FRG_state(INV_LEFT) && */INV_get_FRG_state(INV_RIGHT);
-  bool DRV_on = /*INV_is_drive_enabled(INV_LEFT) && */INV_is_drive_enabled(INV_RIGHT);
+  bool RFE_on = INV_get_RFE_state(INV_LEFT) && INV_get_RFE_state(INV_RIGHT);
+  bool RUN_on = INV_get_FRG_state(INV_LEFT) && INV_get_FRG_state(INV_RIGHT);
+  bool DRV_on =
+      INV_is_drive_enabled(INV_LEFT) && INV_is_drive_enabled(INV_RIGHT);
 
-  if (ecumsg_ecu_set_status_state.data.status == primary_ecu_set_status_status_idle && ecumsg_ecu_set_status_state.info.is_new) {
+  if (ecumsg_ecu_set_status_state.data.status ==
+          primary_ecu_set_status_status_idle &&
+      ecumsg_ecu_set_status_state.info.is_new) {
     ecumsg_ecu_set_status_state.info.is_new = false;
     next_state = VFSM_STATE_DISABLE_INV_DRIVE;
   } else if (!RFE_on || !RUN_on) {
-    ecumsg_lv_set_inverter_connection_status_state.data.status = primary_lv_set_inverter_connection_status_status_on;
+    ecumsg_lv_set_inverter_connection_status_state.data.status =
+        primary_lv_set_inverter_connection_status_status_on;
     ecumsg_lv_set_inverter_connection_status_state.info.is_new = true;
   } else if (!DRV_on) {
-    // if(!INV_is_drive_enabled(INV_LEFT))
-    //   INV_enable_drive(INV_LEFT);
-    if(!INV_is_drive_enabled(INV_RIGHT))
-      INV_enable_drive(INV_RIGHT);
+    if (!INV_is_drive_enabled(INV_LEFT)) INV_enable_drive(INV_LEFT);
+    if (!INV_is_drive_enabled(INV_RIGHT)) INV_enable_drive(INV_RIGHT);
   } else { /* RFE_on && RUN_on && DRV_on */
     BUZ_beep_ms_async(2000);
     next_state = VFSM_STATE_DRIVE;
   }
-  
+
   if (TS_get_status() != TS_STATUS_ON)
     next_state = VFSM_STATE_DISABLE_INV_DRIVE;
 
-  #if WTCHDG_DEBUG
-    if(!WDG_is_car_in_safe_state()){
-      next_state = VFSM_STATE_DISABLE_INV_DRIVE;
-    }
-  #endif
-  
+#if WTCHDG_DEBUG
+  if (!WDG_is_car_in_safe_state()) {
+    next_state = VFSM_STATE_DISABLE_INV_DRIVE;
+  }
+#endif
+
   switch (next_state) {
     case VFSM_NO_CHANGE:
     case VFSM_STATE_ENABLE_INV_DRIVE:
@@ -571,38 +613,42 @@ VFSM_state_t VFSM_do_enable_inv_drive(VFSM_state_data_t *data) {
     case VFSM_STATE_DISABLE_INV_DRIVE:
       break;
     default:
-      LOG_write(LOGLEVEL_WARN, "[FSM] Cannot pass from enable_inv_drive to %s, remaining in this state", VFSM_state_names[next_state]);
+      LOG_write(LOGLEVEL_WARN,
+                "[FSM] Cannot pass from enable_inv_drive to %s, remaining in "
+                "this state",
+                VFSM_state_names[next_state]);
       next_state = VFSM_NO_CHANGE;
   }
-  
+
   return next_state;
 }
 
 // Function to be executed in state drive
 VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_NO_CHANGE;
-  
-  #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state drive");
-  #endif
+
+#if FSM_DEBUG
+  LOG_write(LOGLEVEL_DEBUG, "[FSM] In state drive");
+#endif
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_DRIVE);
 
-
   static uint32_t last_drive_send = 0;
 
-  // bool DRV_on = INV_is_drive_enabled(INV_LEFT) && INV_is_drive_enabled(INV_RIGHT);
-  // if(!DRV_on){
+  // bool DRV_on = INV_is_drive_enabled(INV_LEFT) &&
+  // INV_is_drive_enabled(INV_RIGHT); if(!DRV_on){
   //   next_state = VFSM_STATE_ENABLE_INV_DRIVE;
   //   return next_state;
   // }
 
-  if (ecumsg_ecu_set_status_state.data.status == primary_ecu_set_status_status_idle && ecumsg_ecu_set_status_state.info.is_new) {
+  if (ecumsg_ecu_set_status_state.data.status ==
+          primary_ecu_set_status_status_idle &&
+      ecumsg_ecu_set_status_state.info.is_new) {
     ecumsg_ecu_set_status_state.info.is_new = false;
     next_state = VFSM_STATE_DISABLE_INV_DRIVE;
   } else {
-    if(HAL_GetTick() - last_drive_send >= 10){
+    if (HAL_GetTick() - last_drive_send >= 10) {
       last_drive_send = HAL_GetTick();
       if (DAS_do_drive_routine(PED_get_brake_bar())) {
         /* BSPD limits were applied */
@@ -618,11 +664,11 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
     }
   }
 
-  #if WTCHDG_DEBUG
-    if(!WDG_is_car_in_safe_state()){
-      next_state = VFSM_STATE_DISABLE_INV_DRIVE;
-    }
-  #endif
+#if WTCHDG_DEBUG
+  if (!WDG_is_car_in_safe_state()) {
+    next_state = VFSM_STATE_DISABLE_INV_DRIVE;
+  }
+#endif
 
   switch (next_state) {
     case VFSM_NO_CHANGE:
@@ -630,85 +676,92 @@ VFSM_state_t VFSM_do_drive(VFSM_state_data_t *data) {
     case VFSM_STATE_DISABLE_INV_DRIVE:
       break;
     default:
-      LOG_write(LOGLEVEL_WARN, "[FSM] Cannot pass from drive to %s, remaining in this state", VFSM_state_names[next_state]);
+      LOG_write(LOGLEVEL_WARN,
+                "[FSM] Cannot pass from drive to %s, remaining in this state",
+                VFSM_state_names[next_state]);
       next_state = VFSM_NO_CHANGE;
   }
-  
+
   return next_state;
 }
 
 // Function to be executed in state disable_inv_drive
 VFSM_state_t VFSM_do_disable_inv_drive(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_NO_CHANGE;
-  
-  #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state disable_inv_drive");
-  #endif
+
+#if FSM_DEBUG
+  LOG_write(LOGLEVEL_DEBUG, "[FSM] In state disable_inv_drive");
+#endif
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_DISABLE_INV_DRIVE);
-  
-  if (!INV_is_drive_enabled(INV_LEFT) && !INV_is_drive_enabled(INV_LEFT)){
+
+  if (!INV_is_drive_enabled(INV_LEFT) && !INV_is_drive_enabled(INV_LEFT)) {
     next_state = VFSM_STATE_START_TS_DISCHARGE;
   } else {
     INV_disable_drive(INV_LEFT);
     INV_disable_drive(INV_RIGHT);
   }
-  
+
   switch (next_state) {
     case VFSM_NO_CHANGE:
     case VFSM_STATE_DISABLE_INV_DRIVE:
     case VFSM_STATE_START_TS_DISCHARGE:
       break;
     default:
-      LOG_write(LOGLEVEL_WARN, "[FSM] Cannot pass from disable_inv_drive to %s, remaining in this state", VFSM_state_names[next_state]);
+      LOG_write(LOGLEVEL_WARN,
+                "[FSM] Cannot pass from disable_inv_drive to %s, remaining in "
+                "this state",
+                VFSM_state_names[next_state]);
       next_state = VFSM_NO_CHANGE;
   }
-  
+
   return next_state;
 }
-
 
 // Function to be executed in state start_ts_discharge
 VFSM_state_t VFSM_do_start_ts_discharge(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_NO_CHANGE;
-  
-  #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state start_ts_discharge");
-  #endif
+
+#if FSM_DEBUG
+  LOG_write(LOGLEVEL_DEBUG, "[FSM] In state start_ts_discharge");
+#endif
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_START_TS_DISCHARGE);
 
   TS_StatusTypeDef pork = TS_get_status();
-  
+
   if (pork == TS_STATUS_ON || pork == TS_STATUS_PRECHARGE) {
     TS_power_off();
     next_state = VFSM_NO_CHANGE;
   } else {
     next_state = VFSM_STATE_WAIT_TS_DISCHARGE;
   }
-  
+
   switch (next_state) {
     case VFSM_NO_CHANGE:
     case VFSM_STATE_START_TS_DISCHARGE:
     case VFSM_STATE_WAIT_TS_DISCHARGE:
       break;
     default:
-      LOG_write(LOGLEVEL_WARN, "[FSM] Cannot pass from start_ts_off to %s, remaining in this state", VFSM_state_names[next_state]);
+      LOG_write(
+          LOGLEVEL_WARN,
+          "[FSM] Cannot pass from start_ts_off to %s, remaining in this state",
+          VFSM_state_names[next_state]);
       next_state = VFSM_NO_CHANGE;
   }
-  
+
   return next_state;
 }
 
 // Function to be executed in state wait_ts_discharge
 VFSM_state_t VFSM_do_wait_ts_discharge(VFSM_state_data_t *data) {
   VFSM_state_t next_state = VFSM_NO_CHANGE;
-  
-  #if FSM_DEBUG
-    LOG_write(LOGLEVEL_DEBUG, "[FSM] In state wait_ts_discharge");
-  #endif
+
+#if FSM_DEBUG
+  LOG_write(LOGLEVEL_DEBUG, "[FSM] In state wait_ts_discharge");
+#endif
 
   /* Update the car status message */
   _VFSM_update_CarStatus(VFSM_STATE_WAIT_TS_DISCHARGE);
@@ -732,29 +785,30 @@ VFSM_state_t VFSM_do_wait_ts_discharge(VFSM_state_data_t *data) {
     case VFSM_STATE_WAIT_TS_DISCHARGE:
       break;
     default:
-      LOG_write(LOGLEVEL_WARN, "[FSM] Cannot pass from wait_ts_discharge to %s, remaining in this state", VFSM_state_names[next_state]);
+      LOG_write(LOGLEVEL_WARN,
+                "[FSM] Cannot pass from wait_ts_discharge to %s, remaining in "
+                "this state",
+                VFSM_state_names[next_state]);
       next_state = VFSM_NO_CHANGE;
   }
-  
+
   return next_state;
 }
 
-VFSM_state_t VFSM_get_state(){
-  return vfsm_current_state;
-}
+VFSM_state_t VFSM_get_state() { return vfsm_current_state; }
 
-/*  ____  _        _        
- * / ___|| |_ __ _| |_ ___  
+/*  ____  _        _
+ * / ___|| |_ __ _| |_ ___
  * \___ \| __/ _` | __/ _ \
- *  ___) | || (_| | ||  __/ 
- * |____/ \__\__,_|\__\___| 
- *                          
- *                                              
- *  _ __ ___   __ _ _ __   __ _  __ _  ___ _ __ 
+ *  ___) | || (_| | ||  __/
+ * |____/ \__\__,_|\__\___|
+ *
+ *
+ *  _ __ ___   __ _ _ __   __ _  __ _  ___ _ __
  * | '_ ` _ \ / _` | '_ \ / _` |/ _` |/ _ \ '__|
- * | | | | | | (_| | | | | (_| | (_| |  __/ |   
- * |_| |_| |_|\__,_|_| |_|\__,_|\__, |\___|_|   
- *                              |___/           
+ * | | | | | | (_| | | | | (_| | (_| |  __/ |
+ * |_| |_| |_|\__,_|_| |_|\__,_|\__, |\___|_|
+ *                              |___/
  */
 
 VFSM_state_t VFSM_run_state(VFSM_state_t cur_state, VFSM_state_data_t *data) {

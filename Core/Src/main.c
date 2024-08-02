@@ -303,7 +303,7 @@ int main(void) {
     float brk_percent = PED_get_brake_bar();
     BKL_set_curve(brk_percent);
 
-    if (HAL_GetTick() - SECONDARY_ANGULAR_VELOCITY_CYCLE_TIME_MS >=
+    if (HAL_GetTick() - SECONDARY_FRONT_ANGULAR_VELOCITY_CYCLE_TIME_MS >=
         last_enc_calc) {
       last_enc_calc = HAL_GetTick();
       ENC_send_vals_in_CAN();

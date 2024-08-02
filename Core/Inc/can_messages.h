@@ -61,7 +61,7 @@ typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_control_status_convert
 typedef struct { CANMSG_MetadataTypeDef info; primary_hv_total_voltage_converted_t data; } ecumsg_hv_total_voltage_t;
 
 /* Secondary Network */
-typedef struct { CANMSG_MetadataTypeDef info; secondary_angular_velocity_converted_t data; } ecumsg_angular_velocity_t;
+typedef struct { CANMSG_MetadataTypeDef info; secondary_front_angular_velocity_converted_t data; } ecumsg_front_angular_velocity_t;
 typedef struct { CANMSG_MetadataTypeDef info; secondary_pedal_throttle_converted_t data;  } ecumsg_pedal_throttle_t;
 typedef struct { CANMSG_MetadataTypeDef info; secondary_pedal_brakes_pressure_converted_t data;  } ecumsg_pedal_brakes_pressure_t;
 typedef struct { CANMSG_MetadataTypeDef info; secondary_steer_angle_converted_t data; } ecumsg_steer_angle_t;
@@ -79,7 +79,7 @@ extern ecumsg_ecu_status_t        ecumsg_ecu_status_state;
 extern ecumsg_ecu_feedbacks_t     ecumsg_ecu_feedbacks_state;
 extern ecumsg_ecu_set_status_t     ecumsg_ecu_set_status_state;
 extern ecumsg_ecu_control_status_t     ecumsg_ecu_control_status_state;
-extern ecumsg_angular_velocity_t            ecumsg_angular_velocity_state;
+extern ecumsg_front_angular_velocity_t            ecumsg_front_angular_velocity_state;
 // extern CANMSG_HVVoltageTypeDef        CANMSG_HVVoltage;
 // extern CANMSG_HVCurrentTypeDef        CANMSG_HVCurrent;
 // extern CANMSG_HVTemperatureTypeDef    CANMSG_HVTemperature;

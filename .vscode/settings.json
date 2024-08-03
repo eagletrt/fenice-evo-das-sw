@@ -28,6 +28,7 @@
         "pid.h": "c",
         "encoders.h": "c",
         "steering_actuator.h": "c",
-        "ecu_config.h": "c"
+        "ecu_config.h": "c",
+        "logger.h": "c"
     }
 }

@@ -65,7 +65,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define DEBUG 0
+#define DEBUG 1
 #define MAIN_DBG_BUF_LEN 256
 /* USER CODE END PD */
 
@@ -89,6 +89,8 @@ uint16_t _MAIN_timer_feedbacks = 0;
 bool _MAIN_last_tlm_status = false;
 bool _MAIN_update_steering_actuator_pid = false;
 bool _MAIN_update_steering_actuator_speed = false;
+
+state_t current_state = STATE_INIT;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -247,7 +249,7 @@ int main(void) {
     ecumsg_ecu_version_state.info.is_new = true;
 
     /* Step forward the FSM */
-    vfsm_current_state = VFSM_run_state(vfsm_current_state, NULL);
+    current_state = run_state(current_state, NULL);
 
     /* Update debug information over UART */
 #if DEBUG == 1
@@ -641,7 +643,7 @@ void MAIN_print_dbg_info() {
       break;
     case 8:
       snprintf(buf, buf_len, "%8s: %-6s", "State",
-               VFSM_state_names[vfsm_current_state]);
+               state_names[current_state]);
       _MAIN_print_dbg_line("FSM", buf);
       break;
     case 9:

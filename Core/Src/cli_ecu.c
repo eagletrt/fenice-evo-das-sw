@@ -115,10 +115,11 @@ void _pedals(uint16_t argc, char **argv, char *out){
 }
 
 void _fsm_state(uint16_t argc, char **argv, char *out){
+    extern state_t current_state;
     snprintf(out,
     CLI_TX_BUF_LEN,
     "FSM State: %-6s\r\n",
-    VFSM_state_names[VFSM_get_state()]
+    state_names[current_state]
     );
 }
 

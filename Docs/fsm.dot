@@ -13,18 +13,19 @@ digraph "vehicle_fsm" {
     wait_ts_precharge
     wait_driver
     enable_inv_drive
+    re_enable_inv_drive
     drive
     disable_inv_drive
     start_ts_discharge
     wait_ts_discharge
 
     # Uncomment for nice drawing, comment for gv_fsm generation
-    { rank=source;init; }
-    { rank=same;idle;fatal_error; }
-    { rank=same;start_ts_precharge;wait_ts_discharge; }
-    { rank=same;wait_ts_precharge;start_ts_discharge; }
-    { rank=same;enable_inv_drive;disable_inv_drive; }
-    { rank=sink;drive; }
+    # { rank=source;init; }
+    # { rank=same;idle;fatal_error; }
+    # { rank=same;start_ts_precharge;wait_ts_discharge; }
+    # { rank=same;wait_ts_precharge;start_ts_discharge; }
+    # { rank=same;enable_inv_drive;disable_inv_drive; }
+    # { rank=sink;drive; }
 
     init -> enable_inv_updates
 
@@ -59,6 +60,9 @@ digraph "vehicle_fsm" {
 
     drive:s -> drive
     drive -> disable_inv_drive
+    drive -> re_enable_inv_drive
+
+    re_enable_inv_drive -> drive
 
     disable_inv_drive:ne -> disable_inv_drive
     disable_inv_drive -> start_ts_discharge

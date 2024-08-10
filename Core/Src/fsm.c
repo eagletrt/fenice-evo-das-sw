@@ -705,11 +705,12 @@ state_t do_drive(state_data_t *data) {
 
     static uint32_t last_drive_send = 0;
 
-    // bool DRV_on = INV_is_drive_enabled(INV_LEFT) &&
-    // INV_is_drive_enabled(INV_RIGHT); if(!DRV_on){
-    //   next_state = VFSM_STATE_ENABLE_INV_DRIVE;
-    //   return next_state;
-    // }
+    bool DRV_on = INV_is_drive_enabled(INV_LEFT) && INV_is_drive_enabled(INV_RIGHT);
+
+    if(!DRV_on){
+      next_state = STATE_RE_ENABLE_INV_DRIVE;
+      return next_state;
+    }
 
     if (ecumsg_ecu_set_status_state.data.status == primary_ecu_set_status_status_idle && ecumsg_ecu_set_status_state.info.is_new) {
         ecumsg_ecu_set_status_state.info.is_new = false;
@@ -787,7 +788,7 @@ state_t do_disable_inv_drive(state_data_t *data) {
 // Function to be executed in state re_enable_inv_drive
 // valid return states: STATE_DRIVE
 state_t do_re_enable_inv_drive(state_data_t *data) {
-    state_t next_state = STATE_DRIVE;
+    state_t next_state = NO_CHANGE;
 
     /* Your Code Here */
 
@@ -829,7 +830,6 @@ state_t do_re_enable_inv_drive(state_data_t *data) {
 
     switch (next_state) {
         case STATE_DRIVE:
-            break;
         case STATE_DISABLE_INV_DRIVE:
             break;
         default:

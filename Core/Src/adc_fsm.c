@@ -107,11 +107,17 @@ unsigned int ADC_is_closed(float voltage) {
 }
 
 bool is_SD_closed(){
-    bool close = false;
+    volatile bool close = false;
 
-    close = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB0())) /*&& ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB1()))*/ && ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB2())) 
-            && ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB3())) && ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB4())) && ADC_is_closed(ADC_to_voltage(ADC_get_SD_IN())) 
-            && ADC_is_closed(ADC_to_voltage(ADC_get_SD_OUT())) && HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin);
+    // disconnected or in general not used
+    /*close = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB0()));*/
+    /*&& ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB1()))*/ 
+    /*close &= ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB2()));*/
+    /*close &= ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB3()));*/
+    /*close &= ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB4()));*/
+    close = close && ADC_is_closed(ADC_to_voltage(ADC_get_SD_IN()));
+    close = close && ADC_is_closed(ADC_to_voltage(ADC_get_SD_OUT()));
+    close = close && HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin);
     return close;
 }
 

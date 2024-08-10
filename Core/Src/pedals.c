@@ -208,11 +208,11 @@ void PED_calibrate(PED_CalibTypeDef calib) {
 }
 
 bool PED_is_brake_ok() {
-    uint32_t x = ADC_get_BRK_F();
-    uint32_t y = ADC_get_BRK_R();
-    if (x < 200 || x > 3000)
+    uint32_t brake_front = ADC_get_BRK_F();
+    uint32_t brake_rear = ADC_get_BRK_R();
+    if (brake_front < 200 || brake_front > 3000)
         return 0;
-    if (y < 200 || y > 3000)
+    if (brake_rear < 200 || brake_rear > 3000)
         return 0;
     return 1;
 }

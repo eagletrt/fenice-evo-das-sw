@@ -340,6 +340,7 @@ int main(void) {
     }
 #endif
 
+/*
     if (ecumsg_tlm_status_state.info.is_new) {
       static int count = 0;
       static uint32_t last_ms = 0;
@@ -376,8 +377,9 @@ int main(void) {
             count++;
           }
         }
-      }
+      } 
     }
+*/
 
     /* Check if we have calibration messages to process */
     /* if (CANMSG_SetPedalsCalibration.info.is_new) {

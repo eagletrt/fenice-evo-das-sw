@@ -101,6 +101,9 @@ float _DAS_get_driver_request() {
     float BSE_percent = PED_get_brake_bar();
 
     PED_update_plausibility_check();
+    if (!PED_errors.implausibility_err) {
+        return 0.0f;
+    }
     _DAS_update_brake_impl(APPS_percent, BSE_percent);
 
     return PED_get_accelerator_torque(APPS_percent);

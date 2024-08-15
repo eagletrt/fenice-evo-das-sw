@@ -501,8 +501,8 @@ state_t do_wait_ts_precharge(state_data_t *data) {
 
     if (HAL_GetTick() - state_entered_timestamp > 30 * 1000) {
         /* We had a timeout, abort */
-        state_entered_timestamp = 0U;
-        next_state              = STATE_START_TS_DISCHARGE;
+        // state_entered_timestamp = 0U;
+        // next_state              = STATE_START_TS_DISCHARGE;
     } else {
         /* Check if precharge has finished and go forward */
         switch (TS_get_status()) {

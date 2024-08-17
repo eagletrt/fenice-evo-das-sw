@@ -103,18 +103,18 @@ void steer_actuator_update_can() {
 //     float value = pid.kp * pid.error + integral + pid.kd * derivative;
 
 
-//     secondary_debug_signal_1_converted_t msg;
-//     secondary_debug_signal_1_t raw;
+    secondary_debug_signal_1_converted_t msg;
+    secondary_debug_signal_1_t raw;
 //     msg.field_1 = value / 5.0;
 //     msg.field_2 = pid.kp * pid.error / 5.0;
 //     msg.field_3 = integral / 5.0;
 //     msg.field_4 = pid.kd * derivative / 5.0;
 
-//     CAN_MessageTypeDef can_msg;
-//     can_msg.id = SECONDARY_DEBUG_SIGNAL_1_FRAME_ID;
-//     can_msg.size = SECONDARY_DEBUG_SIGNAL_1_BYTE_SIZE;
+    CAN_MessageTypeDef can_msg;
+    can_msg.id = SECONDARY_DEBUG_SIGNAL_1_FRAME_ID;
+    can_msg.size = SECONDARY_DEBUG_SIGNAL_1_BYTE_SIZE;
 
-//     secondary_debug_signal_1_conversion_to_raw_struct(&raw, &msg);
+    secondary_debug_signal_1_conversion_to_raw_struct(&raw, &msg);
 //     secondary_debug_signal_1_pack(can_msg.data, &raw, SECONDARY_DEBUG_SIGNAL_1_BYTE_SIZE);
 
 //     CAN_send(&can_msg, &hcan2);

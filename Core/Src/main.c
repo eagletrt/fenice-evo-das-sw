@@ -81,11 +81,11 @@ uint32_t _MAIN_last_ms_showed = 0;
 char _MAIN_dbg_uart_buf[MAIN_DBG_BUF_LEN];
 bool _MAIN_is_dbg_uart_free = true;
 uint16_t _MAIN_dbg_uart_line_idx = 0;
-bool _MAIN_update_watchdog = false;   /* Every 10ms TIM1 sets this variable to true */
+volatile bool _MAIN_update_watchdog = false;   /* Every 10ms TIM1 sets this variable to true */
 uint16_t _MAIN_timer_feedbacks = 0;
 bool _MAIN_last_tlm_status = false;
-bool _MAIN_update_steer_actuator_pid = false;
-bool _MAIN_update_steer_actuator_speed = false;
+volatile bool _MAIN_update_steer_actuator_pid = false;
+volatile bool _MAIN_update_steer_actuator_speed = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

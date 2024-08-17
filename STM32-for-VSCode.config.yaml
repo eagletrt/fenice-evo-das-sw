@@ -37,6 +37,7 @@ cFlags:
   - -Wall
   - -fdata-sections
   - -ffunction-sections
+  - -Wall
 #  - -DFSM_DEBUG
 #  - -DCAN_DEBUG
 

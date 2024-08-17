@@ -4,7 +4,7 @@
 #ifndef TIME_BASE_TIMER_BITS
 #define TIME_BASE_TIMER_BITS 16
 #endif
-#define TIME_BASE_MASK ((1 << TIME_BASE_TIMER_BITS)-1)
+#define TIME_BASE_MASK ((1 << TIME_BASE_TIMER_BITS) - 1)
 
 /**
  * @brief     Inizializate the struct, the timer should be at microsecond precision.

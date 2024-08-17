@@ -110,7 +110,7 @@ void _VFSM_update_CarStatus(state_t state) {
             break;
         }
         case STATE_RE_ENABLE_INV_DRIVE: {
-            s  = primary_ecu_status_status_re_enable_inverter_drive;
+            s = primary_ecu_status_status_re_enable_inverter_drive;
             break;
         }
         case STATE_WAIT_TS_DISCHARGE: {
@@ -656,7 +656,8 @@ state_t do_enable_inv_drive(state_data_t *data) {
     } /* else if (!RFE_on || !RUN_on) {
         ecumsg_lv_set_inverter_connection_status_state.data.status = primary_lv_set_inverter_connection_status_status_on;
         ecumsg_lv_set_inverter_connection_status_state.info.is_new = true;
-    } */else if (!DRV_on) {
+    } */
+    else if (!DRV_on) {
         if (!INV_is_drive_enabled(INV_LEFT))
             INV_enable_drive(INV_LEFT);
         if (!INV_is_drive_enabled(INV_RIGHT))
@@ -707,9 +708,9 @@ state_t do_drive(state_data_t *data) {
 
     bool DRV_on = INV_is_drive_enabled(INV_LEFT) && INV_is_drive_enabled(INV_RIGHT);
 
-    if(!DRV_on){
-      next_state = STATE_RE_ENABLE_INV_DRIVE;
-      return next_state;
+    if (!DRV_on) {
+        next_state = STATE_RE_ENABLE_INV_DRIVE;
+        return next_state;
     }
 
     if (ecumsg_ecu_set_status_state.data.status == primary_ecu_set_status_status_idle && ecumsg_ecu_set_status_state.info.is_new) {
@@ -809,7 +810,8 @@ state_t do_re_enable_inv_drive(state_data_t *data) {
     } /* else if (!RFE_on || !RUN_on) {
         ecumsg_lv_set_inverter_connection_status_state.data.status = primary_lv_set_inverter_connection_status_status_on;
         ecumsg_lv_set_inverter_connection_status_state.info.is_new = true;
-    } */ else if (!DRV_on) {
+    } */
+    else if (!DRV_on) {
         if (!INV_is_drive_enabled(INV_LEFT))
             INV_enable_drive(INV_LEFT);
         if (!INV_is_drive_enabled(INV_RIGHT))

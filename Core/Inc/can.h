@@ -61,4 +61,3 @@ typedef struct {
 #endif
 
 #endif /* __CAN_H__ */
-

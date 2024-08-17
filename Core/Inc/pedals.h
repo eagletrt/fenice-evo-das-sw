@@ -10,19 +10,19 @@
 #ifndef PEDALS_H
 #define PEDALS_H
 
-#include "stdint.h"
-#include "stdbool.h"
 #include "spi.h"
+#include "stdbool.h"
+#include "stdint.h"
 
 // #define PED_ADC hadc1              /*< ADC connected to the pedals */
 #define PED_DEADZONE_PERCENT 20.0f /*< Initial portion of pedal travel to ignore */
 #define PED_IMPL_THRESHOLD   60.0f /*< Percent of potentiometer offset that triggers the error */
-#define BRK_IMPL_THRESHOLD    6.0f
-#define BRK_THRESHOLD_HIGH    1.2f
-#define BRK_THRESHOLD_LOW     0.8f
+#define BRK_IMPL_THRESHOLD   6.0f
+#define BRK_THRESHOLD_HIGH   1.2f
+#define BRK_THRESHOLD_LOW    0.8f
 
-#define VOLTAGE_DIVIDER      (0.6040268456f)
-#define PED_MAX_TORQUE       (88.0f)  // Nm
+#define VOLTAGE_DIVIDER (0.6040268456f)
+#define PED_MAX_TORQUE  (88.0f)  // Nm
 
 #define EEPROM_SPI hspi1
 
@@ -32,15 +32,9 @@ typedef struct {
     bool ADC_internal, ADC_overrun, ADC_DMA_error, implausibility_err;
 } PED_PedalErrors;
 
-typedef enum {
-    PED_CALIB_APPS_MIN,
-    PED_CALIB_APPS_MAX,
-    PED_CALIB_BSE_MIN,
-    PED_CALIB_BSE_MAX
-} PED_CalibTypeDef;
+typedef enum { PED_CALIB_APPS_MIN, PED_CALIB_APPS_MAX, PED_CALIB_BSE_MIN, PED_CALIB_BSE_MAX } PED_CalibTypeDef;
 
 extern PED_PedalErrors PED_errors; /*< Pedal errors active */
-
 
 /**
  * @brief     Initialize ADCs and DMA streams

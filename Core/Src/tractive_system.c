@@ -1,11 +1,10 @@
 #include "tractive_system.h"
+
 #include "can_messages.h"
 #include "logger.h"
 
-
 TS_StatusTypeDef _TS_status = TS_STATUS_UNKNOWN;
-char* TS_state_names[] = { "UNK", "OFF", "PRE", "ON", "FAIL" };
-
+char *TS_state_names[]      = {"UNK", "OFF", "PRE", "ON", "FAIL"};
 
 /**
  * @brief     Retrieve the status of the BMS-HV from the corresponding CAN message
@@ -44,7 +43,7 @@ TS_StatusTypeDef TS_get_status() {
  */
 void TS_power_on() {
     ecumsg_hv_set_status_ecu_state.data.hv_status_set = primary_hv_set_status_ecu_hv_status_set_on;
-    ecumsg_hv_set_status_ecu_state.info.is_new = true;
+    ecumsg_hv_set_status_ecu_state.info.is_new        = true;
 }
 
 /**
@@ -52,5 +51,5 @@ void TS_power_on() {
  */
 void TS_power_off() {
     ecumsg_hv_set_status_ecu_state.data.hv_status_set = primary_hv_set_status_ecu_hv_status_set_off;
-    ecumsg_hv_set_status_ecu_state.info.is_new = true;
+    ecumsg_hv_set_status_ecu_state.info.is_new        = true;
 }

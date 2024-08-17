@@ -1,8 +1,8 @@
 #ifndef ADC_FSM_H
 #define ADC_FSM_H
 
-#include "stdint.h"
 #include "stdbool.h"
+#include "stdint.h"
 #define BRK_MED_SIZE 500
 
 typedef enum {
@@ -16,10 +16,10 @@ typedef enum {
     ADC_CH_SEVEN,
     ADC_CH_EIGHT,
     ADC_CH_SD_FB4,
-    ADC_CH_SD_FB0,    /* Cockpit Mushroom */
+    ADC_CH_SD_FB0, /* Cockpit Mushroom */
     ADC_CH_SD_FB1,
-    ADC_CH_SD_FB3,    /* Inertial switch */
-    ADC_CH_SD_FB2,    /* BOTS */
+    ADC_CH_SD_FB3, /* Inertial switch */
+    ADC_CH_SD_FB2, /* BOTS */
     ADC_CH_SD_OUT,
     ADC_CH_SD_IN,
     ADC_NUM_CHANNELS
@@ -34,7 +34,6 @@ typedef enum {
 
 extern _ADC_ChannelTypeDef _ADC_curr_ch;
 extern uint32_t _ADC_raw_reads[];
-
 
 bool ADC_StartMuxCapure();
 

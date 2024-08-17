@@ -3,19 +3,17 @@
 
 #include "tim.h"
 
-
 #define BKL_TIM htim3
 
 /**
  * @brief     The available states of the brakelight
  */
 typedef enum {
-    BKL_OFF,    /*< Off */
-    BKL_LVL_1,  /*< Minimum intensity */
-    BKL_LVL_2,  /*< Medium intensity */
-    BKL_LVL_3   /*< Maximum intensity */
+    BKL_OFF,   /*< Off */
+    BKL_LVL_1, /*< Minimum intensity */
+    BKL_LVL_2, /*< Medium intensity */
+    BKL_LVL_3  /*< Maximum intensity */
 } BKL_StateTypeDef;
-
 
 /**
  * @brief     Init the brakelight and start the pwm channels

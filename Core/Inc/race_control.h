@@ -4,7 +4,7 @@
 #include <math.h>
 #include <stdbool.h>
 
-#define ENABLE_CONTROLS (true)
+#define ENABLE_CONTROLS    (true)
 #define CONTROL_FAIL_COUNT 10
 
 bool equal_d(float a, float b);

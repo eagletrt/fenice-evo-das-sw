@@ -1,16 +1,16 @@
 #ifndef CLI_ECU_H
 #define CLI_ECU_H
 
+#include "adc_fsm.h"
 #include "cli.h"
-#include "usart.h"
-#include <string.h>
-#include <stdio.h>
-
+#include "fsm.h"
 #include "pedals.h"
 #include "tim.h"
 #include "timer_utils.h"
-#include "adc_fsm.h"
-#include "fsm.h"
+#include "usart.h"
+
+#include <stdio.h>
+#include <string.h>
 
 // #define NORMAL_COLOR           "\033[0m"
 // #define RED_BG(S)              "\033[0;41m" S NORMAL_COLOR

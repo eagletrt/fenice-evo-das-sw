@@ -1,12 +1,10 @@
 #include "cli_ecu.h"
+
 #include "main.h"
 
-
-
 #define N_COMMANDS 7
-#define HTIM_CLI htim6
-#define CLI_UART huart2
-
+#define HTIM_CLI   htim6
+#define CLI_UART   huart2
 
 cli_command_func_t help;
 cli_command_func_t _sd_feedbacks;
@@ -16,27 +14,34 @@ cli_command_func_t _inv;
 cli_command_func_t _cli_help;
 cli_command_func_t _cli_sigterm;
 
-char *command_names[N_COMMANDS] = {"help", "sd_feedbacks", "pedals" "fsm_state", "inv", "?", "\003"};
+char *command_names[N_COMMANDS] = {
+    "help",
+    "sd_feedbacks",
+    "pedals"
+    "fsm_state",
+    "inv",
+    "?",
+    "\003"};
 
 cli_command_func_t *commands[N_COMMANDS] = {&help, &_sd_feedbacks, &_pedals, &_fsm_state, &_inv, &_cli_help, &_cli_sigterm};
 
 cli_t cli_ecu;
 bool dmesg_ena = true;
 
-void cli_ecu_init(){
+void cli_ecu_init() {
     cli_ecu.uart           = &CLI_UART;
     cli_ecu.cmds.functions = commands;
     cli_ecu.cmds.names     = command_names;
     cli_ecu.cmds.count     = N_COMMANDS;
 
     // char logo[] = "\033[H"
-        // "         E - A g l e   T r e n t o   R a c i n g   T e a m        \r\n"
-        // "██████████████████████████████     ████  ███  ████████████████████\r\n"
-        // "                           ████   ███                             \r\n"
-        // "  ████████████  ████████  ██████ ███   ███  ███         ████████  \r\n"
-        // "      ███      ███       ███  █████   ███  ███        ███         \r\n"
-        // "     ███      ████████  ███    ███   ███  █████████  █████████    \r\n"
-        // "                                                                  \r\n";
+    // "         E - A g l e   T r e n t o   R a c i n g   T e a m        \r\n"
+    // "██████████████████████████████     ████  ███  ████████████████████\r\n"
+    // "                           ████   ███                             \r\n"
+    // "  ████████████  ████████  ██████ ███   ███  ███         ████████  \r\n"
+    // "      ███      ███       ███  █████   ███  ███        ███         \r\n"
+    // "     ███      ████████  ███    ███   ███  █████████  █████████    \r\n"
+    // "                                                                  \r\n";
     char init[95];
 
     snprintf(
@@ -70,63 +75,57 @@ void help(uint16_t argc, char **argv, char *out) {
     }
 }
 
-void _sd_feedbacks(uint16_t argc, char **argv, char *out){
-    snprintf(out,
-    CLI_TX_BUF_LEN,
-    "SD_FB0 (Cockpit Mushroom): %d\r\n"
-    "SD_FB1: %d\r\n"
-    "SD_FB2 (BOTS): %d\r\n"
-    "SD_FB3 (Inertial Switch): %d\r\n"
-    "SD_FB4: %d\r\n"
-    "SD_IN: %d\r\n"
-    "SD_OUT: %d\r\n"
-    "SD CTRL PIN: %d\r\n",
-    ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB0())),
-    ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB1())),
-    ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB2())),
-    ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB3())),
-    ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB4())),
-    ADC_is_closed(ADC_to_voltage(ADC_get_SD_IN())),
-    ADC_is_closed(ADC_to_voltage(ADC_get_SD_OUT())),
-    HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin)
-    );
+void _sd_feedbacks(uint16_t argc, char **argv, char *out) {
+    snprintf(
+        out,
+        CLI_TX_BUF_LEN,
+        "SD_FB0 (Cockpit Mushroom): %d\r\n"
+        "SD_FB1: %d\r\n"
+        "SD_FB2 (BOTS): %d\r\n"
+        "SD_FB3 (Inertial Switch): %d\r\n"
+        "SD_FB4: %d\r\n"
+        "SD_IN: %d\r\n"
+        "SD_OUT: %d\r\n"
+        "SD CTRL PIN: %d\r\n",
+        ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB0())),
+        ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB1())),
+        ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB2())),
+        ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB3())),
+        ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB4())),
+        ADC_is_closed(ADC_to_voltage(ADC_get_SD_IN())),
+        ADC_is_closed(ADC_to_voltage(ADC_get_SD_OUT())),
+        HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin));
 }
 
-void _pedals(uint16_t argc, char **argv, char *out){
-    snprintf(out,
-    CLI_TX_BUF_LEN,
-    "APPS1: %" PRIu32 "\r\n"
-    "APPS2: %" PRIu32 "\r\n"
-    "BPPS1: %" PRIu32 "\r\n"
-    "BPPS2: %" PRIu32 "\r\n"
-    "BRKF: %" PRIu32 "\r\n"
-    "BRKR: %" PRIu32 "\r\n"
-    "ACC: %f\r\n"
-    "BRK: %f\r\n",
-    ADC_get_APPS1(),
-    ADC_get_APPS2(),
-    ADC_get_BPPS1(),
-    ADC_get_BPPS2(),
-    ADC_get_BRK_F(),
-    ADC_get_BRK_R(),
-    PED_get_accelerator_percent(),
-    PED_get_brake_bar()
-    );
+void _pedals(uint16_t argc, char **argv, char *out) {
+    snprintf(
+        out,
+        CLI_TX_BUF_LEN,
+        "APPS1: %" PRIu32 "\r\n"
+        "APPS2: %" PRIu32 "\r\n"
+        "BPPS1: %" PRIu32 "\r\n"
+        "BPPS2: %" PRIu32 "\r\n"
+        "BRKF: %" PRIu32 "\r\n"
+        "BRKR: %" PRIu32 "\r\n"
+        "ACC: %f\r\n"
+        "BRK: %f\r\n",
+        ADC_get_APPS1(),
+        ADC_get_APPS2(),
+        ADC_get_BPPS1(),
+        ADC_get_BPPS2(),
+        ADC_get_BRK_F(),
+        ADC_get_BRK_R(),
+        PED_get_accelerator_percent(),
+        PED_get_brake_bar());
 }
 
-void _fsm_state(uint16_t argc, char **argv, char *out){
+void _fsm_state(uint16_t argc, char **argv, char *out) {
     extern state_t current_state;
-    snprintf(out,
-    CLI_TX_BUF_LEN,
-    "FSM State: %-6s\r\n",
-    state_names[current_state]
-    );
+    snprintf(out, CLI_TX_BUF_LEN, "FSM State: %-6s\r\n", state_names[current_state]);
 }
 
-void _inv(uint16_t argc, char **argv, char *out){
-    snprintf(out,
-    CLI_TX_BUF_LEN,
-    "Inverter");
+void _inv(uint16_t argc, char **argv, char *out) {
+    snprintf(out, CLI_TX_BUF_LEN, "Inverter");
 }
 
 void _cli_help(uint16_t argc, char **argv, char *out) {
@@ -182,7 +181,6 @@ void _cli_timer_handler(TIM_HandleTypeDef *htim) {
 char tx_buf[CLI_TX_BUF_LEN]           = {'\0'};
 char print_buf[CLI_ECU_PRINT_BUF_LEN] = {'\0'};
 char *save_ptr                        = NULL;
-
 
 void cli_watch_flush_handler() {
     char *argv[BUF_SIZE] = {NULL};

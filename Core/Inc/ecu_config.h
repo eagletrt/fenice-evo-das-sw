@@ -3,5 +3,4 @@
 
 #define AS_STEERING_ACTUATOR_ENABLED 0
 
-#endif // ECU_CONFIG_H
-
+#endif  // ECU_CONFIG_H

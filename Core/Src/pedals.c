@@ -1,16 +1,15 @@
 #include "pedals.h"
-#include "adc_fsm.h"
-#include "logger.h"
-#include "can_messages.h"
-#include "math.h"
-
-#include "limits.h"
 
 #include "../Lib/micro-libs/eeprom-config/eeprom-config.h"
+#include "adc_fsm.h"
+#include "can_messages.h"
+#include "limits.h"
+#include "logger.h"
+#include "math.h"
 
 /* Private variables and constants ------------------------------------------ */
-PED_PedalErrors PED_errors = {};
-uint32_t _PED_impl_start_timestamp = 0;
+PED_PedalErrors PED_errors               = {};
+uint32_t _PED_impl_start_timestamp       = 0;
 uint32_t _PED_implausibility_max_time_ms = 100;
 
 typedef struct {
@@ -28,20 +27,20 @@ typedef struct {
     uint16_t BPPS2_MAX;
 } _PED_CALIB;
 
-#define _PED_CALIB_BRKF_MIN (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->BRKF_MIN)
-#define _PED_CALIB_BRKF_MAX (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->BRKF_MAX)
-#define _PED_CALIB_BRKR_MIN (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->BRKR_MIN)
-#define _PED_CALIB_BRKR_MAX (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->BRKR_MAX)
-#define _PED_CALIB_APPS1_MIN (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->APPS1_MIN)
-#define _PED_CALIB_APPS1_MAX (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->APPS1_MAX)
-#define _PED_CALIB_APPS2_MIN (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->APPS2_MIN)
-#define _PED_CALIB_APPS2_MAX (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->APPS2_MAX)
-#define _PED_CALIB_BPPS1_MIN (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->BPPS1_MIN)
-#define _PED_CALIB_BPPS1_MAX (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->BPPS1_MAX)
-#define _PED_CALIB_BPPS2_MIN (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->BPPS2_MIN)
-#define _PED_CALIB_BPPS2_MAX (((_PED_CALIB*)EEPROM_config_get(&pedals_config))->BPPS2_MAX)
+#define _PED_CALIB_BRKF_MIN  (((_PED_CALIB *)EEPROM_config_get(&pedals_config))->BRKF_MIN)
+#define _PED_CALIB_BRKF_MAX  (((_PED_CALIB *)EEPROM_config_get(&pedals_config))->BRKF_MAX)
+#define _PED_CALIB_BRKR_MIN  (((_PED_CALIB *)EEPROM_config_get(&pedals_config))->BRKR_MIN)
+#define _PED_CALIB_BRKR_MAX  (((_PED_CALIB *)EEPROM_config_get(&pedals_config))->BRKR_MAX)
+#define _PED_CALIB_APPS1_MIN (((_PED_CALIB *)EEPROM_config_get(&pedals_config))->APPS1_MIN)
+#define _PED_CALIB_APPS1_MAX (((_PED_CALIB *)EEPROM_config_get(&pedals_config))->APPS1_MAX)
+#define _PED_CALIB_APPS2_MIN (((_PED_CALIB *)EEPROM_config_get(&pedals_config))->APPS2_MIN)
+#define _PED_CALIB_APPS2_MAX (((_PED_CALIB *)EEPROM_config_get(&pedals_config))->APPS2_MAX)
+#define _PED_CALIB_BPPS1_MIN (((_PED_CALIB *)EEPROM_config_get(&pedals_config))->BPPS1_MIN)
+#define _PED_CALIB_BPPS1_MAX (((_PED_CALIB *)EEPROM_config_get(&pedals_config))->BPPS1_MAX)
+#define _PED_CALIB_BPPS2_MIN (((_PED_CALIB *)EEPROM_config_get(&pedals_config))->BPPS2_MIN)
+#define _PED_CALIB_BPPS2_MAX (((_PED_CALIB *)EEPROM_config_get(&pedals_config))->BPPS2_MAX)
 
-#define _PEDALS_CONFIG_BRKF_MIN 
+#define _PEDALS_CONFIG_BRKF_MIN
 
 EEPROM_ConfigTypeDef pedals_config = {};
 
@@ -51,15 +50,14 @@ void PED_update_plausibility_check();
 float _PED_from_raw_to_percent(uint32_t, uint32_t, uint32_t);
 float _PED_remove_dead_zone(float);
 
-
 void PED_init() {
     _PED_CALIB calib;
 
     /* Set calibration values */
-    calib.BRKF_MIN = 400;
-    calib.BRKF_MAX = 1030;
-    calib.BRKR_MIN = 520;
-    calib.BRKR_MAX = 700;
+    calib.BRKF_MIN  = 400;
+    calib.BRKF_MAX  = 1030;
+    calib.BRKR_MIN  = 520;
+    calib.BRKR_MAX  = 700;
     calib.APPS1_MIN = 1740;
     calib.APPS1_MAX = 3500;
     calib.APPS2_MIN = 460;
@@ -75,26 +73,31 @@ void PED_init() {
 float PED_get_accelerator_percent() {
     float acc1_percent = _PED_from_raw_to_percent(
         ADC_get_APPS1(),
-        _PED_CALIB_APPS1_MIN,
-        _PED_CALIB_APPS1_MAX
+        1171,  // 286, // _PED_CALIB_APPS1_MIN,
+        3277   // 800 // _PED_CALIB_APPS1_MAX
     );
     float acc2_percent = _PED_from_raw_to_percent(
         ADC_get_APPS2(),
-        _PED_CALIB_APPS2_MIN,
-        _PED_CALIB_APPS2_MAX
+        1171,  // 286, // _PED_CALIB_APPS2_MIN,
+        3277   // 800 // _PED_CALIB_APPS2_MAX
     );
-
+    // return acc1_percent;
     float acc_avg = (acc1_percent + acc2_percent) / 2.0f;
+    return acc_avg / 100.0f;
     float acc_no_deadzone = _PED_remove_dead_zone(acc_avg);
-    static float avg = 0.0f;
-    avg = avg * 0.99 + acc_no_deadzone * 0.01;
-    return avg / 100.0;
+    return acc_no_deadzone / 100.0f;
+
+    // return acc_no_deadzone;
+    // static float avg = 0.0f;
+    // avg = avg * 0.99 + acc_no_deadzone * 0.01;
+    // avg = avg * 0.8 + acc_no_deadzone * 0.2;
+    // return avg / 100.0;
 }
 
-float PED_get_accelerator_torque(float acc_percent){
-    float mp = ecumsg_ecu_set_power_maps_state.data.map_pw;
-    mp = mp > 0.0 ? mp : 0.0;
-    mp = mp > 1.0 ? 1.0 : mp;
+float PED_get_accelerator_torque(float acc_percent) {
+    float mp = ecumsg_ecu_power_maps_state.data.map_pw;
+    mp       = mp > 0.0 ? mp : 0.0;
+    mp       = mp > 1.0 ? 1.0 : mp;
     return PED_MAX_TORQUE * acc_percent * mp;
 }
 
@@ -105,9 +108,9 @@ float PED_get_brake_bar() {
     float bf_mV = ((float)brk_f * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
     float br_mV = ((float)brk_r * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
 
-    float bf_bar = ((bf_mV - 0.5f)/4.0f) * 100.0f;
-    float br_bar = ((br_mV - 0.5f)/4.0f) * 100.0f;
-    
+    float bf_bar = ((bf_mV - 0.5f) / 4.0f) * 100.0f;
+    float br_bar = ((br_mV - 0.5f) / 4.0f) * 100.0f;
+
     // old conversion with the voltage divider
     // float bf_bar = ((brk_f/4096.0 * 3.3 - 0.3)/ 4.0) * 100.0;
     // float br_bar = ((brk_r/4096.0 * 3.3 - 0.35)/4.0) * 100.0;
@@ -116,11 +119,13 @@ float PED_get_brake_bar() {
 }
 
 float _PED_from_raw_to_percent(uint32_t val, uint32_t min, uint32_t max) {
-    if (val < min) val = min;
-    if (val > max) val = max;
-    return (100.0 * (val - min) / (max - min));
+    if (val < min)
+        val = min;
+    if (val > max)
+        val = max;
+    volatile float x = (100.0f * ((float)val - (float)min) / ((float)max - (float)min));
+    return x;
 }
-
 
 /**
  * @brief     Check that ADC values comply with rule T/11.8.8 and set or clear
@@ -144,11 +149,11 @@ bool _PED_are_values_plausible(uint32_t val_1, uint32_t val_2) {
     /* Detect if shorted to GND */
     if (val_1 < 100 || val_2 < 100)
         return 0;
-    
+
     /* Detect if shorted to Vcc */
     if (val_1 > 4050 || val_2 > 4050)
         return 0;
-    
+
     // TODO: check if the above values make sense
 
     /* Find the normal offset between the two pots */
@@ -177,37 +182,40 @@ float _PED_remove_dead_zone(float val) {
 void PED_send_vals_in_CAN() {
     uint32_t brk_f, brk_r;
     get_brk_average(&brk_f, &brk_r);
-    float bf_bar = ((brk_f/4096.0 * 3.3 - 0.3)/ 4.0) * 100.0;
-    float br_bar = ((brk_r/4096.0 * 3.3 - 0.35)/4.0) * 100.0;
+    float bf_bar = ((brk_f / 4096.0 * 3.3 - 0.3) / 4.0) * 100.0;
+    float br_bar = ((brk_r / 4096.0 * 3.3 - 0.35) / 4.0) * 100.0;
 
-    ecumsg_pedal_throttle_state.data.throttle = PED_get_accelerator_percent();
-    ecumsg_pedal_throttle_state.info.is_new = true;
-    ecumsg_pedal_brakes_pressure_state.data.front = bf_bar;
-    ecumsg_pedal_brakes_pressure_state.data.rear = br_bar;
+    ecumsg_pedal_throttle_state.data.throttle      = PED_get_accelerator_percent();
+    ecumsg_pedal_throttle_state.info.is_new        = true;
+    ecumsg_pedal_brakes_pressure_state.data.front  = bf_bar;
+    ecumsg_pedal_brakes_pressure_state.data.rear   = br_bar;
     ecumsg_pedal_brakes_pressure_state.info.is_new = true;
 
-/*
     static uint32_t last_debug_signal_3_sent = 0;
     if (HAL_GetTick() - last_debug_signal_3_sent > 50) {
         last_debug_signal_3_sent = HAL_GetTick();
         CAN_MessageTypeDef msg;
-        msg.hcan = &hcan2;
-        msg.id = PRIMARY_DEBUG_SIGNAL_3_FRAME_ID;
-        msg.size = PRIMARY_DEBUG_SIGNAL_3_BYTE_SIZE;
-        uint32_t brk_f, brk_r;
-        get_brk_average(&brk_f, &brk_r);    
-        float bf_mV = ((float)brk_f * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
-        float br_mV = ((float)brk_r * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
-        primary_debug_signal_3_converted_t ds8 = {
-            .device_id = primary_debug_signal_3_device_id_ecu,
-            .field_1 = (float)bf_mV / 5.0f, .field_2 = (float) br_mV / 5.0f, .field_3 = 0.0f};
-            // .field_1 = (float)brk_f / 4096.0f, .field_2 = (float) brk_r / 4096.0f, .field_3 = 0.0f};
-        primary_debug_signal_3_t ds8_raw;
-        primary_debug_signal_3_conversion_to_raw_struct(&ds8_raw, &ds8);
-        primary_debug_signal_3_pack(msg.data, &ds8_raw, PRIMARY_DEBUG_SIGNAL_3_BYTE_SIZE);
+        msg.hcan = &hcan1;
+        msg.id   = PRIMARY_DEBUG_SIGNAL_4_FRAME_ID;
+        msg.size = PRIMARY_DEBUG_SIGNAL_4_BYTE_SIZE;
+        // uint32_t brk_f, brk_r;
+        // get_brk_average(&brk_f, &brk_r);
+        // float bf_mV = ((float)brk_f * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
+        // float br_mV = ((float)brk_r * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
+        volatile float x                       = ((float)ADC_get_APPS1()) / 4096.0f;
+        volatile float y                       = ((float)ADC_get_APPS2()) / 4096.0f;
+        primary_debug_signal_4_converted_t ds8 = {
+            .device_id = primary_debug_signal_4_device_id_ecu,
+            // .field_1 = (float)bf_mV / 5.0f, .field_2 = (float) br_mV / 5.0f, .field_3 = 0.0f};
+            // .field_1 = (float)brk_f / 4096.0f, .field_2 = (float) brk_r / 4096.0f, .field_3 = x};
+            .field_1 = x,
+            .field_2 = y,
+            .field_3 = 0.2f};
+        primary_debug_signal_4_t ds8_raw;
+        primary_debug_signal_4_conversion_to_raw_struct(&ds8_raw, &ds8);
+        primary_debug_signal_4_pack(msg.data, &ds8_raw, PRIMARY_DEBUG_SIGNAL_4_BYTE_SIZE);
         CAN_send(&msg, msg.hcan);
     }
-*/
 }
 
 void PED_calibrate(PED_CalibTypeDef calib) {
@@ -228,7 +236,7 @@ void PED_calibrate(PED_CalibTypeDef calib) {
             break;
     }
     pedals_config.dirty = true;
-    if(EEPROM_config_write(&pedals_config)){
+    if (EEPROM_config_write(&pedals_config)) {
         LOG_write(LOGLEVEL_INFO, "[PED] Calibration saved");
     } else {
         LOG_write(LOGLEVEL_WARN, "[PED] Calibration not saved");
@@ -251,18 +259,32 @@ bool PED_is_brake_ok() {
 }
 
 #if PED_DEBUG
-    void PED_log_dbg_info() {
-        LOG_write(LOGLEVEL_DEBUG, "PED/Cal  | %8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
-            "ACC1 Max", _PED_CALIB_APPS1_MAX, "ACC1 Min", _PED_CALIB_APPS1_MIN,
-            "ACC2 Max", _PED_CALIB_APPS2_MAX, "ACC2 Min", _PED_CALIB_APPS2_MIN
-        );
-        LOG_write(LOGLEVEL_DEBUG, "PED/ADCs | %8s: %-6d %8s: %-6.1f %8s: %-6d %8s: %-6.1f",
-            "ACC1 Raw", ADC_get_APPS1(), "ACC1 %%", _PED_from_raw_to_percent(ADC_get_APPS1(),_PED_CALIB_APPS1_MIN, _PED_CALIB_APPS1_MAX),
-            "ACC2 Raw", ADC_get_APPS2(), "ACC2 %%", _PED_from_raw_to_percent(ADC_get_APPS2(), _PED_CALIB_APPS2_MIN, _PED_CALIB_APPS2_MAX)
-        );
-        LOG_write(LOGLEVEL_DEBUG, "PED/ADCs | %8s: %-6.4f", "BRK perc", PED_get_brake_bar());
-        uint32_t brk_f, brk_r;
-        get_brk_average(&brk_f, &brk_r);
-        LOG_write(LOGLEVEL_DEBUG, "PED/ADCs | %8s: %-6d %8s: %-6d", "BRKF Raw", brk_f, "BRKR Raw", brk_r);
-    }
+void PED_log_dbg_info() {
+    LOG_write(
+        LOGLEVEL_DEBUG,
+        "PED/Cal  | %8s: %-6d %8s: %-6d %8s: %-6d %8s: %-6d",
+        "ACC1 Max",
+        _PED_CALIB_APPS1_MAX,
+        "ACC1 Min",
+        _PED_CALIB_APPS1_MIN,
+        "ACC2 Max",
+        _PED_CALIB_APPS2_MAX,
+        "ACC2 Min",
+        _PED_CALIB_APPS2_MIN);
+    LOG_write(
+        LOGLEVEL_DEBUG,
+        "PED/ADCs | %8s: %-6d %8s: %-6.1f %8s: %-6d %8s: %-6.1f",
+        "ACC1 Raw",
+        ADC_get_APPS1(),
+        "ACC1 %%",
+        _PED_from_raw_to_percent(ADC_get_APPS1(), _PED_CALIB_APPS1_MIN, _PED_CALIB_APPS1_MAX),
+        "ACC2 Raw",
+        ADC_get_APPS2(),
+        "ACC2 %%",
+        _PED_from_raw_to_percent(ADC_get_APPS2(), _PED_CALIB_APPS2_MIN, _PED_CALIB_APPS2_MAX));
+    LOG_write(LOGLEVEL_DEBUG, "PED/ADCs | %8s: %-6.4f", "BRK perc", PED_get_brake_bar());
+    uint32_t brk_f, brk_r;
+    get_brk_average(&brk_f, &brk_r);
+    LOG_write(LOGLEVEL_DEBUG, "PED/ADCs | %8s: %-6d %8s: %-6d", "BRKF Raw", brk_f, "BRKR Raw", brk_r);
+}
 #endif

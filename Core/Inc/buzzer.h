@@ -12,7 +12,6 @@
 
 #include "stdint.h"
 
-
 /**
  * @brief     Play a frequency on the buzzer for a given number of milliseconds and return
  * @param     ms Duration of the sound in milliseconds

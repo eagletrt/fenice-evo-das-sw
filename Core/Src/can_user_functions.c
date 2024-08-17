@@ -1,10 +1,10 @@
 #include "can_user_functions.h"
+
 #include "can_messages.h"
 #include "logger.h"
 #include "string.h"
 
-
-float CAN_error_rate = 0.0f;
+float CAN_error_rate       = 0.0f;
 uint32_t _CAN_tot_tx_count = 0, _CAN_err_count = 0;
 
 void _CAN_error_handler(char *);
@@ -17,7 +17,7 @@ void _CAN_process_incoming_rx(CAN_HandleTypeDef *, uint32_t);
 /**
  * @brief Initialize CAN filters and notifications
  * */
-bool CAN_user_init(CAN_HandleTypeDef * hcan) {
+bool CAN_user_init(CAN_HandleTypeDef *hcan) {
     /* Configure CAN filter */
     _CAN_activate_filter(hcan);
 
@@ -32,18 +32,18 @@ bool CAN_user_init(CAN_HandleTypeDef * hcan) {
 }
 
 void _CAN_wait(CAN_HandleTypeDef *nwk) {
-  uint32_t start_timestamp = HAL_GetTick();
-  while (HAL_CAN_GetTxMailboxesFreeLevel(nwk) == 0)
-    if(HAL_GetTick() > start_timestamp + 5)
-      return;
+    uint32_t start_timestamp = HAL_GetTick();
+    while (HAL_CAN_GetTxMailboxesFreeLevel(nwk) == 0)
+        if (HAL_GetTick() > start_timestamp + 5)
+            return;
 }
 
 HAL_StatusTypeDef CAN_send(CAN_MessageTypeDef *msg, CAN_HandleTypeDef *nwk) {
     CAN_TxHeaderTypeDef header;
-    header.StdId = msg->id;
-    header.IDE = CAN_ID_STD;
-    header.RTR = CAN_RTR_DATA;
-    header.DLC = msg->size;
+    header.StdId              = msg->id;
+    header.IDE                = CAN_ID_STD;
+    header.RTR                = CAN_RTR_DATA;
+    header.DLC                = msg->size;
     header.TransmitGlobalTime = DISABLE;
 
     _CAN_wait(nwk);
@@ -51,9 +51,9 @@ HAL_StatusTypeDef CAN_send(CAN_MessageTypeDef *msg, CAN_HandleTypeDef *nwk) {
     _CAN_tot_tx_count++;
     CAN_error_rate = (float)_CAN_err_count / (float)_CAN_tot_tx_count;
 
-    #if CAN_DEBUG
-      LOG_write(LOGLEVEL_DEBUG, "[CAN] Sending 0x%02X", msg->id);
-    #endif
+#if CAN_DEBUG
+    LOG_write(LOGLEVEL_DEBUG, "[CAN] Sending 0x%02X", msg->id);
+#endif
 
     return HAL_CAN_AddTxMessage(nwk, &header, msg->data, NULL);
 }
@@ -62,20 +62,20 @@ HAL_StatusTypeDef CAN_send(CAN_MessageTypeDef *msg, CAN_HandleTypeDef *nwk) {
  * @brief Print the error message in the serial console
  * @param msg The message to send over UART
  * */
-void _CAN_error_handler(char * msg) {
+void _CAN_error_handler(char *msg) {
     _CAN_err_count++;
     CAN_error_rate = (float)_CAN_err_count / (float)_CAN_tot_tx_count;
-    
-    #if CAN_DEBUG
-        LOG_write(LOGLEVEL_ERR, "[CAN/Error Handler] %s", msg);
-    #endif
+
+#if CAN_DEBUG
+    LOG_write(LOGLEVEL_ERR, "[CAN/Error Handler] %s", msg);
+#endif
 }
 
 /**
  * @brief Activate the proper filter for the given CAN bus
  * @param hcan The CAN bus on which to activate the filter
  * */
-HAL_StatusTypeDef _CAN_activate_filter(CAN_HandleTypeDef * hcan) {
+HAL_StatusTypeDef _CAN_activate_filter(CAN_HandleTypeDef *hcan) {
     CAN_FilterTypeDef f;
     HAL_StatusTypeDef s;
 
@@ -83,10 +83,10 @@ HAL_StatusTypeDef _CAN_activate_filter(CAN_HandleTypeDef * hcan) {
         _CAN_create_primary_can_filter(&f);
     else
         _CAN_create_secondary_can_filter(&f);
-    
+
     if ((s = HAL_CAN_ConfigFilter(hcan, &f)) != HAL_OK)
         _CAN_error_handler("Failed to initialize a CAN filter");
-    
+
     return s;
 }
 
@@ -94,56 +94,50 @@ HAL_StatusTypeDef _CAN_activate_filter(CAN_HandleTypeDef * hcan) {
  * @brief Create the CAN filter for the primary CAN network
  * @param f A CAN_FilterTypeDef in which to store the filter data
  * */
-void _CAN_create_primary_can_filter(CAN_FilterTypeDef * f) {
-    f->FilterMode = CAN_FILTERMODE_IDMASK;
-    f->FilterIdLow = 0;
-    f->FilterIdHigh = 0xFFFF;
-    f->FilterMaskIdHigh = 0;
-    f->FilterMaskIdLow = 0;
+void _CAN_create_primary_can_filter(CAN_FilterTypeDef *f) {
+    f->FilterMode           = CAN_FILTERMODE_IDMASK;
+    f->FilterIdLow          = 0;
+    f->FilterIdHigh         = 0xFFFF;
+    f->FilterMaskIdHigh     = 0;
+    f->FilterMaskIdLow      = 0;
     f->FilterFIFOAssignment = CAN_FILTER_FIFO0;
-    f->FilterBank = 0;
-    f->FilterScale = CAN_FILTERSCALE_16BIT;
-    f->FilterActivation = ENABLE;
+    f->FilterBank           = 0;
+    f->FilterScale          = CAN_FILTERSCALE_16BIT;
+    f->FilterActivation     = ENABLE;
 }
 
 /**
  * @brief Create the CAN filter for the secondary CAN network
  * @param f A CAN_FilterTypeDef in which to store the filter data
  * */
-void _CAN_create_secondary_can_filter(CAN_FilterTypeDef * f) {
-    f->FilterMode = CAN_FILTERMODE_IDMASK;
-    f->FilterIdLow = 0;
-    f->FilterIdHigh = 0xFFFF;
-    f->FilterMaskIdHigh = 0;
-    f->FilterMaskIdLow = 0;
+void _CAN_create_secondary_can_filter(CAN_FilterTypeDef *f) {
+    f->FilterMode           = CAN_FILTERMODE_IDMASK;
+    f->FilterIdLow          = 0;
+    f->FilterIdHigh         = 0xFFFF;
+    f->FilterMaskIdHigh     = 0;
+    f->FilterMaskIdLow      = 0;
     f->FilterFIFOAssignment = CAN_FILTER_FIFO1;
-    f->FilterBank = 1;
-    f->FilterScale = CAN_FILTERSCALE_16BIT;
-    f->FilterActivation = ENABLE;
+    f->FilterBank           = 1;
+    f->FilterScale          = CAN_FILTERSCALE_16BIT;
+    f->FilterActivation     = ENABLE;
     f->SlaveStartFilterBank = 1;
 }
 
 /**
  * @brief Activate CAN notifications 
  * */
-HAL_StatusTypeDef _CAN_activate_interrupts(CAN_HandleTypeDef * hcan) {
+HAL_StatusTypeDef _CAN_activate_interrupts(CAN_HandleTypeDef *hcan) {
     HAL_StatusTypeDef s_rx;
 
-    uint32_t irq_rx = (hcan == &CAN_PRIMARY_NETWORK) ?
-        CAN_IT_RX_FIFO0_MSG_PENDING : CAN_IT_RX_FIFO1_MSG_PENDING;
+    uint32_t irq_rx = (hcan == &CAN_PRIMARY_NETWORK) ? CAN_IT_RX_FIFO0_MSG_PENDING : CAN_IT_RX_FIFO1_MSG_PENDING;
 
     if ((s_rx = HAL_CAN_ActivateNotification(hcan, irq_rx)) != HAL_OK)
         _CAN_error_handler("Failed to activate a CAN RX interrupt");
-    
-    HAL_CAN_ActivateNotification(hcan,
-        CAN_IT_TX_MAILBOX_EMPTY |
-        CAN_IT_ERROR_WARNING |
-        CAN_IT_ERROR_PASSIVE |
-        CAN_IT_BUSOFF |
-        CAN_IT_LAST_ERROR_CODE |
-        CAN_IT_ERROR
-    );
-    
+
+    HAL_CAN_ActivateNotification(
+        hcan,
+        CAN_IT_TX_MAILBOX_EMPTY | CAN_IT_ERROR_WARNING | CAN_IT_ERROR_PASSIVE | CAN_IT_BUSOFF | CAN_IT_LAST_ERROR_CODE | CAN_IT_ERROR);
+
     return s_rx;
 }
 
@@ -203,14 +197,14 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan) {
  * @brief     HAL callback for RX on FIFO0
  */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-     _CAN_process_incoming_rx(hcan, CAN_RX_FIFO0);
+    _CAN_process_incoming_rx(hcan, CAN_RX_FIFO0);
 }
 
 /**
  * @brief     HAL callback for RX on FIFO1
  */
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-	_CAN_process_incoming_rx(hcan, CAN_RX_FIFO1);
+    _CAN_process_incoming_rx(hcan, CAN_RX_FIFO1);
 }
 
 // void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan) { }
@@ -220,24 +214,24 @@ void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 /**
  * @brief   Callback invoked when a CAN message has arrived in the HW FIFO
  * */
-void _CAN_process_incoming_rx(CAN_HandleTypeDef * hcan, uint32_t rx_fifo) {
+void _CAN_process_incoming_rx(CAN_HandleTypeDef *hcan, uint32_t rx_fifo) {
     CAN_RxHeaderTypeDef header = {};
-	CAN_MessageTypeDef msg = {};
-    
+    CAN_MessageTypeDef msg     = {};
+
     /* Get the last message */
-	HAL_CAN_GetRxMessage(hcan, rx_fifo, &header, msg.data);
-	msg.id = header.StdId;
-	msg.size = header.DLC;
+    HAL_CAN_GetRxMessage(hcan, rx_fifo, &header, msg.data);
+    msg.id   = header.StdId;
+    msg.size = header.DLC;
     msg.hcan = hcan;
-    
-    #if CAN_DEBUG
-        char txt[70] = "[CAN] RX: ";
-        int offset = strlen(txt);
-        offset += sprintf(txt+offset, "[ID: 0x%x - DLC: %d] ", msg.id, msg.size);
-        for (int i = 0; i < msg.size; i++)
-            offset += sprintf(txt+offset, "%02X ", msg.data[i]);
-        LOG_write(LOGLEVEL_DEBUG, txt);
-    #endif
+
+#if CAN_DEBUG
+    char txt[70] = "[CAN] RX: ";
+    int offset   = strlen(txt);
+    offset += sprintf(txt + offset, "[ID: 0x%x - DLC: %d] ", msg.id, msg.size);
+    for (int i = 0; i < msg.size; i++)
+        offset += sprintf(txt + offset, "%02X ", msg.data[i]);
+    LOG_write(LOGLEVEL_DEBUG, txt);
+#endif
 
     /* Add th message to the SW queue */
     CANMSG_add_msg_to_RX_queue(&msg);

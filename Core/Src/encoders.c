@@ -119,12 +119,15 @@ void ENC_R_push_speed_rads() {
  * @brief     Calculate the ground speed from steering wheel encoder
  */
 void ENC_C_push_angle_deg() {
-    float calib_center_ang = 199.0f;  // 216.4f;
+    float calib_center_ang = 199.0f;
     uint16_t buf           = 0;
 
     /* Clock rate must be <= 4 MHz (from datasheet) */
     /* Also, the interval between two consecutive conversions must be > 20 μs */
-    HAL_SPI_Receive(&hspi2, (uint8_t *)&buf, 2, 100);
+    volatile HAL_StatusTypeDef status = HAL_SPI_Receive(&hspi2, (uint8_t *)&buf, 2, 100);
+    if (status != HAL_OK) {
+      (void) status;
+    }
     buf = buf >> 3;
     buf = buf & 0x0FFF;
 
@@ -132,29 +135,17 @@ void ENC_C_push_angle_deg() {
 
     float raw = 360.0f / 4095.f * buf;
 
-    static uint32_t last_debug_signal_3_sent = 0;
-    if (HAL_GetTick() - last_debug_signal_3_sent > 50) {
-        last_debug_signal_3_sent = HAL_GetTick();
+    static uint32_t last_debug_signal_1_sent = 0; 
+    if (HAL_GetTick() - last_debug_signal_1_sent > 50) {
+        last_debug_signal_1_sent = HAL_GetTick();
         CAN_MessageTypeDef msg;
         msg.hcan = &hcan1;
-        msg.id   = PRIMARY_DEBUG_SIGNAL_4_FRAME_ID;
-        msg.size = PRIMARY_DEBUG_SIGNAL_4_BYTE_SIZE;
-        // uint32_t brk_f, brk_r;
-        // get_brk_average(&brk_f, &brk_r);
-        // float bf_mV = ((float)brk_f * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
-        // float br_mV = ((float)brk_r * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
-        volatile float x                       = ((float)ADC_get_APPS1()) / 4096.0f;
-        volatile float y                       = ((float)ADC_get_APPS2()) / 4096.0f;
-        primary_debug_signal_4_converted_t ds8 = {
-            .device_id = primary_debug_signal_4_device_id_ecu,
-            // .field_1 = (float)bf_mV / 5.0f, .field_2 = (float) br_mV / 5.0f, .field_3 = 0.0f};
-            // .field_1 = (float)brk_f / 4096.0f, .field_2 = (float) brk_r / 4096.0f, .field_3 = x};
-            .field_1 = x,
-            .field_2 = y,
-            .field_3 = 0.2f};
-        primary_debug_signal_4_t ds8_raw;
-        primary_debug_signal_4_conversion_to_raw_struct(&ds8_raw, &ds8);
-        primary_debug_signal_4_pack(msg.data, &ds8_raw, PRIMARY_DEBUG_SIGNAL_4_BYTE_SIZE);
+        msg.id   = PRIMARY_DEBUG_SIGNAL_1_FRAME_ID;
+        msg.size = PRIMARY_DEBUG_SIGNAL_1_BYTE_SIZE;
+        primary_debug_signal_1_converted_t ds1 = {.device_id = primary_debug_signal_1_device_id_ecu, .field_1 = raw / 1000.0f};
+        primary_debug_signal_1_t ds1_raw;
+        primary_debug_signal_1_conversion_to_raw_struct(&ds1_raw, &ds1);
+        primary_debug_signal_1_pack(msg.data, &ds1_raw, PRIMARY_DEBUG_SIGNAL_1_BYTE_SIZE);
         CAN_send(&msg, msg.hcan);
     }
 

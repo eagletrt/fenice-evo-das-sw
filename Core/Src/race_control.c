@@ -23,6 +23,13 @@ bool equal_d_threshold(float a, float b, double threshold) {
 }
 
 bool _DAS_is_control_feasible() {
+    // Steering wheel encoder not working
+    if ((ENC_C_get_angle_deg()) > 179.0f && (ENC_C_get_angle_deg()) < 181.0f) {
+        return false;
+    } else {
+        return true;
+    }
+
     static uint8_t conditions_counter = 0;
     // Avoid overflow
     if (conditions_counter > CONTROL_FAIL_COUNT) {

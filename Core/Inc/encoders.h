@@ -15,7 +15,7 @@
 
 #define ENC_L_TIM htim2 /*< Left encoder timer */
 #define ENC_R_TIM htim5 /*< Right encoder timer */
-#define ENC_C_SPI hspi2 /*< Center encoder SPI */
+// #define ENC_C_SPI hspi2 /*< Center encoder SPI */
 
 #define ENC_ROLLAVG_SIZE 5
 

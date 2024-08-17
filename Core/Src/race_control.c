@@ -40,11 +40,11 @@ bool _DAS_is_control_feasible() {
     }
 
     // Check on control watchdog
-    if(HAL_GetTick() - ecumsg_control_output_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_OUTPUT * 4) {
+    if(HAL_GetTick() - ecumsg_control_output_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_OUTPUT * 10) {
         conditions_counter ++;
         ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 1;
     }
-    if(HAL_GetTick() - ecumsg_control_status_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_STATUS * 4) {
+    if(HAL_GetTick() - ecumsg_control_status_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_STATUS * 10) {
         conditions_counter ++;
         ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 1;
     } else {
@@ -101,7 +101,7 @@ float _DAS_get_driver_request() {
     float BSE_percent = PED_get_brake_bar();
 
     PED_update_plausibility_check();
-    if (!PED_errors.implausibility_err) {
+    if (PED_errors.implausibility_err) {
         return 0.0f;
     }
     _DAS_update_brake_impl(APPS_percent, BSE_percent);

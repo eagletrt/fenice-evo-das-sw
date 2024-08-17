@@ -18,11 +18,11 @@
 #define PED_DEADZONE_PERCENT 20.0f /*< Initial portion of pedal travel to ignore */
 #define PED_IMPL_THRESHOLD   60.0f /*< Percent of potentiometer offset that triggers the error */
 #define BRK_IMPL_THRESHOLD    6.0f
-#define BRK_THRESHOLD_HIGH    0.9f
-#define BRK_THRESHOLD_LOW     0.4f
-#define BRK_DRIVE_THRESHOLD   2.0f
+#define BRK_THRESHOLD_HIGH    1.2f
+#define BRK_THRESHOLD_LOW     0.8f
 
-#define PED_MAX_TORQUE       88.0f  // Nm
+#define VOLTAGE_DIVIDER      (0.6040268456f)
+#define PED_MAX_TORQUE       (88.0f)  // Nm
 
 #define EEPROM_SPI hspi1
 

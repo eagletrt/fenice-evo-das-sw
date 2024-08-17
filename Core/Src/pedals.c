@@ -102,8 +102,15 @@ float PED_get_brake_bar() {
     uint32_t brk_f, brk_r;
     get_brk_average(&brk_f, &brk_r);
 
-    float bf_bar = ((brk_f/4096.0 * 3.3 - 0.3)/ 4.0) * 100.0;
-    float br_bar = ((brk_r/4096.0 * 3.3 - 0.35)/4.0) * 100.0;
+    float bf_mV = ((float)brk_f * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
+    float br_mV = ((float)brk_r * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
+
+    float bf_bar = ((bf_mV - 0.5f)/4.0f) * 100.0f;
+    float br_bar = ((br_mV - 0.5f)/4.0f) * 100.0f;
+    
+    // old conversion with the voltage divider
+    // float bf_bar = ((brk_f/4096.0 * 3.3 - 0.3)/ 4.0) * 100.0;
+    // float br_bar = ((brk_r/4096.0 * 3.3 - 0.35)/4.0) * 100.0;
     float brk_max = (bf_bar > br_bar) ? bf_bar : br_bar;
     return brk_max;
 }
@@ -178,6 +185,29 @@ void PED_send_vals_in_CAN() {
     ecumsg_pedal_brakes_pressure_state.data.front = bf_bar;
     ecumsg_pedal_brakes_pressure_state.data.rear = br_bar;
     ecumsg_pedal_brakes_pressure_state.info.is_new = true;
+
+/*
+    static uint32_t last_debug_signal_3_sent = 0;
+    if (HAL_GetTick() - last_debug_signal_3_sent > 50) {
+        last_debug_signal_3_sent = HAL_GetTick();
+        CAN_MessageTypeDef msg;
+        msg.hcan = &hcan2;
+        msg.id = PRIMARY_DEBUG_SIGNAL_3_FRAME_ID;
+        msg.size = PRIMARY_DEBUG_SIGNAL_3_BYTE_SIZE;
+        uint32_t brk_f, brk_r;
+        get_brk_average(&brk_f, &brk_r);    
+        float bf_mV = ((float)brk_f * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
+        float br_mV = ((float)brk_r * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
+        primary_debug_signal_3_converted_t ds8 = {
+            .device_id = primary_debug_signal_3_device_id_ecu,
+            .field_1 = (float)bf_mV / 5.0f, .field_2 = (float) br_mV / 5.0f, .field_3 = 0.0f};
+            // .field_1 = (float)brk_f / 4096.0f, .field_2 = (float) brk_r / 4096.0f, .field_3 = 0.0f};
+        primary_debug_signal_3_t ds8_raw;
+        primary_debug_signal_3_conversion_to_raw_struct(&ds8_raw, &ds8);
+        primary_debug_signal_3_pack(msg.data, &ds8_raw, PRIMARY_DEBUG_SIGNAL_3_BYTE_SIZE);
+        CAN_send(&msg, msg.hcan);
+    }
+*/
 }
 
 void PED_calibrate(PED_CalibTypeDef calib) {
@@ -208,11 +238,14 @@ void PED_calibrate(PED_CalibTypeDef calib) {
 }
 
 bool PED_is_brake_ok() {
-    uint32_t brake_front = ADC_get_BRK_F();
-    uint32_t brake_rear = ADC_get_BRK_R();
-    if (brake_front < 200 || brake_front > 3000)
+    // taking directly raw numbers are highly effected by noise
+    // uint32_t brake_front = ADC_get_BRK_F();
+    // uint32_t brake_rear = ADC_get_BRK_R();
+    uint32_t brake_front, brake_rear;
+    get_brk_average(&brake_front, &brake_rear);
+    if (brake_front < 200 || brake_front > 3300)
         return 0;
-    if (brake_rear < 200 || brake_rear > 3000)
+    if (brake_rear < 200 || brake_rear > 3300)
         return 0;
     return 1;
 }

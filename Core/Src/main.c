@@ -262,6 +262,10 @@ int main(void) {
     _DAS_is_control_feasible();
     ecumsg_ecu_control_status_state.data.control_enabled = ENABLE_CONTROLS;
     ecumsg_ecu_control_status_state.info.is_new = 1;
+    ecumsg_ecu_power_maps_state.data.map_pw = DAS_get_pwr_map();
+    ecumsg_ecu_power_maps_state.data.map_sc = DAS_get_sc_map();
+    ecumsg_ecu_power_maps_state.data.map_tv = DAS_get_tv_map();
+    ecumsg_ecu_power_maps_state.info.is_new = 1;
 
     /* Flush CAN TX queue */
     CANMSG_flush_TX();
@@ -293,10 +297,14 @@ int main(void) {
     if (!PED_is_brake_ok()) {
       HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
       ecumsg_ecu_errors_state.data.error_pedal_implausibility = 1;
+    } else {
+      HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
+      ecumsg_ecu_errors_state.data.error_pedal_implausibility = 0;
     }
 
     /* Send ECU feedbacks */
     _update_ecu_feedbacks();
+    ecumsg_ecu_errors_state.info.is_new = true;
 
     /* Send pedal and steer values to the steering wheel for visualization */
     PED_send_vals_in_CAN();

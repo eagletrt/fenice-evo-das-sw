@@ -44,7 +44,8 @@ void _CANMSG_secondary_deserialize_msg_by_id(CAN_MessageTypeDef msg);
 /* Primary Network */
 ecumsg_ecu_version_t            ecumsg_ecu_version_state     = { {0U, false, 0U}, { .component_build_time = INT_COMPONENT_VERSION, .canlib_build_time = CANLIB_BUILD_TIME } };
 ecumsg_ecu_errors_t             ecumsg_ecu_errors_state      = { {0U, false, 0U}, { 0U } };
-ecumsg_ecu_set_power_maps_t           ecumsg_ecu_set_power_maps_state    = { {0U, false, 0U}, { .map_pw = 0.5, .map_sc = 0, .map_tv = 0 } };
+ecumsg_ecu_set_power_maps_t           ecumsg_ecu_set_power_maps_state    = { {0U, false, 0U}, { .map_pw = 0.0, .map_sc = 0, .map_tv = 0 } };
+ecumsg_ecu_power_maps_t           ecumsg_ecu_power_maps_state    = { {0U, false, 0U}, { .map_pw = 0.0, .map_sc = 0, .map_tv = 0 } };
 ecumsg_ecu_status_t             ecumsg_ecu_status_state      = { {0U, false, 0U}, { .status = primary_ecu_status_status_idle } };
 ecumsg_ecu_feedbacks_t          ecumsg_ecu_feedbacks_state   = { {0U, false, 0U}, { 0 }};
 ecumsg_ecu_set_status_t          ecumsg_ecu_set_status_state   = { {0U, false, 0U}, { .status = primary_ecu_set_status_status_idle } };
@@ -205,6 +206,8 @@ CANMSG_MetadataTypeDef* CANMSG_get_primary_metadata_from_id(CAN_IdTypeDef id) {
             return &(ecumsg_ecu_errors_state.info);
         case PRIMARY_ECU_SET_POWER_MAPS_FRAME_ID:
             return &(ecumsg_ecu_set_power_maps_state.info);
+        case PRIMARY_ECU_POWER_MAPS_FRAME_ID:
+            return &(ecumsg_ecu_power_maps_state.info);
         case PRIMARY_ECU_STATUS_FRAME_ID:
             return &(ecumsg_ecu_status_state.info);
         case PRIMARY_ECU_FEEDBACKS_FRAME_ID:
@@ -363,6 +366,7 @@ void CANMSG_flush_TX() {
         PRIMARY_ECU_CONTROL_STATUS_FRAME_ID,
         PRIMARY_HV_SET_STATUS_ECU_FRAME_ID,
         PRIMARY_LV_SET_INVERTER_CONNECTION_STATUS_FRAME_ID,
+        PRIMARY_ECU_POWER_MAPS_FRAME_ID,
         // PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID,
         PRIMARY_ECU_PTT_STATUS_FRAME_ID,
 
@@ -465,6 +469,7 @@ bool _CANMSG_primary_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *m
         ECU_CANLIB_PACK(ecu_feedbacks, primary, ECU_FEEDBACKS, PRIMARY);
         ECU_CANLIB_PACK(ecu_control_status, primary, ECU_CONTROL_STATUS, PRIMARY);
         ECU_CANLIB_PACK(hv_set_status_ecu, primary, HV_SET_STATUS_ECU, PRIMARY);
+        ECU_CANLIB_PACK(ecu_power_maps, primary, ECU_POWER_MAPS, PRIMARY);
         ECU_CANLIB_PACK(lv_set_inverter_connection_status, primary, LV_SET_INVERTER_CONNECTION_STATUS, PRIMARY);
         // case PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID:
             // msg->size = primary_ambient_temperature_pack(

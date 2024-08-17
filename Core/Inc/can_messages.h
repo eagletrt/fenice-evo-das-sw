@@ -34,6 +34,7 @@ case NTW##_##MSG_NAME##_FRAME_ID:{ \
 typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_version_converted_t data;      } ecumsg_ecu_version_t;
 typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_errors_converted_t data;       } ecumsg_ecu_errors_t;
 typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_set_power_maps_converted_t data;     } ecumsg_ecu_set_power_maps_t;
+typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_power_maps_converted_t data;     } ecumsg_ecu_power_maps_t;
 typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_status_converted_t data;       } ecumsg_ecu_status_t;
 typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_feedbacks_converted_t data;       } ecumsg_ecu_feedbacks_t;
 typedef struct { CANMSG_MetadataTypeDef info; primary_ecu_set_status_converted_t data;   } ecumsg_ecu_set_status_t;
@@ -75,6 +76,7 @@ typedef struct { CANMSG_MetadataTypeDef info; } CANMSG_INVResponseTypeDef;
 extern ecumsg_ecu_version_t       ecumsg_ecu_version_state;
 extern ecumsg_ecu_errors_t        ecumsg_ecu_errors_state;
 extern ecumsg_ecu_set_power_maps_t      ecumsg_ecu_set_power_maps_state;
+extern ecumsg_ecu_power_maps_t      ecumsg_ecu_power_maps_state;
 extern ecumsg_ecu_status_t        ecumsg_ecu_status_state;
 extern ecumsg_ecu_feedbacks_t     ecumsg_ecu_feedbacks_state;
 extern ecumsg_ecu_set_status_t     ecumsg_ecu_set_status_state;

@@ -65,7 +65,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define DEBUG            1
+#define DEBUG            0
 #define MAIN_DBG_BUF_LEN 256
 /* USER CODE END PD */
 

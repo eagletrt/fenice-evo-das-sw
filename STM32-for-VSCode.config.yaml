@@ -10,7 +10,7 @@ target: fenice-evo-das
 # Can be C or C++
 language: C
 
-optimization: O2
+optimization: Og
 
 # MCU settings
 targetMCU: stm32f4x

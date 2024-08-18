@@ -22,7 +22,7 @@ TARGET = fenice-evo-das
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -O2
+OPT = -Og
 
 
 #######################################

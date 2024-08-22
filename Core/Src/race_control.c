@@ -26,8 +26,6 @@ bool _DAS_is_control_feasible() {
     // Steering wheel encoder not working
     if ((ENC_C_get_angle_deg()) > 179.0f && (ENC_C_get_angle_deg()) < 181.0f) {
         return false;
-    } else {
-        return true;
     }
 
     static uint8_t conditions_counter = 0;
@@ -45,11 +43,11 @@ bool _DAS_is_control_feasible() {
     }
 
     // Check on control watchdog
-    if (HAL_GetTick() - ecumsg_control_output_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_OUTPUT * 10) {
+    if (HAL_GetTick() - ecumsg_control_output_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_OUTPUT * 6) {
         conditions_counter++;
         ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 1;
     }
-    if (HAL_GetTick() - ecumsg_control_status_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_STATUS * 10) {
+    if (HAL_GetTick() - ecumsg_control_status_state.info.timestamp > PRIMARY_INTERVAL_CONTROL_STATUS * 6) {
         conditions_counter++;
         ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 1;
     } else {

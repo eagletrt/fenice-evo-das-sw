@@ -296,12 +296,15 @@ int main(void) {
             // HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
             // ecumsg_ecu_errors_state.data.das_error_pedal_adc = 1;
         }
-        if (!PED_is_brake_ok()) {
-            HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
-            ecumsg_ecu_errors_state.data.error_pedal_implausibility = 1;
-        } else {
-            HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
-            ecumsg_ecu_errors_state.data.error_pedal_implausibility = 0;
+        // wait one second before doing the check (read some samples)
+        if (HAL_GetTick() > 1000) {
+            if (!PED_is_brake_ok()) {
+                HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
+                ecumsg_ecu_errors_state.data.error_pedal_implausibility = 1;
+            } else {
+                HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
+                ecumsg_ecu_errors_state.data.error_pedal_implausibility = 0;
+            }
         }
 
         /* Send ECU feedbacks */

@@ -73,13 +73,13 @@ void PED_init() {
 float PED_get_accelerator_percent() {
     float acc1_percent = _PED_from_raw_to_percent(
         ADC_get_APPS1(),
-        1171,  // 286, // _PED_CALIB_APPS1_MIN,
-        3277   // 800 // _PED_CALIB_APPS1_MAX
+        1220,  // 286, // _PED_CALIB_APPS1_MIN,
+        3100   // 800 // _PED_CALIB_APPS1_MAX
     );
     float acc2_percent = _PED_from_raw_to_percent(
         ADC_get_APPS2(),
-        1171,  // 286, // _PED_CALIB_APPS2_MIN,
-        3277   // 800 // _PED_CALIB_APPS2_MAX
+        1200,  // 286, // _PED_CALIB_APPS2_MIN,
+        3100   // 800 // _PED_CALIB_APPS2_MAX
     );
     // return acc1_percent;
     float acc_avg = (acc1_percent + acc2_percent) / 2.0f;

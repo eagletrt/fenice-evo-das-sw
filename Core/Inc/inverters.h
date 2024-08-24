@@ -31,7 +31,7 @@ typedef enum { INV_LEFT, INV_RIGHT } INV_SideTypeDef;
 #define RPM_TO_RADS_COEFF         (2 * M_PI / 60.0f)
 #define RADS_TO_RPM_COEFF         (60.0f / (2 * M_PI))
 #define INV_I_MAX                 169.9f     //  400.0f // Arms
-#define MOT_RPM_MAX               6500.0f    // RPM
+#define MOT_RPM_MAX               8000.0f    // RPM
 #define BSPD_BRAKE_PRESSURE_LIMIT (20.0f)    // Bar
 #define BSPD_POWER_LIMIT          (5000.0f)  // W
 

@@ -119,14 +119,14 @@ void ENC_R_push_speed_rads() {
  * @brief     Calculate the ground speed from steering wheel encoder
  */
 void ENC_C_push_angle_deg() {
-    float calib_center_ang = 199.0f;
+    float calib_center_ang = 36.8f;
     uint16_t buf           = 0;
 
     /* Clock rate must be <= 4 MHz (from datasheet) */
     /* Also, the interval between two consecutive conversions must be > 20 μs */
     volatile HAL_StatusTypeDef status = HAL_SPI_Receive(&hspi2, (uint8_t *)&buf, 2, 100);
     if (status != HAL_OK) {
-      (void) status;
+        (void)status;
     }
     buf = buf >> 3;
     buf = buf & 0x0FFF;
@@ -135,13 +135,13 @@ void ENC_C_push_angle_deg() {
 
     float raw = 360.0f / 4095.f * buf;
 
-    static uint32_t last_debug_signal_1_sent = 0; 
+    static uint32_t last_debug_signal_1_sent = 0;
     if (HAL_GetTick() - last_debug_signal_1_sent > 50) {
         last_debug_signal_1_sent = HAL_GetTick();
         CAN_MessageTypeDef msg;
-        msg.hcan = &hcan1;
-        msg.id   = PRIMARY_DEBUG_SIGNAL_1_FRAME_ID;
-        msg.size = PRIMARY_DEBUG_SIGNAL_1_BYTE_SIZE;
+        msg.hcan                               = &hcan1;
+        msg.id                                 = PRIMARY_DEBUG_SIGNAL_1_FRAME_ID;
+        msg.size                               = PRIMARY_DEBUG_SIGNAL_1_BYTE_SIZE;
         primary_debug_signal_1_converted_t ds1 = {.device_id = primary_debug_signal_1_device_id_ecu, .field_1 = raw / 1000.0f};
         primary_debug_signal_1_t ds1_raw;
         primary_debug_signal_1_conversion_to_raw_struct(&ds1_raw, &ds1);
@@ -151,9 +151,8 @@ void ENC_C_push_angle_deg() {
 
     float angle = raw - calib_center_ang;
     angle *= -1.0;
-    if (angle < -100.0f)
-        angle += 180.0f;
-    angle *= 2.0f;
+    if (angle < -200.0f)
+        angle += 360.0f;
 
     /* Update array of values*/
     static const float a   = 1.0f / ENC_ROLLAVG_SIZE;

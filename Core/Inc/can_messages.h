@@ -96,17 +96,27 @@ typedef struct {
     CANMSG_MetadataTypeDef info;
     primary_lv_set_inverter_connection_status_converted_t data;
 } ecumsg_lv_set_inverter_connection_status_t;
-// typedef struct { CANMSG_MetadataTypeDef info; primary_set_pedal_calibration_t data; } CANMSG_SetPedalCalibrationTypeDef;
-// typedef struct { CANMSG_MetadataTypeDef info; primary_pedal_calibration_ack_t data; } CANMSG_PedalCalibrationAckTypeDef;
-// typedef struct { CANMSG_MetadataTypeDef info; primary_ambient_temperature_t data; } CANMSG_AmbientTemperatureTypeDef;
-typedef struct {
-    CANMSG_MetadataTypeDef info;
-    primary_control_output_converted_t data;
-} ecumsg_control_output_t;
 typedef struct {
     CANMSG_MetadataTypeDef info;
     primary_tlm_status_converted_t data;
 } ecumsg_tlm_status_t;
+typedef struct {
+    CANMSG_MetadataTypeDef info;
+    primary_hv_total_voltage_converted_t data;
+} ecumsg_hv_total_voltage_t;
+
+typedef struct {
+    CANMSG_MetadataTypeDef info;
+    primary_hv_cells_voltage_stats_converted_t data;
+} ecumsg_hv_cells_voltage_stats_t;
+typedef struct {
+    CANMSG_MetadataTypeDef info;
+    secondary_hv_soc_estimation_state_converted_t data;
+} ecumsg_hv_soc_t;
+typedef struct {
+    CANMSG_MetadataTypeDef info;
+    primary_control_output_converted_t data;
+} ecumsg_control_output_t;
 typedef struct {
     CANMSG_MetadataTypeDef info;
     primary_control_status_converted_t data;
@@ -115,10 +125,6 @@ typedef struct {
     CANMSG_MetadataTypeDef info;
     primary_ecu_control_status_converted_t data;
 } ecumsg_ecu_control_status_t;
-typedef struct {
-    CANMSG_MetadataTypeDef info;
-    primary_hv_total_voltage_converted_t data;
-} ecumsg_hv_total_voltage_t;
 
 /* Secondary Network */
 typedef struct {
@@ -137,14 +143,6 @@ typedef struct {
     CANMSG_MetadataTypeDef info;
     secondary_steer_angle_converted_t data;
 } ecumsg_steer_angle_t;
-typedef struct {
-    CANMSG_MetadataTypeDef info;
-    secondary_imu_acceleration_converted_t data;
-} ecumsg_imu_acceleration_t;
-typedef struct {
-    CANMSG_MetadataTypeDef info;
-    secondary_imu_angular_rate_converted_t data;
-} ecumsg_imu_angular_rate_t;
 
 /* Inverter automatic message */
 typedef struct {
@@ -160,39 +158,30 @@ extern ecumsg_ecu_feedbacks_t ecumsg_ecu_feedbacks_state;
 extern ecumsg_ecu_set_status_t ecumsg_ecu_set_status_state;
 extern ecumsg_ecu_control_status_t ecumsg_ecu_control_status_state;
 extern ecumsg_front_angular_velocity_t ecumsg_front_angular_velocity_state;
-// extern CANMSG_HVVoltageTypeDef        CANMSG_HVVoltage;
-// extern CANMSG_HVCurrentTypeDef        CANMSG_HVCurrent;
-// extern CANMSG_HVTemperatureTypeDef    CANMSG_HVTemperature;
 extern ecumsg_hv_errors_t ecumsg_hv_errors_state;
 extern ecumsg_hv_feedback_status_t ecumsg_hv_feedback_status_state;
 extern ecumsg_hv_status_t ecumsg_hv_status_state;
 extern ecumsg_hv_set_status_ecu_t ecumsg_hv_set_status_ecu_state;
-// extern CANMSG_LVCurrentTypeDef        CANMSG_LVCurrent;
-// extern CANMSG_LVVoltageTypeDef        CANMSG_LVVoltage;
-// extern CANMSG_LVTemperatureTypeDef    CANMSG_LVTemperature;
 extern ecumsg_lv_inverter_connection_status_t ecumsg_lv_inverter_connection_status_state;
 extern ecumsg_lv_set_inverter_connection_status_t ecumsg_lv_set_inverter_connection_status_state;
 extern ecumsg_ecu_set_ptt_status_t ecumsg_ecu_set_ptt_status_state;
 extern ecumsg_ecu_ptt_status_t ecumsg_ecu_ptt_status_state;
-// extern CANMSG_SetPedalCalibrationTypeDef CANMSG_SetPedalsCalibration;
-// extern CANMSG_PedalCalibrationAckTypeDef CANMSG_PedalsCalibrationAck;
-// extern CANMSG_AmbientTemperatureTypeDef CANMSG_AmbientTemperature;
 extern ecumsg_tlm_status_t ecumsg_tlm_status_state;
 extern ecumsg_hv_total_voltage_t ecumsg_hv_total_voltage_state;
+extern ecumsg_hv_cells_voltage_stats_t ecumsg_hv_cells_voltage_stats_state;
 
 extern ecumsg_pedal_throttle_t ecumsg_pedal_throttle_state;
 extern ecumsg_pedal_brakes_pressure_t ecumsg_pedal_brakes_pressure_state;
-// extern CANMSG_PedValsTypeDef          CANMSG_PedVals;
-extern ecumsg_control_output_t ecumsg_control_output_state;
 extern ecumsg_steer_angle_t ecumsg_steer_angle_state;
-// extern ecumsg_imu_acceleration_t           CANMSG_IMUAcc;
-// extern ecumsg_imu_angular_rate_t           CANMSG_IMUAng;
+
+extern ecumsg_hv_soc_t ecumsg_hv_soc_estimation_state_state;
+extern ecumsg_control_output_t ecumsg_control_output_state;
 extern ecumsg_control_status_t ecumsg_control_status_state;
 
-extern CANMSG_INVResponseTypeDef CANMSG_InvL_I_CMD_RAMP, CANMSG_InvL_I_CMD, CANMSG_InvL_IQ_ACTUAL, CANMSG_InvL_T_MOTOR, CANMSG_InvL_T_IGBT,
-    CANMSG_InvL_N_ACTUAL_FILT, CANMSG_InvL_M_CMD_RAMP, CANMSG_InvL_VDC_BUS;
-extern CANMSG_INVResponseTypeDef CANMSG_InvR_I_CMD_RAMP, CANMSG_InvR_I_CMD, CANMSG_InvR_IQ_ACTUAL, CANMSG_InvR_T_MOTOR, CANMSG_InvR_T_IGBT,
-    CANMSG_InvR_N_ACTUAL_FILT, CANMSG_InvR_M_CMD_RAMP, CANMSG_InvR_VDC_BUS;
+extern CANMSG_INVResponseTypeDef CANMSG_InvL_I_CMD_RAMP, CANMSG_InvL_I_CMD, CANMSG_InvL_IQ_ACTUAL, CANMSG_InvL_ID_ACTUAL,
+    CANMSG_InvL_T_MOTOR, CANMSG_InvL_T_IGBT, CANMSG_InvL_N_ACTUAL_FILT, CANMSG_InvL_N_CMD_RAMP, CANMSG_InvL_VDC_BUS;
+extern CANMSG_INVResponseTypeDef CANMSG_InvR_I_CMD_RAMP, CANMSG_InvR_I_CMD, CANMSG_InvR_IQ_ACTUAL, CANMSG_InvR_ID_ACTUAL,
+    CANMSG_InvR_T_MOTOR, CANMSG_InvR_T_IGBT, CANMSG_InvR_N_ACTUAL_FILT, CANMSG_InvR_N_CMD_RAMP, CANMSG_InvR_VDC_BUS;
 
 /**
  * Implementation of CAN messages

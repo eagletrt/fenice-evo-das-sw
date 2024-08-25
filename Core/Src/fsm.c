@@ -191,14 +191,12 @@ state_t do_enable_inv_updates(state_data_t *data) {
     i_cmd &= (HAL_GetTick() - CANMSG_InvR_I_CMD.info.timestamp) < tout_ms;
     bool iq_actual = (HAL_GetTick() - CANMSG_InvL_IQ_ACTUAL.info.timestamp) < tout_ms;
     iq_actual &= (HAL_GetTick() - CANMSG_InvR_IQ_ACTUAL.info.timestamp) < tout_ms;
-    bool t_motor = (HAL_GetTick() - CANMSG_InvL_T_MOTOR.info.timestamp) < tout_ms;
-    t_motor &= (HAL_GetTick() - CANMSG_InvR_T_MOTOR.info.timestamp) < tout_ms;
-    bool t_igbt = (HAL_GetTick() - CANMSG_InvL_T_IGBT.info.timestamp) < tout_ms;
-    t_igbt &= (HAL_GetTick() - CANMSG_InvR_T_IGBT.info.timestamp) < tout_ms;
+    bool id_actual = (HAL_GetTick() - CANMSG_InvL_ID_ACTUAL.info.timestamp) < tout_ms;
+    id_actual &= (HAL_GetTick() - CANMSG_InvR_ID_ACTUAL.info.timestamp) < tout_ms;
     bool n_actual_filt = (HAL_GetTick() - CANMSG_InvL_N_ACTUAL_FILT.info.timestamp) < tout_ms;
     n_actual_filt &= (HAL_GetTick() - CANMSG_InvR_N_ACTUAL_FILT.info.timestamp) < tout_ms;
-    bool m_cmd_ramp = (HAL_GetTick() - CANMSG_InvL_M_CMD_RAMP.info.timestamp) < tout_ms;
-    m_cmd_ramp &= (HAL_GetTick() - CANMSG_InvR_M_CMD_RAMP.info.timestamp) < tout_ms;
+    bool n_cmd_ramp = (HAL_GetTick() - CANMSG_InvL_N_CMD_RAMP.info.timestamp) < tout_ms;
+    n_cmd_ramp &= (HAL_GetTick() - CANMSG_InvR_N_CMD_RAMP.info.timestamp) < tout_ms;
     bool vdc_bus = (HAL_GetTick() - CANMSG_InvL_VDC_BUS.info.timestamp) < tout_ms;
     vdc_bus &= (HAL_GetTick() - CANMSG_InvR_VDC_BUS.info.timestamp) < tout_ms;
 
@@ -215,20 +213,16 @@ state_t do_enable_inv_updates(state_data_t *data) {
         INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_27H_IQ_ACTUAL_CHOICE, 10);
         HAL_Delay(51);
     }
-    if (!t_motor) {
-        INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_49H_T_MOTOR_CHOICE, 100);
-        HAL_Delay(51);
-    }
-    if (!t_igbt) {
-        INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_4AH_T_IGBT_CHOICE, 100);
+    if (!id_actual) {
+        INV_enable_regid_updates(INVERTERS_INV_L_RCV_RCV_MUX_ID_28_ID_ACTUAL_CHOICE, 10);
         HAL_Delay(51);
     }
     if (!n_actual_filt) {
         INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_A8H_N_ACTUAL_FILT_CHOICE, 10);
         HAL_Delay(51);
     }
-    if (!m_cmd_ramp) {
-        INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_3AH_M_CMD_RAMP_CHOICE, 10);
+    if (!n_cmd_ramp) {
+        INV_enable_regid_updates(INVERTERS_INV_L_SEND_READ_ID_32H_N_CMD_RAMP_CHOICE, 10);
         HAL_Delay(51);
     }
     if (!vdc_bus) {
@@ -241,7 +235,7 @@ state_t do_enable_inv_updates(state_data_t *data) {
     //   status_on, ioinfo_on, errors_on, speed_on
     // );
 
-    if (i_cmd_ramp && i_cmd && iq_actual && t_motor && t_igbt && n_actual_filt && m_cmd_ramp && vdc_bus)
+    if (i_cmd_ramp && i_cmd && iq_actual && id_actual && n_actual_filt && n_cmd_ramp && vdc_bus)
         next_state = STATE_CHECK_INV_SETTINGS;
     else
         next_state = NO_CHANGE;

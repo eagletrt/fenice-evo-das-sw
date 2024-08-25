@@ -80,26 +80,30 @@ ecumsg_pedal_throttle_t ecumsg_pedal_throttle_state               = {{0U, false,
 ecumsg_pedal_brakes_pressure_t ecumsg_pedal_brakes_pressure_state = {{0U, false, 0U}, {0U}};
 // ecumsg_imu_acceleration_t         CANMSG_IMUAcc         = { {0U, false, 0U}, { 0U } };
 // ecumsg_imu_angular_rate_t         CANMSG_IMUAng         = { {0U, false, 0U}, { 0U } };
-ecumsg_control_status_t ecumsg_control_status_state         = {{0U, false, 0U}, {0U}};
-ecumsg_ecu_control_status_t ecumsg_ecu_control_status_state = {{0U, false, 0U}, {0U}};
+ecumsg_control_status_t ecumsg_control_status_state                 = {{0U, false, 0U}, {0U}};
+ecumsg_ecu_control_status_t ecumsg_ecu_control_status_state         = {{0U, false, 0U}, {0U}};
+ecumsg_hv_cells_voltage_stats_t ecumsg_hv_cells_voltage_stats_state = {{0U, false, 0U}, {0U}};
+ecumsg_hv_soc_t ecumsg_hv_soc_estimation_state_state                = {{0U, false, 0U}, {0U}};
 
 /* Inverter automatic message */
 CANMSG_INVResponseTypeDef CANMSG_InvL_I_CMD_RAMP    = {{0U, false, 0U}};
 CANMSG_INVResponseTypeDef CANMSG_InvL_I_CMD         = {{0U, false, 0U}};
 CANMSG_INVResponseTypeDef CANMSG_InvL_IQ_ACTUAL     = {{0U, false, 0U}};
+CANMSG_INVResponseTypeDef CANMSG_InvL_ID_ACTUAL     = {{0U, false, 0U}};
 CANMSG_INVResponseTypeDef CANMSG_InvL_T_MOTOR       = {{0U, false, 0U}};
 CANMSG_INVResponseTypeDef CANMSG_InvL_T_IGBT        = {{0U, false, 0U}};
 CANMSG_INVResponseTypeDef CANMSG_InvL_N_ACTUAL_FILT = {{0U, false, 0U}};
-CANMSG_INVResponseTypeDef CANMSG_InvL_M_CMD_RAMP    = {{0U, false, 0U}};
+CANMSG_INVResponseTypeDef CANMSG_InvL_N_CMD_RAMP    = {{0U, false, 0U}};
 CANMSG_INVResponseTypeDef CANMSG_InvL_VDC_BUS       = {{0U, false, 0U}};
 
 CANMSG_INVResponseTypeDef CANMSG_InvR_I_CMD_RAMP    = {{0U, false, 0U}};
 CANMSG_INVResponseTypeDef CANMSG_InvR_I_CMD         = {{0U, false, 0U}};
 CANMSG_INVResponseTypeDef CANMSG_InvR_IQ_ACTUAL     = {{0U, false, 0U}};
+CANMSG_INVResponseTypeDef CANMSG_InvR_ID_ACTUAL     = {{0U, false, 0U}};
 CANMSG_INVResponseTypeDef CANMSG_InvR_T_MOTOR       = {{0U, false, 0U}};
 CANMSG_INVResponseTypeDef CANMSG_InvR_T_IGBT        = {{0U, false, 0U}};
 CANMSG_INVResponseTypeDef CANMSG_InvR_N_ACTUAL_FILT = {{0U, false, 0U}};
-CANMSG_INVResponseTypeDef CANMSG_InvR_M_CMD_RAMP    = {{0U, false, 0U}};
+CANMSG_INVResponseTypeDef CANMSG_InvR_N_CMD_RAMP    = {{0U, false, 0U}};
 CANMSG_INVResponseTypeDef CANMSG_InvR_VDC_BUS       = {{0U, false, 0U}};
 
 CANFQ_QueueTypeDef _CANMSG_RX_queue = {0U};
@@ -160,6 +164,7 @@ void _CANMSG_primary_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
         ECU_CANLIB_UNPACK(control_status, primary, CONTROL_STATUS, PRIMARY);
         ECU_CANLIB_UNPACK(tlm_status, primary, TLM_STATUS, PRIMARY);
         ECU_CANLIB_UNPACK(hv_total_voltage, primary, HV_TOTAL_VOLTAGE, PRIMARY);
+        ECU_CANLIB_UNPACK(hv_cells_voltage_stats, primary, HV_CELLS_VOLTAGE_STATS, PRIMARY);
         default:
             // LOG_write(LOGLEVEL_ERR, "[CANMSG/Deserialize] Unknown message id: 0x%X", msg.id);
             break;
@@ -168,23 +173,7 @@ void _CANMSG_primary_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
 
 void _CANMSG_secondary_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
     switch (msg.id) {
-            // case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
-            // secondary_imu_acceleration_t raw_imu_acc;
-            // secondary_imu_acceleration_unpack(&raw_imu_acc, msg.data, SECONDARY_IMU_ACCELERATION_BYTE_SIZE);
-            // secondary_imu_acceleration_raw_to_conversion_struct(&(CANMSG_IMUAcc.data), &raw_imu_acc);
-            // CANMSG_AmbientTemperature.data.temp = CANMSG_IMUAcc.data.temperature;
-            // CANMSG_AmbientTemperature.info.is_new = true;
-            // CANMSG_IMUAcc.info.hcan = msg.hcan;
-            // break;
-            // }
-            // case SECONDARY_IMU_ANGULAR_RATE_FRAME_ID:{
-            // secondary_imu_angular_rate_t raw_imu_ang;
-            // secondary_imu_angular_rate_unpack(&raw_imu_ang, msg.data, SECONDARY_IMU_ANGULAR_RATE_BYTE_SIZE);
-            // secondary_imu_angular_rate_raw_to_conversion_struct(&(CANMSG_IMUAng.data), &raw_imu_ang);
-            // CANMSG_IMUAng.info.hcan = msg.hcan;
-            // break;
-            // }
-
+        ECU_CANLIB_UNPACK(hv_soc_estimation_state, secondary, HV_SOC_ESTIMATION_STATE, SECONDARY);
         default:
             // LOG_write(LOGLEVEL_ERR, "[CANMSG/Deserialize] Unknown message id: 0x%X", msg.id);
             break;
@@ -218,12 +207,8 @@ CANMSG_MetadataTypeDef *CANMSG_get_primary_metadata_from_id(CAN_IdTypeDef id) {
             return &(ecumsg_hv_status_state.info);
         case PRIMARY_HV_TOTAL_VOLTAGE_FRAME_ID:
             return &(ecumsg_hv_total_voltage_state.info);
-        // case PRIMARY_HV_VOLTAGE_FRAME_ID:
-        // return &(CANMSG_HVVoltage.info);
-        // case PRIMARY_HV_CURRENT_FRAME_ID:
-        // return &(CANMSG_HVCurrent.info);
-        // case PRIMARY_HV_TEMP_FRAME_ID:
-        // return &(CANMSG_HVTemperature.info);
+        case PRIMARY_HV_CELLS_VOLTAGE_STATS_FRAME_ID:
+            return &(ecumsg_hv_cells_voltage_stats_state.info);
         case PRIMARY_HV_ERRORS_FRAME_ID:
             return &(ecumsg_hv_errors_state.info);
         case PRIMARY_HV_FEEDBACK_STATUS_FRAME_ID:
@@ -281,6 +266,8 @@ CANMSG_MetadataTypeDef *CANMSG_get_secondary_metadata_from_id(CAN_IdTypeDef id) 
         // return &(CANMSG_PedVals.info);
         case SECONDARY_STEER_ANGLE_FRAME_ID:
             return &(ecumsg_steer_angle_state.info);
+        case SECONDARY_HV_SOC_ESTIMATION_STATE_FRAME_ID:
+            return &(ecumsg_hv_soc_estimation_state_state.info);
         // case SECONDARY_IMU_ACCELERATION_FRAME_ID:
         // return &(CANMSG_IMUAcc.info);
         // case SECONDARY_IMU_ANGULAR_RATE_FRAME_ID:
@@ -311,8 +298,8 @@ CANMSG_MetadataTypeDef *CANMSG_get_InvL_metadata_from_mux_id(CAN_IdTypeDef id) {
             return &(CANMSG_InvL_T_IGBT.info);
         case INVERTERS_INV_L_RCV_RCV_MUX_ID_A8_N_ACTUAL_FILT_CHOICE:
             return &(CANMSG_InvL_N_ACTUAL_FILT.info);
-        case INVERTERS_INV_L_RCV_RCV_MUX_ID_3A_M_CMD_RAMP_CHOICE:
-            return &(CANMSG_InvL_M_CMD_RAMP.info);
+        case INVERTERS_INV_L_RCV_RCV_MUX_ID_32_N_CMD_RAMP_CHOICE:
+            return &(CANMSG_InvL_N_CMD_RAMP.info);
         case INVERTERS_INV_L_SEND_READ_ID_EBH_VDC_BUS_CHOICE:
             return &(CANMSG_InvL_VDC_BUS.info);
         default:
@@ -336,8 +323,8 @@ CANMSG_MetadataTypeDef *CANMSG_get_InvR_metadata_from_mux_id(CAN_IdTypeDef id) {
             return &(CANMSG_InvR_T_IGBT.info);
         case INVERTERS_INV_R_RCV_RCV_MUX_ID_A8_N_ACTUAL_FILT_CHOICE:
             return &(CANMSG_InvR_N_ACTUAL_FILT.info);
-        case INVERTERS_INV_R_RCV_RCV_MUX_ID_3A_M_CMD_RAMP_CHOICE:
-            return &(CANMSG_InvR_M_CMD_RAMP.info);
+        case INVERTERS_INV_R_RCV_RCV_MUX_ID_32_N_CMD_RAMP_CHOICE:
+            return &(CANMSG_InvR_N_CMD_RAMP.info);
         case INVERTERS_INV_R_SEND_READ_ID_EBH_VDC_BUS_CHOICE:
             return &(CANMSG_InvR_VDC_BUS.info);
         default:

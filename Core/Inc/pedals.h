@@ -22,7 +22,7 @@
 #define BRK_THRESHOLD_LOW    0.8f
 
 #define VOLTAGE_DIVIDER (0.6040268456f)
-#define PED_MAX_TORQUE  (88.0f)  // Nm
+#define PED_MAX_TORQUE  (91.0f)  // Nm
 
 #define EEPROM_SPI hspi1
 

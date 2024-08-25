@@ -258,6 +258,10 @@ int main(void) {
         /* Iterate over inverter registers */
         INV_read_next_register();
 
+        // float trq   = PED_get_accelerator_torque(PED_get_accelerator_percent());
+        // float trq_2 = trq;
+        // _INV_minimum_cell_voltage_limit(INV_get_RPM(INV_LEFT), INV_get_RPM(INV_RIGHT), &trq, &trq_2);
+
         _DAS_is_control_feasible();
         ecumsg_ecu_control_status_state.data.control_enabled = ENABLE_CONTROLS;
         ecumsg_ecu_control_status_state.info.is_new          = 1;

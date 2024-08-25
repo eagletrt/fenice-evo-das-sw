@@ -4,6 +4,7 @@
 #include "can_messages.h"
 #include "can_user_functions.h"
 #include "logger.h"
+#include "usart.h"
 
 #include <math.h>
 #include <string.h>
@@ -355,6 +356,82 @@ float _INV_compute_current_negative_limit(float rpm, float torque_ratio) {
     float I_batt_min = INV_I_batt_min_negative(rpm, torque_ratio);
     return fmax(I_mot_peak, fmax(I_mot_max, I_batt_min));
 }
+float _INV_pack_VOC_model(float soc) {
+    soc = fmax(0.0, fmin(1.0, soc));
+    return -3.85189120 * pow(soc, 4) + 9.42278296 * pow(soc, 3) - 8.31949326 * pow(soc, 2) + 4.04805239 * soc + 2.82544823;
+}
+float _INV_internal_resistance_model(float soc) {
+    soc = fmax(0.0, fmin(1.0, soc));
+    return 0.0141 + 0.0021 * soc;
+}
+void _INV_minimum_cell_voltage_limit(float rpm_l, float rpm_r, float *torque_l, float *torque_r) {
+    if (HAL_GetTick() - ecumsg_hv_soc_estimation_state_state.info.timestamp > 1000 ||
+        HAL_GetTick() - ecumsg_hv_total_voltage_state.info.timestamp > 1000) {
+        return;
+    }
+
+    float w_l = rpm_l * RPM_TO_RADS_COEFF;
+    float w_r = rpm_r * RPM_TO_RADS_COEFF;
+
+    float VOC   = _INV_pack_VOC_model(ecumsg_hv_soc_estimation_state_state.data.soc);
+    float dV    = fmax(VOC - HV_MIN_CELL_VOLTAGE, 0.0);
+    float R     = _INV_internal_resistance_model(ecumsg_hv_soc_estimation_state_state.data.soc);
+    float I_max = dV / R;
+    I_max *= 4.0;  // 4 parallels
+
+    // static uint32_t print_time_ms = 0;
+
+    float packV = VOC * HV_CELL_COUNT;
+    float P_max = packV * I_max;
+
+    float t_l = *torque_l;
+    float t_r = *torque_r;
+
+    float P_mech          = *torque_l * w_l + *torque_r * w_r;
+    float reduction_ratio = 0.0f;
+    if (fabs(P_max) < 1.0) {
+        *torque_l = 0.0f;
+        *torque_r = 0.0f;
+    } else if (P_mech > P_max && P_mech > 0.0f) {
+        reduction_ratio = fmin(fmax(P_max / P_mech, 0.0f), 1.0f);
+        *torque_l *= reduction_ratio;
+        *torque_r *= reduction_ratio;
+    }
+    // if (HAL_GetTick() - print_time_ms > 200) {
+    //     print_time_ms = HAL_GetTick();
+    //     char buffer[100];
+
+    //     snprintf(buffer, 100, "---------\r\nVOC: %.2f, R: %.2f, I_max: %.2f\r\n", VOC, R, I_max);
+    //     HAL_UART_Transmit(&huart2, (uint8_t *)buffer, strlen(buffer), 1000);
+
+    //     sprintf(buffer, "P_max: %.2f, P_mech: %.2f, reduction_ratio: %.2f\r\n", P_max, P_mech, reduction_ratio);
+    //     HAL_UART_Transmit(&huart2, (uint8_t *)buffer, strlen(buffer), 1000);
+
+    //     snprintf(buffer, 100, "omega_l: %.2f, omega_r: %.2f\r\n", w_l, w_r);
+    //     HAL_UART_Transmit(&huart2, (uint8_t *)buffer, strlen(buffer), 1000);
+
+    //     sprintf(buffer, "torque_l: %.2f, torque_r: %.2f\r\n", t_l, t_r);
+    //     HAL_UART_Transmit(&huart2, (uint8_t *)buffer, strlen(buffer), 1000);
+
+    //     sprintf(buffer, "torque_l_aft: %.2f, torque_r_aft: %.2f\r\n", *torque_l, *torque_r);
+    //     HAL_UART_Transmit(&huart2, (uint8_t *)buffer, strlen(buffer), 1000);
+    // }
+
+    static uint32_t last_debug_signal_3_sent = 0;
+    if (HAL_GetTick() - last_debug_signal_3_sent > 50) {
+        last_debug_signal_3_sent = HAL_GetTick();
+        CAN_MessageTypeDef msg;
+        msg.hcan                               = &hcan1;
+        msg.id                                 = PRIMARY_DEBUG_SIGNAL_4_FRAME_ID;
+        msg.size                               = PRIMARY_DEBUG_SIGNAL_4_BYTE_SIZE;
+        primary_debug_signal_4_converted_t ds8 = {
+            .device_id = primary_debug_signal_4_device_id_ecu, .field_1 = P_mech / 100000.0f, .field_2 = dV / 10.0, .field_3 = R};
+        primary_debug_signal_4_t ds8_raw;
+        primary_debug_signal_4_conversion_to_raw_struct(&ds8_raw, &ds8);
+        primary_debug_signal_4_pack(msg.data, &ds8_raw, PRIMARY_DEBUG_SIGNAL_4_BYTE_SIZE);
+        CAN_send(&msg, msg.hcan);
+    }
+}
 float _INV_avoid_zero_division(float rpm, float pos_threshold) {
     if (rpm > -pos_threshold && rpm < pos_threshold) {
         if (rpm > 0) {
@@ -374,34 +451,35 @@ void INV_apply_cutoff(float rpm_l, float rpm_r, float *torque_l, float *torque_r
     rpm_l                       = _INV_avoid_zero_division(rpm_l, speed_threshold);
     rpm_r                       = _INV_avoid_zero_division(rpm_r, speed_threshold);
 
-    {
-        float I_positive_cutoff_l = _INV_compute_current_positive_limit(rpm_l, torque_ratio_l);
-        float I_negative_cutoff_l = _INV_compute_current_negative_limit(rpm_l, torque_ratio_l);
-        if (I_positive_cutoff_l > 0.0f) {
-            *torque_l = fmin(*torque_l, INV_current_to_torque(I_positive_cutoff_l));
-        } else {
-            *torque_l = fmax(*torque_l, INV_current_to_torque(I_positive_cutoff_l));
-        }
-        if (I_negative_cutoff_l > 0.0f) {
-            *torque_l = fmin(*torque_l, INV_current_to_torque(I_negative_cutoff_l));
-        } else {
-            *torque_l = fmax(*torque_l, INV_current_to_torque(I_negative_cutoff_l));
-        }
-    }
-    {
-        float I_positive_cutoff_r = _INV_compute_current_positive_limit(rpm_r, torque_ratio_r);
-        float I_negative_cutoff_r = _INV_compute_current_negative_limit(rpm_r, torque_ratio_r);
-        if (I_positive_cutoff_r > 0.0f) {
-            *torque_r = fmin(*torque_r, INV_current_to_torque(I_positive_cutoff_r));
-        } else {
-            *torque_r = fmax(*torque_r, INV_current_to_torque(I_positive_cutoff_r));
-        }
-        if (I_negative_cutoff_r > 0.0f) {
-            *torque_r = fmin(*torque_r, INV_current_to_torque(I_negative_cutoff_r));
-        } else {
-            *torque_r = fmax(*torque_r, INV_current_to_torque(I_negative_cutoff_r));
-        }
-    }
+    // {
+    //     float I_positive_cutoff_l = _INV_compute_current_positive_limit(rpm_l, torque_ratio_l);
+    //     float I_negative_cutoff_l = _INV_compute_current_negative_limit(rpm_l, torque_ratio_l);
+    //     if (I_positive_cutoff_l > 0.0f) {
+    //         *torque_l = fmin(*torque_l, INV_current_to_torque(I_positive_cutoff_l));
+    //     } else {
+    //         *torque_l = fmax(*torque_l, INV_current_to_torque(I_positive_cutoff_l));
+    //     }
+    //     if (I_negative_cutoff_l > 0.0f) {
+    //         *torque_l = fmin(*torque_l, INV_current_to_torque(I_negative_cutoff_l));
+    //     } else {
+    //         *torque_l = fmax(*torque_l, INV_current_to_torque(I_negative_cutoff_l));
+    //     }
+    // }
+    // {
+    //     float I_positive_cutoff_r = _INV_compute_current_positive_limit(rpm_r, torque_ratio_r);
+    //     float I_negative_cutoff_r = _INV_compute_current_negative_limit(rpm_r, torque_ratio_r);
+    //     if (I_positive_cutoff_r > 0.0f) {
+    //         *torque_r = fmin(*torque_r, INV_current_to_torque(I_positive_cutoff_r));
+    //     } else {
+    //         *torque_r = fmax(*torque_r, INV_current_to_torque(I_positive_cutoff_r));
+    //     }
+    //     if (I_negative_cutoff_r > 0.0f) {
+    //         *torque_r = fmin(*torque_r, INV_current_to_torque(I_negative_cutoff_r));
+    //     } else {
+    //         *torque_r = fmax(*torque_r, INV_current_to_torque(I_negative_cutoff_r));
+    //     }
+    // }
+    _INV_minimum_cell_voltage_limit(rpm_l, rpm_r, torque_l, torque_r);
 }
 
 bool INV_apply_bspd_limits(float *torque_l_Nm, float *torque_r_Nm, float brake_pressure) {

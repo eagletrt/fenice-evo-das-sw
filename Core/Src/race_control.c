@@ -52,7 +52,7 @@ bool _DAS_is_control_feasible() {
         ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 1;
     } else {
         // Check control and steering maps
-        if (equal_d_threshold(ecumsg_control_status_state.data.map_pw, ecumsg_ecu_set_power_maps_state.data.map_pw, 0.05) &&
+        if (equal_d_threshold(ecumsg_control_status_state.data.map_pw, DAS_get_pwr_map(), 0.05) &&
             equal_d_threshold(ecumsg_control_status_state.data.map_tv, ecumsg_ecu_set_power_maps_state.data.map_tv, 0.05) &&
             equal_d_threshold(ecumsg_control_status_state.data.map_sc, ecumsg_ecu_set_power_maps_state.data.map_sc, 0.05)) {
             conditions_counter = 0;
@@ -132,7 +132,8 @@ void _DAS_update_brake_impl(float apps, float bse) {
 }
 
 float DAS_get_pwr_map() {
-    return ecumsg_ecu_set_power_maps_state.data.map_pw;
+    return 1.0f;
+    // return ecumsg_ecu_set_power_maps_state.data.map_pw;
 }
 
 float DAS_get_sc_map() {

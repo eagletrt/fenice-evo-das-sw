@@ -33,7 +33,7 @@ typedef enum { INV_LEFT, INV_RIGHT } INV_SideTypeDef;
 #define INV_I_MAX                 169.7f     //  400.0f // Arms
 #define MOT_RPM_MAX               8000.0f    // RPM
 #define BSPD_BRAKE_PRESSURE_LIMIT (20.0f)    // Bar
-#define BSPD_POWER_LIMIT          (5000.0f)  // W
+#define BSPD_POWER_LIMIT          (3800.0f)  // W
 
 float INV_I_mot_peak();
 float INV_I_mot_max(const float rpm);

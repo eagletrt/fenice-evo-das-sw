@@ -18,8 +18,9 @@ bool DAS_do_drive_routine(float brake_pressure);
 float _DAS_get_driver_request();
 bool _DAS_is_control_feasible();
 
-float DAS_get_pwr_map();
-float DAS_get_sc_map();
-float DAS_get_tv_map();
+float DAS_get_power_map();
+bool DAS_get_sc_state();
+bool DAS_get_tv_state();
+bool DAS_get_reg_state();
 
 #endif

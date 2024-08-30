@@ -35,10 +35,9 @@ bool _DAS_is_control_feasible() {
     }
 
     // Driver turned off the controls
-    if (equal_d_threshold(ecumsg_ecu_set_power_maps_state.data.map_tv, 0.0, 0.05) &&
-        equal_d_threshold(ecumsg_ecu_set_power_maps_state.data.map_sc, 0.0, 0.05)) {
-        conditions_counter                                             = CONTROL_FAIL_COUNT;
-        ecumsg_ecu_control_status_state.data.control_errors_forced_off = 1;
+    if (!DAS_get_sc_state() && !DAS_get_tv_state() && !DAS_get_reg_state()) {
+        conditions_counter                                                    = CONTROL_FAIL_COUNT;
+        ecumsg_ecu_control_status_state.data.control_errors_disabled_from_ecu = 1;
         return false;
     }
 
@@ -52,9 +51,10 @@ bool _DAS_is_control_feasible() {
         ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 1;
     } else {
         // Check control and steering maps
-        if (equal_d_threshold(ecumsg_control_status_state.data.map_pw, DAS_get_pwr_map(), 0.05) &&
-            equal_d_threshold(ecumsg_control_status_state.data.map_tv, ecumsg_ecu_set_power_maps_state.data.map_tv, 0.05) &&
-            equal_d_threshold(ecumsg_control_status_state.data.map_sc, ecumsg_ecu_set_power_maps_state.data.map_sc, 0.05)) {
+        if (equal_d_threshold(ecumsg_control_status_state.data.map_power, DAS_get_power_map(), 0.05) &&
+            ecumsg_control_status_state.data.sc_state == DAS_get_sc_state() &&
+            ecumsg_control_status_state.data.tv_state == DAS_get_tv_state() &&
+            ecumsg_control_status_state.data.reg_state == DAS_get_reg_state()) {
             conditions_counter = 0;
         } else {
             conditions_counter++;
@@ -64,9 +64,9 @@ bool _DAS_is_control_feasible() {
 
     if (conditions_counter < CONTROL_FAIL_COUNT) {
         if (conditions_counter == 0) {
-            ecumsg_ecu_control_status_state.data.control_errors_forced_off       = 0;
-            ecumsg_ecu_control_status_state.data.control_errors_control_watchdog = 0;
-            ecumsg_ecu_control_status_state.data.control_errors_wrong_maps       = 0;
+            ecumsg_ecu_control_status_state.data.control_errors_disabled_from_ecu = 0;
+            ecumsg_ecu_control_status_state.data.control_errors_control_watchdog  = 0;
+            ecumsg_ecu_control_status_state.data.control_errors_wrong_maps        = 0;
         }
         return true;
     } else {
@@ -86,8 +86,6 @@ bool DAS_do_drive_routine(float brake_pressure) {
         ecumsg_ecu_control_status_state.data.control_enabled = true;
         torque_l_Nm                                          = ecumsg_control_output_state.data.torque_l;
         torque_r_Nm                                          = ecumsg_control_output_state.data.torque_r;
-        torque_l_Nm                                          = fmin(torque_l_Nm, driver_request);
-        torque_r_Nm                                          = fmin(torque_r_Nm, driver_request);
     } else {
         torque_l_Nm = torque_r_Nm = driver_request;
     }
@@ -131,15 +129,15 @@ void _DAS_update_brake_impl(float apps, float bse) {
     }
 }
 
-float DAS_get_pwr_map() {
+float DAS_get_power_map() {
     return 1.0f;
-    // return ecumsg_ecu_set_power_maps_state.data.map_pw;
 }
-
-float DAS_get_sc_map() {
-    return ecumsg_ecu_set_power_maps_state.data.map_sc;
+bool DAS_get_sc_state() {
+    return ecumsg_ecu_set_power_maps_state.data.sc_state;
 }
-
-float DAS_get_tv_map() {
-    return ecumsg_ecu_set_power_maps_state.data.map_tv;
+bool DAS_get_tv_state() {
+    return ecumsg_ecu_set_power_maps_state.data.tv_state;
+}
+bool DAS_get_reg_state() {
+    return ecumsg_ecu_set_power_maps_state.data.reg_state;
 }

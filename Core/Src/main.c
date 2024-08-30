@@ -264,9 +264,10 @@ int main(void) {
 
         if (ecumsg_ecu_set_power_maps_state.info.is_new) {
             ecumsg_ecu_set_power_maps_state.info.is_new = false;
-            ecumsg_ecu_power_maps_state.data.map_pw     = DAS_get_pwr_map();
-            ecumsg_ecu_power_maps_state.data.map_sc     = DAS_get_sc_map();
-            ecumsg_ecu_power_maps_state.data.map_tv     = DAS_get_tv_map();
+            ecumsg_ecu_power_maps_state.data.map_power  = DAS_get_power_map();
+            ecumsg_ecu_power_maps_state.data.sc_state   = DAS_get_sc_state();
+            ecumsg_ecu_power_maps_state.data.tv_state   = DAS_get_tv_state();
+            ecumsg_ecu_power_maps_state.data.reg_state  = DAS_get_reg_state();
         }
         ecumsg_ecu_power_maps_state.info.is_new = 1;
 

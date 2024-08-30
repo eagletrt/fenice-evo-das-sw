@@ -97,7 +97,7 @@ float PED_get_accelerator_percent() {
 }
 
 float PED_get_accelerator_torque(float acc_percent) {
-    float mp = DAS_get_pwr_map();
+    float mp = DAS_get_power_map();
     mp       = mp > 0.0 ? mp : 0.0;
     mp       = mp > 1.0 ? 1.0 : mp;
     return PED_MAX_TORQUE * acc_percent * mp;

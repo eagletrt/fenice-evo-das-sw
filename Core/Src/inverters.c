@@ -382,9 +382,6 @@ void _INV_minimum_cell_voltage_limit(float rpm_l, float rpm_r, float *torque_l, 
     float packV = VOC * HV_CELL_COUNT;
     float P_max = packV * I_max;
 
-    float t_l = *torque_l;
-    float t_r = *torque_r;
-
     float P_mech          = *torque_l * w_l + *torque_r * w_r;
     float reduction_ratio = 0.0f;
     if (fabs(P_max) < 1.0) {
@@ -449,10 +446,27 @@ void INV_apply_cutoff(float rpm_l, float rpm_r, float *torque_l, float *torque_r
 bool INV_apply_bspd_limits(float *torque_l_Nm, float *torque_r_Nm, float brake_pressure) {
     const float safety_factor = 1.1f;
     if ((brake_pressure * safety_factor) >= BSPD_BRAKE_PRESSURE_LIMIT) {
-        float hv_total_voltage = ecumsg_hv_total_voltage_state.data.pack == 0.0f ? 600.0f : ecumsg_hv_total_voltage_state.data.pack;
+        float hv_total_voltage = ecumsg_hv_total_voltage_state.data.sum_cell == 0.0f ? 600.0f : ecumsg_hv_total_voltage_state.data.sum_cell;
         float current_limit    = (BSPD_POWER_LIMIT) / (hv_total_voltage * safety_factor);
-        *torque_l_Nm           = fminf(*torque_l_Nm, INV_current_to_torque(current_limit / 2.0f));
-        *torque_r_Nm           = fminf(*torque_r_Nm, INV_current_to_torque(current_limit / 2.0f));
+
+        float torque_l_before = *torque_l_Nm;
+
+        *torque_l_Nm = fminf(*torque_l_Nm, INV_current_to_torque(current_limit / 2.0f));
+        *torque_r_Nm = fminf(*torque_r_Nm, INV_current_to_torque(current_limit / 2.0f));
+
+        // static uint32_t last_print = 0;
+        // char mander[255];
+        // if (HAL_GetTick() - last_print > 1000) {
+        //     sprintf(
+        //         mander,
+        //         "volt: %f, curr lim: %f, t_l_before: %f, t_l_after: %f\r\n",
+        //         hv_total_voltage,
+        //         current_limit,
+        //         torque_l_before,
+        //         *torque_l_Nm);
+        //     HAL_UART_Transmit(&huart2, (uint8_t *)mander, strlen(mander), 100);
+        //     last_print = HAL_GetTick();
+        // }
         return true;
     }
     return false;

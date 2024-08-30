@@ -42,12 +42,14 @@ void _CANMSG_secondary_deserialize_msg_by_id(CAN_MessageTypeDef msg);
 ecumsg_ecu_version_t ecumsg_ecu_version_state = {
     {0U, false, 0U},
     {.component_build_time = INT_COMPONENT_VERSION, .canlib_build_time = CANLIB_BUILD_TIME}};
-ecumsg_ecu_errors_t ecumsg_ecu_errors_state                         = {{0U, false, 0U}, {0U}};
-ecumsg_ecu_set_power_maps_t ecumsg_ecu_set_power_maps_state         = {{0U, false, 0U}, {.map_pw = 0.0, .map_sc = 0, .map_tv = 0}};
-ecumsg_ecu_power_maps_t ecumsg_ecu_power_maps_state                 = {{0U, false, 0U}, {.map_pw = 0.0, .map_sc = 0, .map_tv = 0}};
-ecumsg_ecu_status_t ecumsg_ecu_status_state                         = {{0U, false, 0U}, {.status = primary_ecu_status_status_idle}};
-ecumsg_ecu_feedbacks_t ecumsg_ecu_feedbacks_state                   = {{0U, false, 0U}, {0}};
-ecumsg_ecu_set_status_t ecumsg_ecu_set_status_state                 = {{0U, false, 0U}, {.status = primary_ecu_set_status_status_idle}};
+ecumsg_ecu_errors_t ecumsg_ecu_errors_state                 = {{0U, false, 0U}, {0U}};
+ecumsg_ecu_set_power_maps_t ecumsg_ecu_set_power_maps_state = {
+    {0U, false, 0U},
+    {.map_power = 0.0, .sc_state = 0, .tv_state = 0, .reg_state = 0}};
+ecumsg_ecu_power_maps_t ecumsg_ecu_power_maps_state = {{0U, false, 0U}, {.map_power = 0.0, .sc_state = 0, .tv_state = 0, .reg_state = 0}};
+ecumsg_ecu_status_t ecumsg_ecu_status_state         = {{0U, false, 0U}, {.status = primary_ecu_status_status_idle}};
+ecumsg_ecu_feedbacks_t ecumsg_ecu_feedbacks_state   = {{0U, false, 0U}, {0}};
+ecumsg_ecu_set_status_t ecumsg_ecu_set_status_state = {{0U, false, 0U}, {.status = primary_ecu_set_status_status_idle}};
 ecumsg_front_angular_velocity_t ecumsg_front_angular_velocity_state = {{0U, false, 0U}, {0}};
 // CANMSG_HVVoltageTypeDef             CANMSG_HVVoltage      = { {0U, false, 0U}, { 0U } };
 // CANMSG_HVCurrentTypeDef             CANMSG_HVCurrent      = { {0U, false, 0U}, { 0U } };

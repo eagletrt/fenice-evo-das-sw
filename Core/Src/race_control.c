@@ -74,6 +74,17 @@ bool _DAS_is_control_feasible() {
     }
 }
 
+void _DAS_clip_torques_to_driver_request(float driver_request, float *torque_l_Nm, float *torque_r_Nm) {
+    if (driver_request > 0.0f && *torque_l_Nm > 0.0f && *torque_r_Nm > 0.0f) {
+        float total_torque = *torque_l_Nm + *torque_r_Nm;
+        if (total_torque > driver_request * 2.0f) {
+            float ratio = driver_request * 2.0f / total_torque;
+            *torque_l_Nm *= ratio;
+            *torque_r_Nm *= ratio;
+        }
+    }
+}
+
 bool DAS_do_drive_routine(float brake_pressure) {
     float torque_l_Nm, torque_r_Nm;
 
@@ -86,6 +97,7 @@ bool DAS_do_drive_routine(float brake_pressure) {
         ecumsg_ecu_control_status_state.data.control_enabled = true;
         torque_l_Nm                                          = ecumsg_control_output_state.data.torque_l;
         torque_r_Nm                                          = ecumsg_control_output_state.data.torque_r;
+        _DAS_clip_torques_to_driver_request(driver_request, &torque_l_Nm, &torque_r_Nm);
     } else {
         torque_l_Nm = torque_r_Nm = driver_request;
     }

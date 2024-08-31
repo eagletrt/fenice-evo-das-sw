@@ -115,24 +115,24 @@ void ENC_R_push_speed_rads() {
     _ENC_R_rollavg_idx                 = (_ENC_R_rollavg_idx + 1) % ENC_ROLLAVG_SIZE;
 }
 
-float raw_to_angle(uint8_t byte0, uint8_t byte1){
-	// byte1 contains the 7 most significant bits of the angle, while byte0 contains the 5 least significant bits
-	uint16_t parsed = ((uint16_t)(byte1 & 0b01111111) << 5) | (byte0 & 0b11111000) >> 3;
+float raw_to_angle(uint8_t byte0, uint8_t byte1) {
+    // byte1 contains the 7 most significant bits of the angle, while byte0 contains the 5 least significant bits
+    uint16_t parsed = ((uint16_t)(byte1 & 0b01111111) << 5) | (byte0 & 0b11111000) >> 3;
     return parsed / 4095.f * 360.f;
 }
 
 #define STEERING_WHEEL_ENCODER_CENTER_DEG 38.f
-float calibrate_angle(float angle){
+float calibrate_angle(float angle) {
     if (angle > 200.0f)
         angle -= 360.0f;
     angle = angle - STEERING_WHEEL_ENCODER_CENTER_DEG;
-    angle = angle * -1.0; //clockwise rotation must be positive
+    angle = angle * -1.0;  //clockwise rotation must be positive
     return angle;
 }
 
-float update_rolling_average(float average, float new_value){
+float update_rolling_average(float average, float new_value) {
     static const float a = 1.0f / ENC_ROLLAVG_SIZE;
-    average = average * (1.0f - a) + new_value * a;
+    average              = average * (1.0f - a) + new_value * a;
     return average;
 }
 
@@ -140,7 +140,7 @@ float update_rolling_average(float average, float new_value){
  * @brief     Calculate the ground speed from steering wheel encoder
  */
 void ENC_C_push_angle_deg() {
-    uint8_t buf[2] = { 0 };
+    uint8_t buf[2] = {0};
     /*
         Clock rate must be <= 4 MHz (from datasheet)
         Also, the interval between two consecutive conversions must be > 20 μs
@@ -152,22 +152,7 @@ void ENC_C_push_angle_deg() {
 
     float uncalibrated_angle = raw_to_angle(buf[0], buf[1]);
 
-    // Send converted value over CAN for debugging purposes
-    static uint32_t last_debug_signal_1_sent = 0;
-    if (HAL_GetTick() - last_debug_signal_1_sent > 50) {
-        last_debug_signal_1_sent = HAL_GetTick();
-        CAN_MessageTypeDef msg;
-        msg.hcan                               = &hcan1;
-        msg.id                                 = PRIMARY_DEBUG_SIGNAL_1_FRAME_ID;
-        msg.size                               = PRIMARY_DEBUG_SIGNAL_1_BYTE_SIZE;
-        primary_debug_signal_1_converted_t ds1 = {.device_id = primary_debug_signal_1_device_id_ecu, .field_1 = uncalibrated_angle / 1000.0f};
-        primary_debug_signal_1_t ds1_raw;
-        primary_debug_signal_1_conversion_to_raw_struct(&ds1_raw, &ds1);
-        primary_debug_signal_1_pack(msg.data, &ds1_raw, PRIMARY_DEBUG_SIGNAL_1_BYTE_SIZE);
-        CAN_send(&msg, msg.hcan);
-    }
-    
-    float angle = calibrate_angle(uncalibrated_angle);
+    float angle            = calibrate_angle(uncalibrated_angle);
     _ENC_C_inplace_average = update_rolling_average(_ENC_C_inplace_average, angle);
 }
 

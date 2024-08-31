@@ -364,6 +364,18 @@ float _INV_internal_resistance_model(float soc) {
     soc = fmax(0.0, fmin(1.0, soc));
     return 0.0141 + 0.0021 * soc;
 }
+void _INV_limit_torque_by_power(float power_max, float w_l, float w_r, float *torque_l, float *torque_r) {
+    float mecahical_power = *torque_l * w_l + *torque_r * w_r;
+    float reduction_ratio = 0.0f;
+    if (fabs(power_max) < 0.5) {
+        *torque_l = 0.0f;
+        *torque_r = 0.0f;
+    } else if (mecahical_power > power_max && mecahical_power > 0.0f) {
+        reduction_ratio = fmin(fmax(power_max / mecahical_power, 0.0f), 1.0f);
+        *torque_l *= reduction_ratio;
+        *torque_r *= reduction_ratio;
+    }
+}
 void _INV_minimum_cell_voltage_limit(float rpm_l, float rpm_r, float *torque_l, float *torque_r) {
     if (HAL_GetTick() - ecumsg_hv_soc_estimation_state_state.info.timestamp > 1000 ||
         HAL_GetTick() - ecumsg_hv_total_voltage_state.info.timestamp > 1000) {
@@ -381,17 +393,12 @@ void _INV_minimum_cell_voltage_limit(float rpm_l, float rpm_r, float *torque_l, 
 
     float packV = VOC * HV_CELL_COUNT;
     float P_max = packV * I_max;
-
-    float P_mech          = *torque_l * w_l + *torque_r * w_r;
-    float reduction_ratio = 0.0f;
-    if (fabs(P_max) < 1.0) {
-        *torque_l = 0.0f;
-        *torque_r = 0.0f;
-    } else if (P_mech > P_max && P_mech > 0.0f) {
-        reduction_ratio = fmin(fmax(P_max / P_mech, 0.0f), 1.0f);
-        *torque_l *= reduction_ratio;
-        *torque_r *= reduction_ratio;
-    }
+    _INV_limit_torque_by_power(P_max, w_l, w_r, torque_l, torque_r);
+}
+void _INV_maximum_allowable_power(float rpm_l, float rpm_r, float *torque_l, float *torque_r) {
+    float w_l = rpm_l * RPM_TO_RADS_COEFF;
+    float w_r = rpm_r * RPM_TO_RADS_COEFF;
+    _INV_limit_torque_by_power(P_BAT_MAX, w_l, w_r, torque_l, torque_r);
 }
 float _INV_avoid_zero_division(float rpm, float pos_threshold) {
     if (rpm > -pos_threshold && rpm < pos_threshold) {
@@ -441,6 +448,7 @@ void INV_apply_cutoff(float rpm_l, float rpm_r, float *torque_l, float *torque_r
         }
     }
     _INV_minimum_cell_voltage_limit(rpm_l, rpm_r, torque_l, torque_r);
+    _INV_maximum_allowable_power(rpm_l, rpm_r, torque_l, torque_r);
 }
 
 bool INV_apply_bspd_limits(float *torque_l_Nm, float *torque_r_Nm, float brake_pressure) {

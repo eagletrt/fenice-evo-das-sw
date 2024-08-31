@@ -192,32 +192,6 @@ void PED_send_vals_in_CAN() {
     ecumsg_pedal_brakes_pressure_state.data.front  = bf_bar;
     ecumsg_pedal_brakes_pressure_state.data.rear   = br_bar;
     ecumsg_pedal_brakes_pressure_state.info.is_new = true;
-
-    // static uint32_t last_debug_signal_3_sent = 0;
-    // if (HAL_GetTick() - last_debug_signal_3_sent > 50) {
-    //     last_debug_signal_3_sent = HAL_GetTick();
-    //     CAN_MessageTypeDef msg;
-    //     msg.hcan = &hcan1;
-    //     msg.id   = PRIMARY_DEBUG_SIGNAL_4_FRAME_ID;
-    //     msg.size = PRIMARY_DEBUG_SIGNAL_4_BYTE_SIZE;
-    //     // uint32_t brk_f, brk_r;
-    //     // get_brk_average(&brk_f, &brk_r);
-    //     // float bf_mV = ((float)brk_f * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
-    //     // float br_mV = ((float)brk_r * 3.3f / 4096.0f) / VOLTAGE_DIVIDER;
-    //     volatile float x                       = ((float)ADC_get_APPS1()) / 4096.0f;
-    //     volatile float y                       = ((float)ADC_get_APPS2()) / 4096.0f;
-    //     primary_debug_signal_4_converted_t ds8 = {
-    //         .device_id = primary_debug_signal_4_device_id_ecu,
-    //         // .field_1 = (float)bf_mV / 5.0f, .field_2 = (float) br_mV / 5.0f, .field_3 = 0.0f};
-    //         // .field_1 = (float)brk_f / 4096.0f, .field_2 = (float) brk_r / 4096.0f, .field_3 = x};
-    //         .field_1 = x,
-    //         .field_2 = y,
-    //         .field_3 = 0.2f};
-    //     primary_debug_signal_4_t ds8_raw;
-    //     primary_debug_signal_4_conversion_to_raw_struct(&ds8_raw, &ds8);
-    //     primary_debug_signal_4_pack(msg.data, &ds8_raw, PRIMARY_DEBUG_SIGNAL_4_BYTE_SIZE);
-    //     CAN_send(&msg, msg.hcan);
-    // }
 }
 
 void PED_calibrate(PED_CalibTypeDef calib) {

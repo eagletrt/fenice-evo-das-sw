@@ -716,6 +716,8 @@ state_t do_drive(state_data_t *data) {
             if (DAS_do_drive_routine(PED_get_brake_bar())) {
                 /* BSPD limits were applied */
                 ecumsg_ecu_errors_state.data.error_bspd_limits = 1;
+            } else {
+                ecumsg_ecu_errors_state.data.error_bspd_limits = 0;
             }
         }
 

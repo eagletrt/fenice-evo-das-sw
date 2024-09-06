@@ -329,6 +329,8 @@ state_t do_idle(state_data_t *data) {
             next_state = STATE_IDLE;
     }
 
+    DAS_do_drive_routine(0.0f);
+
 #if WTCHDG_DEBUG
     if (!WDG_is_car_in_safe_state()) {
         next_state = VFSM_STATE_IDLE;

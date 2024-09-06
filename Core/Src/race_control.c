@@ -85,12 +85,25 @@ void _DAS_clip_torques_to_driver_request(float driver_request, float *torque_l_N
     }
 }
 
+#include <stdarg.h>
+#include "usart.h"
+
+void print(const char *fmt, ...) {
+    char buff[256];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buff, sizeof(buff), fmt, args);
+    va_end(args);
+    HAL_UART_Transmit(&huart2, (uint8_t *)buff, strlen(buff), 250);
+}
+
 bool DAS_do_drive_routine(float brake_pressure) {
     float torque_l_Nm, torque_r_Nm;
 
     ecumsg_ecu_control_status_state.info.is_new          = 1;
     ecumsg_ecu_control_status_state.data.control_enabled = false;
     float driver_request                                 = _DAS_get_driver_request();
+    // print("%0.2f\r\n", driver_request);
 
     // Check on control watchdog, control power maps and control torque vectoring.
     if (ENABLE_CONTROLS && _DAS_is_control_feasible()) {
@@ -101,12 +114,17 @@ bool DAS_do_drive_routine(float brake_pressure) {
     } else {
         torque_l_Nm = torque_r_Nm = driver_request;
     }
-    INV_apply_cutoff(INV_get_RPM(INV_LEFT), INV_get_RPM(INV_RIGHT), &torque_l_Nm, &torque_r_Nm);
-    bool applied_bspd_limits = INV_apply_bspd_limits(&torque_l_Nm, &torque_r_Nm, brake_pressure);
+    // INV_apply_cutoff(INV_get_RPM(INV_LEFT), INV_get_RPM(INV_RIGHT), &torque_l_Nm, &torque_r_Nm);
+    // bool applied_bspd_limits = INV_apply_bspd_limits(&torque_l_Nm, &torque_r_Nm, brake_pressure);
 
     INV_set_torque_Nm(INV_LEFT, torque_l_Nm);
     INV_set_torque_Nm(INV_RIGHT, torque_r_Nm);
-    return applied_bspd_limits;
+
+    char b[256];
+    snprintf(b, 256, "%.0f - %.0f\r\n", torque_l_Nm, torque_r_Nm);
+
+    // print(b);
+    return false;
 }
 
 /**
@@ -120,9 +138,11 @@ float _DAS_get_driver_request() {
     if (PED_errors.implausibility_err) {
         return 0.0f;
     }
-    _DAS_update_brake_impl(APPS_percent, BSE_percent);
+     // _DAS_update_brake_impl(APPS_percent, BSE_percent);
 
-    return PED_get_accelerator_torque(APPS_percent);
+    float x = PED_get_accelerator_torque(APPS_percent);
+    // print("torque %0.4f\r\n", x);
+    return x;
 }
 
 /**

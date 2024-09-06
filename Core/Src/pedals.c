@@ -134,13 +134,18 @@ float _PED_from_raw_to_percent(uint32_t val, uint32_t min, uint32_t max) {
  */
 void PED_update_plausibility_check() {
     if (_PED_are_values_plausible(ADC_get_APPS1(), ADC_get_APPS2())) {
-        _PED_impl_start_timestamp = 0;
+        PED_errors.implausibility_err = false;
     } else {
-        if (_PED_impl_start_timestamp == 0)
-            _PED_impl_start_timestamp = HAL_GetTick();
-        if ((HAL_GetTick() - _PED_impl_start_timestamp) > _PED_implausibility_max_time_ms)
-            PED_errors.implausibility_err = true;
+        PED_errors.implausibility_err = true;
     }
+    // if (_PED_are_values_plausible(ADC_get_APPS1(), ADC_get_APPS2())) {
+    //     _PED_impl_start_timestamp = 0;
+    // } else {
+    //     if (_PED_impl_start_timestamp == 0)
+    //         _PED_impl_start_timestamp = HAL_GetTick();
+    //     if ((HAL_GetTick() - _PED_impl_start_timestamp) > _PED_implausibility_max_time_ms)
+    //         PED_errors.implausibility_err = true;
+    // }
 }
 
 /**
@@ -182,6 +187,7 @@ float _PED_remove_dead_zone(float val) {
 
 void PED_send_vals_in_CAN() {
     uint32_t brk_f, brk_r;
+    // TODO mettere la compversion giust
     get_brk_average(&brk_f, &brk_r);
     float bf_bar = ((brk_f / 4096.0 * 3.3 - 0.3) / 4.0) * 100.0;
     float br_bar = ((brk_r / 4096.0 * 3.3 - 0.35) / 4.0) * 100.0;
@@ -226,9 +232,10 @@ bool PED_is_brake_ok() {
     // uint32_t brake_rear = ADC_get_BRK_R();
     uint32_t brake_front, brake_rear;
     get_brk_average(&brake_front, &brake_rear);
-    if (brake_front < 200 || brake_front > 3300)
+    print("%lu, %lu \r\n", brake_front, brake_rear);
+    if (brake_front < 200 || brake_front > 2350)
         return 0;
-    if (brake_rear < 200 || brake_rear > 3300)
+    if (brake_rear < 200 || brake_rear > 2350)
         return 0;
     return 1;
 }

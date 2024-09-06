@@ -300,9 +300,11 @@ int main(void) {
         // wait one second before doing the check (read some samples)
         if (HAL_GetTick() > 1000) {
             if (!PED_is_brake_ok()) {
+                print("NOT OK\r\n");
                 HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
                 ecumsg_ecu_errors_state.data.error_pedal_implausibility = 1;
             } else {
+                print("OK\r\n");
                 HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
                 ecumsg_ecu_errors_state.data.error_pedal_implausibility = 0;
             }

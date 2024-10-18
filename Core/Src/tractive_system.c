@@ -14,7 +14,7 @@ TS_StatusTypeDef TS_get_status() {
         ecumsg_hv_status_state.info.is_new = false;
 
         switch (ecumsg_hv_status_state.data.status) {
-            case primary_hv_status_status_fatal_error:
+            case primary_hv_status_status_fatal:
                 _TS_status = TS_STATUS_FATAL;
                 break;
             case primary_hv_status_status_ts_on:
@@ -24,9 +24,9 @@ TS_StatusTypeDef TS_get_status() {
             case primary_hv_status_status_idle:
                 _TS_status = TS_STATUS_OFF;
                 break;
-            case primary_hv_status_status_airn_close:
-            case primary_hv_status_status_precharge:
-            case primary_hv_status_status_airp_close:
+            case primary_hv_status_status_airn_check:
+            case primary_hv_status_status_precharge_check:
+            case primary_hv_status_status_airp_check:
                 _TS_status = TS_STATUS_PRECHARGE;
                 break;
         }

@@ -764,7 +764,7 @@ void MAIN_print_dbg_info() {
             snprintf(
                 buf,
                 buf_len,
-                "%8s: %-6.1f %8s: %-6.1f %8s: %-6.1f",
+                "%8s: %-6.3f %8s: %-6.1f %8s: %-6.1f",
                 "Steer",
                 ENC_C_get_angle_deg(),
                 "W/L",

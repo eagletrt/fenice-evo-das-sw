@@ -232,7 +232,6 @@ bool PED_is_brake_ok() {
     // uint32_t brake_rear = ADC_get_BRK_R();
     uint32_t brake_front, brake_rear;
     get_brk_average(&brake_front, &brake_rear);
-    print("%lu, %lu \r\n", brake_front, brake_rear);
     if (brake_front < 200 || brake_front > 2350)
         return 0;
     if (brake_rear < 200 || brake_rear > 2350)

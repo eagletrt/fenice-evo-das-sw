@@ -120,10 +120,6 @@ bool DAS_do_drive_routine(float brake_pressure) {
     INV_set_torque_Nm(INV_LEFT, torque_l_Nm);
     INV_set_torque_Nm(INV_RIGHT, torque_r_Nm);
 
-    char b[256];
-    snprintf(b, 256, "%.0f - %.0f\r\n", torque_l_Nm, torque_r_Nm);
-
-    // print(b);
     return false;
 }
 

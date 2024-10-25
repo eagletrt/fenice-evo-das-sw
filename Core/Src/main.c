@@ -342,14 +342,6 @@ int main(void) {
             ecumsg_ecu_set_ptt_status_state.info.is_new = false;
         }
 
-#if 0
-    static uint32_t dalbom1 = 0;
-    if (HAL_GetTick() - dalbom1 > 2000) {
-      dalbom1 = HAL_GetTick();
-      HAL_GPIO_TogglePin(PTT_GPIO_Port, PTT_Pin);
-    }
-#endif
-
         /*
     if (ecumsg_tlm_status_state.info.is_new) {
       static int count = 0;
@@ -391,13 +383,6 @@ int main(void) {
     }
 */
 
-        /* Check if we have calibration messages to process */
-        /* if (CANMSG_SetPedalsCalibration.info.is_new) {
-      LOG_write(LOGLEVEL_DEBUG, "[MAIN] Processing pedal calibration message");
-      _MAIN_process_ped_calib_msg();
-      CANMSG_SetPedalsCalibration.info.is_new = false;
-    } */
-
         /* Record loop duration */
         uint32_t loop_duration     = HAL_GetTick() - _MAIN_last_loop_start_ms;
         _MAIN_avg_loop_duration_ms = loop_duration;
@@ -406,22 +391,11 @@ int main(void) {
         if (_MAIN_update_steering_actuator_pid) {
             _MAIN_update_steering_actuator_pid = false;
             steering_actuator_update_pid(ENC_C_get_angle_deg());
+            steering_actuator_update_set_point(ecumsg_ecu_set_steer_atuator_angle_state.data.angle);
+            steering_actuator_set_speed(steering_actuator_computePID());
         }
 #endif
 
-#if AS_STEERING_ACTUATOR_ENABLED == 1
-        if (_MAIN_update_steering_actuator_speed) {
-            _MAIN_update_steering_actuator_speed = false;
-            // steering_actuator_set_speed(steering_actuator_computePID());
-        }
-#endif
-
-        /* test steering wheel actuator driver */
-        // int tick_mod = HAL_GetTick() % 10001 - 5000;
-#if AS_STEERING_ACTUATOR_ENABLED == 1
-        steering_actuator_set_speed((float)tick_mod / 5000);
-        // steering_actuator_set_speed((float)0.7);
-#endif
 
 #ifdef DEBUG_CLI
         cli_watch_flush_handler();

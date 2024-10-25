@@ -10,3 +10,5 @@ build/
 **/.vscode/*
 !**/.vscode/settings.json
 !**/.vscode/extensions.json
+
+.stm32env

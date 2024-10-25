@@ -87,6 +87,10 @@ ecumsg_ecu_control_status_t ecumsg_ecu_control_status_state         = {{0U, fals
 ecumsg_hv_cells_voltage_stats_t ecumsg_hv_cells_voltage_stats_state = {{0U, false, 0U}, {0U}};
 ecumsg_hv_soc_t ecumsg_hv_soc_estimation_state_state                = {{0U, false, 0U}, {0U}};
 
+ecumsg_ecu_set_steer_atuator_angle_t ecumsg_ecu_set_steer_atuator_angle_state = {{0}};
+ecumsg_ecu_steer_actuator_status_t ecumsg_ecu_steer_actuator_status_state = {{0}};
+ecumsg_ecu_set_steer_actuator_status_tlm_t ecumsg_ecu_set_steer_actuator_status_tlm_state = {{0}};
+
 /* Inverter automatic message */
 CANMSG_INVResponseTypeDef CANMSG_InvL_I_CMD_RAMP    = {{0U, false, 0U}};
 CANMSG_INVResponseTypeDef CANMSG_InvL_I_CMD         = {{0U, false, 0U}};
@@ -167,6 +171,8 @@ void _CANMSG_primary_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
         ECU_CANLIB_UNPACK(tlm_status, primary, TLM_STATUS, PRIMARY);
         ECU_CANLIB_UNPACK(hv_total_voltage, primary, HV_TOTAL_VOLTAGE, PRIMARY);
         ECU_CANLIB_UNPACK(hv_cells_voltage_stats, primary, HV_CELLS_VOLTAGE_STATS, PRIMARY);
+
+        ECU_CANLIB_UNPACK(ecu_set_steer_actuator_status_tlm, primary, ECU_SET_STEER_ACTUATOR_STATUS_TLM, PRIMARY);
         default:
             // LOG_write(LOGLEVEL_ERR, "[CANMSG/Deserialize] Unknown message id: 0x%X", msg.id);
             break;
@@ -235,6 +241,8 @@ CANMSG_MetadataTypeDef *CANMSG_get_primary_metadata_from_id(CAN_IdTypeDef id) {
             return &(ecumsg_control_status_state.info);
         case PRIMARY_TLM_STATUS_FRAME_ID:
             return &(ecumsg_tlm_status_state.info);
+        case PRIMARY_ECU_SET_STEER_ACTUATOR_STATUS_TLM_FRAME_ID:
+            return &(ecumsg_ecu_set_steer_actuator_status_tlm_state.info);
         // case PRIMARY_SET_CELL_BALANCING_STATUS_FRAME_ID:
         // case PRIMARY_HANDCART_SETTINGS_SET_FRAME_ID:
         // case PRIMARY_TLM_VERSION_FRAME_ID:

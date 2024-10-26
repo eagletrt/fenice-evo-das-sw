@@ -147,7 +147,7 @@ typedef struct {
 typedef struct {
     CANMSG_MetadataTypeDef info;
     primary_ecu_set_steer_actuator_angle_converted_t data;
-} ecumsg_ecu_set_steer_atuator_angle_t;
+} ecumsg_ecu_set_steer_actuator_angle_t;
 typedef struct {
     CANMSG_MetadataTypeDef info;
     primary_ecu_steer_actuator_status_converted_t data;
@@ -187,7 +187,7 @@ extern ecumsg_pedal_throttle_t ecumsg_pedal_throttle_state;
 extern ecumsg_pedal_brakes_pressure_t ecumsg_pedal_brakes_pressure_state;
 extern ecumsg_steer_angle_t ecumsg_steer_angle_state;
 
-extern ecumsg_ecu_set_steer_atuator_angle_t ecumsg_ecu_set_steer_atuator_angle_state;
+extern ecumsg_ecu_set_steer_actuator_angle_t ecumsg_ecu_set_steer_actuator_angle_state;
 extern ecumsg_ecu_steer_actuator_status_t ecumsg_ecu_steer_actuator_status_state;
 extern ecumsg_ecu_set_steer_actuator_status_tlm_t ecumsg_ecu_set_steer_actuator_status_tlm_state;
 

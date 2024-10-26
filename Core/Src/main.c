@@ -386,11 +386,30 @@ int main(void) {
         _MAIN_avg_loop_duration_ms = loop_duration;
 
 #if AS_STEERING_ACTUATOR_ENABLED == 1
-        if (_MAIN_update_steering_actuator_pid) {
-            _MAIN_update_steering_actuator_pid = false;
-            steering_actuator_update_pid(ENC_C_get_angle_deg());
-            steering_actuator_update_set_point(ecumsg_ecu_set_steer_atuator_angle_state.data.angle);
-            steering_actuator_set_speed(steering_actuator_computePID());
+        if(HAL_GetTick() - ecumsg_ecu_set_steer_actuator_status_tlm_state.info.is_new < 1000) {
+            if (_MAIN_update_steering_actuator_pid) {
+                _MAIN_update_steering_actuator_pid = false;
+                steering_actuator_update_pid(ENC_C_get_angle_deg());
+                steering_actuator_update_set_point(ecumsg_ecu_set_steer_actuator_angle_state.data.angle);
+                steering_actuator_set_speed(steering_actuator_computePID());
+            }
+            ecumsg_ecu_steer_actuator_status_state.data.status = primary_ecu_steer_actuator_status_status_on;
+        } else {
+            ecumsg_ecu_steer_actuator_status_state.data.status = primary_ecu_steer_actuator_status_status_off;
+        }
+        static uint32_t last_steering_actuator_update = 0;
+        if(HAL_GetTick() - last_steering_actuator_update > 100) {
+            ecumsg_ecu_steer_actuator_status_state.info.is_new = true;
+            primary_ecu_steer_actuator_status_t raw;
+            primary_ecu_steer_actuator_status_conversion_to_raw_struct(&raw, &ecumsg_ecu_steer_actuator_status_state.data);
+            uint8_t data[8];
+            primary_ecu_steer_actuator_status_pack(data, &raw, PRIMARY_ECU_STEER_ACTUATOR_STATUS_BYTE_SIZE);
+            CAN_MessageTypeDef msg = {0};
+            msg.hcan = &CAN_PRIMARY_NETWORK;
+            msg.id = PRIMARY_ECU_STEER_ACTUATOR_STATUS_FRAME_ID;
+            msg.size = PRIMARY_ECU_STEER_ACTUATOR_STATUS_BYTE_SIZE;
+            memcpy(msg.data, data, msg.size);
+            CAN_send(&msg, msg.hcan);
         }
 #endif
 

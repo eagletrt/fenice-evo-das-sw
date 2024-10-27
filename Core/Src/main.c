@@ -340,7 +340,7 @@ int main(void) {
             ecumsg_ecu_set_ptt_status_state.info.is_new = false;
         }
 
-        /*
+
     if (ecumsg_tlm_status_state.info.is_new) {
       static int count = 0;
       static uint32_t last_ms = 0;
@@ -379,7 +379,7 @@ int main(void) {
         }
       } 
     }
-*/
+
 
         /* Record loop duration */
         uint32_t loop_duration     = HAL_GetTick() - _MAIN_last_loop_start_ms;

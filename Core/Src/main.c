@@ -386,19 +386,22 @@ int main(void) {
         _MAIN_avg_loop_duration_ms = loop_duration;
 
 #if AS_STEERING_ACTUATOR_ENABLED == 1
-        if(HAL_GetTick() - ecumsg_ecu_set_steer_actuator_status_tlm_state.info.is_new < 1000) {
+        if(HAL_GetTick() - ecumsg_ecu_set_steer_actuator_angle_state.info.timestamp < 1000){// && ecumsg_ecu_set_steer_actuator_status_tlm_state.data.status) {
             if (_MAIN_update_steering_actuator_pid) {
                 _MAIN_update_steering_actuator_pid = false;
-                steering_actuator_update_pid(ENC_C_get_angle_deg());
+                float current = ENC_C_get_angle_deg();
+                steering_actuator_update_pid(current);
                 steering_actuator_update_set_point(ecumsg_ecu_set_steer_actuator_angle_state.data.angle);
                 steering_actuator_set_speed(steering_actuator_computePID());
             }
             ecumsg_ecu_steer_actuator_status_state.data.status = primary_ecu_steer_actuator_status_status_on;
         } else {
             ecumsg_ecu_steer_actuator_status_state.data.status = primary_ecu_steer_actuator_status_status_off;
+            steering_actuator_set_speed(0.0f);
         }
         static uint32_t last_steering_actuator_update = 0;
         if(HAL_GetTick() - last_steering_actuator_update > 100) {
+            last_steering_actuator_update = HAL_GetTick();
             ecumsg_ecu_steer_actuator_status_state.info.is_new = true;
             primary_ecu_steer_actuator_status_t raw;
             primary_ecu_steer_actuator_status_conversion_to_raw_struct(&raw, &ecumsg_ecu_steer_actuator_status_state.data);

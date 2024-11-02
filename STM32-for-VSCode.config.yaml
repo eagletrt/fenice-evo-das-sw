@@ -88,6 +88,7 @@ includeDirectories:
   - Core/Lib/micro-libs/cli-legacy/**
   - Core/Lib/micro-libs/llist-legacy/**
   - Core/Lib/micro-libs/can-fifo-queue-legacy/**
+  - Core/Lib/micro-libs/pid/**
 
 
 # Files that should be included in the compilation.
@@ -110,6 +111,7 @@ sourceFiles:
   - Core/Lib/micro-libs/cli-legacy/**
   - Core/Lib/micro-libs/llist-legacy/**
   - Core/Lib/micro-libs/can-fifo-queue-legacy/**
+  - Core/Lib/micro-libs/pid/**
 
 
 # When no makefile is present it will show a warning pop-up.

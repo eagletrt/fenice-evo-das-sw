@@ -1,72 +1,96 @@
 #include "steering_actuator.h"
 
-#if AS_STEERING_ACTUATOR_ENABLED == 1
+#if AS_STEER_ACTUATOR_ENABLED == 1
 
-struct PIDController {
-    float kp;
-    float ki;
-    float kd;
-    float integrator;
-    float prevError;
-    float error;
-    float sampleTime;
-    float setPoint;
-} pid;
+#include "can_messages.h"
+#include "can_user_functions.h"
+#include <math.h>
+#include <stdbool.h>
 
-void steering_actuator_pid_init(float kp, float ki, float kd, float sampleTime) {
-    // PIDInit(&steering_actuator_pid, kp, ki, kd, 1.000 * ENC_STEER_PERIOD_MS);
-    pid.kp         = kp;
-    pid.ki         = ki;
-    pid.kd         = kd;
-    pid.integrator = 0.0;
-    pid.prevError  = 0.0;
-    pid.error      = 0.0;
-    pid.setPoint   = 0.0;
-    pid.sampleTime = sampleTime;
+float pid_prev_errors[N_PID_PREV_ERRORS];
+PidController_t pid_controller;
+
+bool steer_actuator_enabled = false;
+
+void steer_actuator_update_set_point(float set_point) {
+    pid_controller.set_point = set_point;
 }
 
-void steering_actuator_update_set_point(float setPoint) {
-    pid.setPoint = setPoint;
+bool steer_actuator_is_enabled() {
+    return steer_actuator_enabled;
 }
 
-void steering_actuator_update_pid(float status) {
-    pid.prevError = pid.error;
-    pid.error     = pid.setPoint - status;
-    pid.integrator += pid.error * pid.sampleTime;
-    if (pid.integrator > 0.5) {
-        pid.integrator = 0.5;
-    } else if (pid.setPoint < -0.5) {
-        pid.integrator = -0.5;
+void steer_actuator_enable() {
+    pid_reset(&pid_controller);
+    steer_actuator_enabled = true;
+    ecumsg_ecu_steer_actuator_status_state.data.status = 1;
+}
+
+void steer_actuator_disable() {
+    steer_actuator_enabled = false;
+    ecumsg_ecu_steer_actuator_status_state.data.status = 0;
+    steer_actuator_set_speed(0.0);
+}
+
+void steer_actuator_set_speed(float speed)
+{
+    float steering_angle = ENC_C_get_angle_deg();
+
+    if (fabs(steering_angle) > STEER_ACTUATOR_ANGLE_LIMIT) speed = 0.0;
+
+    if (fabs(speed) > STEER_ACTUATOR_SPEED_LIMIT){
+        if (speed > 0.0) speed = STEER_ACTUATOR_SPEED_LIMIT;
+        else speed = -STEER_ACTUATOR_SPEED_LIMIT;
+    }
+    
+    HAL_GPIO_WritePin(STEERING_REVERSE_GPIO_Port, STEERING_REVERSE_Pin, speed < 0.0 ? 0 : 1);
+    TIM4->CCR2 = (uint32_t)(65535 * (fabs(speed) / STEER_ACTUATOR_SPEED_LIMIT));
+}
+
+void steer_actuator_pid_init(float kp, float ki, float kd, float sample_time, float anti_windup) {
+    pid_init(&pid_controller, kp, kd, ki, sample_time, anti_windup, pid_prev_errors, N_PID_PREV_ERRORS);
+}
+
+void steer_actuator_update_pid() {
+    if (steer_actuator_enabled) {
+        pid_update(&pid_controller, ENC_C_get_angle_deg());
     }
 }
 
-bool steering_actuator_set_speed(float speed) {
-    if (speed < 0.0) {
-        if (speed >= -1.0) {
-            HAL_GPIO_WritePin(STEERING_REVERSE_GPIO_Port, STEERING_REVERSE_Pin, 1);
-            TIM4->CCR2 = (uint32_t)(65535 * (-speed));
-            return true;
-        }
-    } else {
-        if (speed <= 1.0) {
-            HAL_GPIO_WritePin(STEERING_REVERSE_GPIO_Port, STEERING_REVERSE_Pin, 0);
-            TIM4->CCR2 = (uint32_t)(65535 * speed);
-            return true;
-        }
+void steer_actuator_update_speed() {
+    if (steer_actuator_enabled) {
+        float speed = pid_compute(&pid_controller);
+        steer_actuator_set_speed(speed);
     }
-    return false;
 }
 
-float steering_actuator_computePID() {
-    float derivator = (pid.error - pid.prevError) / pid.sampleTime;
-    float value     = pid.kp * pid.error + pid.ki * pid.integrator + pid.kd * derivator;
-    if (value > 0.5) {
-        return 0.5;
+void steer_actuator_update_can() {
+//     if (ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.info.is_new){
+//     if (ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.data.status != steer_actuator_enabled) {
+//       if (ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.data.status) {
+//         steer_actuator_enable();
+//       } else {
+//         steer_actuator_disable();
+//       }
+//     }
+//     ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.info.is_new = false;
+//   }
+
+  if (ecumsg_ecu_set_steer_actuator_status_tlm_state.info.is_new){
+    if (ecumsg_ecu_set_steer_actuator_status_tlm_state.data.status != steer_actuator_enabled) {
+      if (ecumsg_ecu_set_steer_actuator_status_tlm_state.data.status) {
+        steer_actuator_enable();
+      } else {
+        steer_actuator_disable();
+      }
     }
-    if (value < -0.5) {
-        return -0.5;
-    }
-    return value;
+    ecumsg_ecu_set_steer_actuator_status_tlm_state.info.is_new = false;
+  }
+
+  if (ecumsg_ecu_set_steer_actuator_angle_state.info.is_new) {
+    steer_actuator_update_set_point(ecumsg_ecu_set_steer_actuator_angle_state.data.angle);
+    ecumsg_ecu_set_steer_actuator_angle_state.info.is_new = false;
+  }
 }
 
 #endif

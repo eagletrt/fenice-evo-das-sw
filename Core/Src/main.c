@@ -86,8 +86,8 @@ uint16_t _MAIN_dbg_uart_line_idx          = 0;
 bool _MAIN_update_watchdog                = false; /* Every 10ms TIM1 sets this variable to true */
 uint16_t _MAIN_timer_feedbacks            = 0;
 bool _MAIN_last_tlm_status                = false;
-bool _MAIN_update_steering_actuator_pid   = false;
-bool _MAIN_update_steering_actuator_speed = false;
+volatile bool _MAIN_update_steer_actuator_pid   = false;
+volatile bool _MAIN_update_steer_actuator_speed = false;
 
 state_t current_state = STATE_INIT;
 /* USER CODE END PV */
@@ -221,9 +221,12 @@ int main(void) {
 
     uint32_t last_enc_calc = 0;
 
-#if AS_STEERING_ACTUATOR_ENABLED == 1
-    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
-    steering_actuator_pid_init(0.0, 0.0, 0.0, 1000.0 * ENC_STEER_PERIOD_MS);
+#if AS_STEER_ACTUATOR_ENABLED == 1
+  //pid_parametersss
+  #define OSC_PULSE 13.1 //rad/s
+  #define KP_MAX 0.25
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+  steer_actuator_pid_init(0.95 * KP_MAX, 0.1 * KP_MAX, 0.0, ENC_STEER_PERIOD_MS / 1000.0, 5.0);
 #endif
 
     /* USER CODE END 2 */
@@ -385,20 +388,29 @@ int main(void) {
         uint32_t loop_duration     = HAL_GetTick() - _MAIN_last_loop_start_ms;
         _MAIN_avg_loop_duration_ms = loop_duration;
 
-#if AS_STEERING_ACTUATOR_ENABLED == 1
-        if(HAL_GetTick() - ecumsg_ecu_set_steer_actuator_angle_state.info.timestamp < 1000){// && ecumsg_ecu_set_steer_actuator_status_tlm_state.data.status) {
-            if (_MAIN_update_steering_actuator_pid) {
-                _MAIN_update_steering_actuator_pid = false;
-                float current = ENC_C_get_angle_deg();
-                steering_actuator_update_pid(current);
-                steering_actuator_update_set_point(ecumsg_ecu_set_steer_actuator_angle_state.data.angle);
-                steering_actuator_set_speed(steering_actuator_computePID());
-            }
-            ecumsg_ecu_steer_actuator_status_state.data.status = primary_ecu_steer_actuator_status_status_on;
-        } else {
-            ecumsg_ecu_steer_actuator_status_state.data.status = primary_ecu_steer_actuator_status_status_off;
-            steering_actuator_set_speed(0.0f);
+#if AS_STEER_ACTUATOR_ENABLED == 1
+        steer_actuator_update_can();
+
+        if (_MAIN_update_steer_actuator_pid) {
+		    _MAIN_update_steer_actuator_pid = false;
+		    steer_actuator_update_pid();
+	    }
+
+        if (_MAIN_update_steer_actuator_speed) {
+            _MAIN_update_steer_actuator_speed = false;
+
+            // const unsigned int period = 750; //ms
+            // const float amplitude = 60.0;
+            // float target = sin((float)(HAL_GetTick() % period) / period * 2 * M_PI) * amplitude;
+            // steer_actuator_update_set_point(target);
+            steer_actuator_update_speed();
         }
+
+        // if (steer_actuator_is_enabled() && HAL_GetTick() - ecumsg_ecu_set_steer_actuator_angle_state.info.timestamp > 1000) {
+        //         ecumsg_ecu_steer_actuator_status_state.data.status = primary_ecu_steer_actuator_status_status_off;
+        //         steer_actuator_disable();
+        // }
+
         static uint32_t last_steering_actuator_update = 0;
         if(HAL_GetTick() - last_steering_actuator_update > 100) {
             last_steering_actuator_update = HAL_GetTick();
@@ -531,15 +543,15 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 
         if ((true) && (get_time() - last_angle_sample > ENC_STEER_PERIOD_MS)) {
             ENC_C_push_angle_deg();
-#if AS_STEERING_ACTUATOR_ENABLED == 1
-            _MAIN_update_steering_actuator_pid = true;
+#if AS_STEER_ACTUATOR_ENABLED == 1
+            _MAIN_update_steer_actuator_pid = true;
 #endif
             last_angle_sample = get_time();
         }
 
         if (get_time() - last_steering_actuator_update > STEERING_ACTUATOR_PERIOD_MS) {
-#if AS_STEERING_ACTUATOR_ENABLED == 1
-            _MAIN_update_steering_actuator_speed = true;
+#if AS_STEER_ACTUATOR_ENABLED == 1
+            _MAIN_update_steer_actuator_speed = true;
 #endif
             last_steering_actuator_update = get_time();
         }

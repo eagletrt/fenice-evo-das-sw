@@ -226,7 +226,7 @@ int main(void) {
   #define OSC_PULSE 13.1 //rad/s
   #define KP_MAX 0.25
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
-  steer_actuator_pid_init(0.95 * KP_MAX, 0.1 * KP_MAX, 0.0, ENC_STEER_PERIOD_MS / 1000.0, 5.0);
+  steer_actuator_pid_init(0.97 * KP_MAX, 0.1 * KP_MAX, 0.0, ENC_STEER_PERIOD_MS / 1000.0, 5.0);
 #endif
 
     /* USER CODE END 2 */

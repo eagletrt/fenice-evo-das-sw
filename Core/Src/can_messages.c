@@ -59,7 +59,7 @@ ecumsg_hv_feedback_status_t ecumsg_hv_feedback_status_state = {{0U, false, 0U}, 
 ecumsg_hv_status_t ecumsg_hv_status_state                   = {{0U, false, 0U}, {.status = primary_hv_status_status_init}};
 ecumsg_hv_set_status_ecu_t ecumsg_hv_set_status_ecu_state   = {
     {0U, false, 0U},
-    {.hv_status_set = primary_hv_set_status_ecu_hv_status_set_off}};
+    {.status = false}};
 // CANMSG_LVCurrentTypeDef             CANMSG_LVCurrent      = { {0U, false, 0U}, { 0U } };
 // CANMSG_LVVoltageTypeDef             CANMSG_LVVoltage      = { {0U, false, 0U}, { 0U } };
 // CANMSG_LVTemperatureTypeDef         CANMSG_LVTemperature  = { {0U, false, 0U}, { 0U } };

@@ -108,9 +108,8 @@ unsigned int ADC_is_closed(float voltage) {
 }
 
 bool is_SD_closed() {
-    return true;
-    /*
-    volatile bool close = false;
+    // return true;
+    volatile bool close = true;
 
     // disconnected or in general not used
     // close  = ADC_is_closed(ADC_to_voltage(ADC_get_SD_FB0()));
@@ -122,7 +121,6 @@ bool is_SD_closed() {
     close = close && ADC_is_closed(ADC_to_voltage(ADC_get_SD_OUT()));
     close = close && HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin);
     return close;
-    */
 }
 
 void brk_push_average() {

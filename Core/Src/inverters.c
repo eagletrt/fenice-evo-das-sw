@@ -339,10 +339,10 @@ float INV_I_mot_max(const float rpm) {
     return P_MOT_MAX / MOT_TORQUE_COEFF * RADS_TO_RPM_COEFF / rpm;
 }
 float INV_I_batt_max_positive(const float rpm, const float torque_ratio) {
-    return P_BAT_MAX * torque_ratio / MOT_TORQUE_COEFF * RADS_TO_RPM_COEFF / rpm;
+    return fmin(I_BAT_MAX, P_BAT_MAX * torque_ratio / MOT_TORQUE_COEFF * RADS_TO_RPM_COEFF / rpm);
 }
 float INV_I_batt_min_negative(const float rpm, const float torque_ratio) {
-    return P_BAT_MIN * torque_ratio / MOT_TORQUE_COEFF * RADS_TO_RPM_COEFF / rpm;
+    return fmax(HV_MAX_REGEN_CURRENT, P_BAT_MIN * torque_ratio / MOT_TORQUE_COEFF * RADS_TO_RPM_COEFF / rpm);
 }
 float _INV_compute_current_positive_limit(float rpm, float torque_ratio) {
     float I_mot_peak = INV_I_mot_peak();

@@ -23,12 +23,12 @@ bool steer_actuator_is_enabled() {
 void steer_actuator_enable() {
     pid_reset(&pid_controller);
     steer_actuator_enabled = true;
-    ecumsg_ecu_steer_actuator_status_state.data.status = 1;
+    ecumsg_as_commands_set_status_state.data.steerstatus = primary_as_commands_set_status_steerstatus_on;
 }
 
 void steer_actuator_disable() {
     steer_actuator_enabled = false;
-    ecumsg_ecu_steer_actuator_status_state.data.status = 0;
+    ecumsg_as_commands_set_status_state.data.steerstatus = primary_as_commands_set_status_steerstatus_off;
     steer_actuator_set_speed(0.0);
 }
 
@@ -76,20 +76,20 @@ void steer_actuator_update_can() {
 //     ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.info.is_new = false;
 //   }
 
-  if (ecumsg_ecu_set_steer_actuator_status_tlm_state.info.is_new){
-    if (ecumsg_ecu_set_steer_actuator_status_tlm_state.data.status != steer_actuator_enabled) {
-      if (ecumsg_ecu_set_steer_actuator_status_tlm_state.data.status) {
+  if (ecumsg_as_commands_status_state.info.is_new){
+    if (ecumsg_as_commands_status_state.data.steerstatus != steer_actuator_enabled) {
+      if (ecumsg_as_commands_status_state.data.steerstatus) {
         steer_actuator_enable();
       } else {
         steer_actuator_disable();
       }
     }
-    ecumsg_ecu_set_steer_actuator_status_tlm_state.info.is_new = false;
+    ecumsg_as_commands_set_status_state.info.is_new = false;
   }
 
-  if (ecumsg_ecu_set_steer_actuator_angle_state.info.is_new) {
-    steer_actuator_update_set_point(ecumsg_ecu_set_steer_actuator_angle_state.data.angle);
-    ecumsg_ecu_set_steer_actuator_angle_state.info.is_new = false;
+  if (ecumsg_as_commands_set_status_state.data.steerstatus == primary_as_commands_set_status_steerstatus_on) {
+    steer_actuator_update_set_point(ecumsg_as_commands_set_value_state.data.steerangle);
+    ecumsg_as_commands_set_status_state.data.steerstatus = primary_as_commands_set_status_steerstatus_off;
   }
 }
 

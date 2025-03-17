@@ -180,6 +180,7 @@ void _CANMSG_primary_deserialize_msg_by_id(CAN_MessageTypeDef msg) {
 
         //ECU_CANLIB_UNPACK(ecu_set_steer_actuator_status_tlm, primary, ECU_SET_STEER_ACTUATOR_STATUS_TLM, PRIMARY);
         //ECU_CANLIB_UNPACK(ecu_set_steer_actuator_angle, primary, ECU_SET_STEER_ACTUATOR_ANGLE, PRIMARY);
+        ECU_CANLIB_UNPACK(as_commands_status, primary, AS_COMMANDS_STATUS, PRIMARY);
         ECU_CANLIB_UNPACK(as_commands_set_status, primary, AS_COMMANDS_SET_STATUS, PRIMARY);
         ECU_CANLIB_UNPACK(as_commands_set_value, primary, AS_COMMANDS_SET_VALUE, PRIMARY);
         default:

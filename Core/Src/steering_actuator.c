@@ -87,9 +87,9 @@ void steer_actuator_update_can() {
     ecumsg_as_commands_set_status_state.info.is_new = false;
   }
 
-  if (ecumsg_as_commands_set_status_state.data.steerstatus == primary_as_commands_set_status_steerstatus_on) {
+  if (ecumsg_as_commands_set_value_state.info.is_new) {
     steer_actuator_update_set_point(ecumsg_as_commands_set_value_state.data.steerangle);
-    ecumsg_as_commands_set_status_state.data.steerstatus = primary_as_commands_set_status_steerstatus_off;
+    ecumsg_as_commands_set_value_state.info.is_new = false;
   }
 }
 

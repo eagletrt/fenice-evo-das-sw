@@ -23,12 +23,12 @@ bool steer_actuator_is_enabled() {
 void steer_actuator_enable() {
     pid_reset(&pid_controller);
     steer_actuator_enabled = true;
-    ecumsg_as_commands_set_status_state.data.steerstatus = primary_as_commands_set_status_steerstatus_on;
+    ecumsg_as_commands_status_state.data.steerstatus = primary_as_commands_status_steerstatus_on;
 }
 
 void steer_actuator_disable() {
     steer_actuator_enabled = false;
-    ecumsg_as_commands_set_status_state.data.steerstatus = primary_as_commands_set_status_steerstatus_off;
+    ecumsg_as_commands_status_state.data.steerstatus = primary_as_commands_status_steerstatus_off;
     steer_actuator_set_speed(0.0);
 }
 

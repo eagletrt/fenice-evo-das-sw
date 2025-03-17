@@ -161,15 +161,15 @@ typedef struct {
 
 typedef struct {
     CANMSG_MetadataTypeDef info;
-    primary_as_commands_status_t data;
+    primary_as_commands_status_converted_t data;
 } ecumsg_as_commands_status_t;
 typedef struct {
     CANMSG_MetadataTypeDef info;
-    primary_as_commands_set_status_t data;
+    primary_as_commands_set_status_converted_t data;
 } ecumsg_as_commands_set_status_t;
 typedef struct {
     CANMSG_MetadataTypeDef info;
-    primary_as_commands_set_value_t data;
+    primary_as_commands_set_value_converted_t data;
 } ecumsg_as_commands_set_value_t;
 
 /* Inverter automatic message */

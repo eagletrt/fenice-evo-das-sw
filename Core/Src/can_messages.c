@@ -480,8 +480,6 @@ bool _CANMSG_primary_serialize_msg_by_id(CAN_IdTypeDef id, CAN_MessageTypeDef *m
         ECU_CANLIB_PACK(ecu_ptt_status, primary, ECU_PTT_STATUS, PRIMARY);
         ECU_CANLIB_PACK(control_output, primary, CONTROL_OUTPUT, PRIMARY);
         ECU_CANLIB_PACK(as_commands_status, primary, AS_COMMANDS_STATUS, PRIMARY);
-        ECU_CANLIB_PACK(as_commands_set_status, primary, AS_COMMANDS_SET_STATUS, PRIMARY);
-        ECU_CANLIB_PACK(as_commands_set_value, primary, AS_COMMANDS_SET_VALUE, PRIMARY);
         default:
             LOG_write(LOGLEVEL_ERR, "[CANMSG/Serialize] Unknown message id: 0x%X", msg->id);
 

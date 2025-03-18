@@ -76,9 +76,9 @@ void steer_actuator_update_can() {
 //     ecumsg_ecu_set_steer_actuator_status_steering_wheel_state.info.is_new = false;
 //   }
 
-  if (ecumsg_as_commands_status_state.info.is_new){
-    if (ecumsg_as_commands_status_state.data.steerstatus != steer_actuator_enabled) {
-      if (ecumsg_as_commands_status_state.data.steerstatus) {
+  if (ecumsg_as_commands_set_status_state.info.is_new){
+    if (ecumsg_as_commands_set_status_state.data.steerstatus != steer_actuator_enabled) {
+      if (ecumsg_as_commands_set_status_state.data.steerstatus) {
         steer_actuator_enable();
       } else {
         steer_actuator_disable();
@@ -88,7 +88,9 @@ void steer_actuator_update_can() {
   }
 
   if (ecumsg_as_commands_set_value_state.info.is_new) {
-    steer_actuator_update_set_point(ecumsg_as_commands_set_value_state.data.steerangle);
+    if (steer_actuator_enabled) {
+      steer_actuator_update_set_point(ecumsg_as_commands_set_value_state.data.steerangle);
+    }
     ecumsg_as_commands_set_value_state.info.is_new = false;
   }
 }

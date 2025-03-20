@@ -93,9 +93,16 @@ ecumsg_ecu_steer_actuator_status_t ecumsg_ecu_steer_actuator_status_state = {{0}
 ecumsg_ecu_set_steer_actuator_status_tlm_t ecumsg_ecu_set_steer_actuator_status_tlm_state = {{0}};
 */
 
-ecumsg_as_commands_set_status_t ecumsg_as_commands_set_status_state = {{0}};
-ecumsg_as_commands_status_t ecumsg_as_commands_status_state = {{0}};
-ecumsg_as_commands_set_value_t ecumsg_as_commands_set_value_state = {{0}};
+//ecumsg_as_commands_set_status_t ecumsg_as_commands_set_status_state = {{0}};
+//ecumsg_as_commands_status_t ecumsg_as_commands_status_state = {{0}};
+//ecumsg_as_commands_set_value_t ecumsg_as_commands_set_value_state = {{0}};
+
+ecumsg_as_commands_status_t ecumsg_as_commands_status_state = {{0U, false, 0U}, {.steerstatus = primary_as_commands_status_steerstatus_off, 
+    .brakestatus = primary_as_commands_status_brakestatus_off, .throttlestatus = primary_as_commands_status_throttlestatus_off}};
+ecumsg_as_commands_set_status_t ecumsg_as_commands_set_status_state = {{0U, false, 0U}, {.steerstatus = primary_as_commands_status_steerstatus_off, 
+    .brakestatus = primary_as_commands_status_brakestatus_off, .throttlestatus = primary_as_commands_status_throttlestatus_off}};
+ecumsg_as_commands_set_value_t ecumsg_as_commands_set_value_state = {{0U, false, 0U}, {0U}};
+
 
 /* Inverter automatic message */
 CANMSG_INVResponseTypeDef CANMSG_InvL_I_CMD_RAMP    = {{0U, false, 0U}};
@@ -377,7 +384,6 @@ void CANMSG_flush_TX() {
         // PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID,
         PRIMARY_ECU_PTT_STATUS_FRAME_ID,
         PRIMARY_AS_COMMANDS_STATUS_FRAME_ID,
-        //PRIMARY_AS_COMMANDS_SET_STATUS_FRAME_ID,
     };
     static CAN_IdTypeDef secondary_ids_to_send[] = {
         SECONDARY_FRONT_ANGULAR_VELOCITY_FRAME_ID,

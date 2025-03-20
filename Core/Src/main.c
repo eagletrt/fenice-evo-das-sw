@@ -418,7 +418,7 @@ int main(void) {
             //primary_ecu_steer_actuator_status_t raw;
             primary_as_commands_status_t raw;
             //primary_ecu_steer_actuator_status_conversion_to_raw_struct(&raw, &ecumsg_ecu_steer_actuator_status_state.data);
-            primary_as_commands_status_conversion_to_raw_struct(&raw, &ecumsg_as_commands_set_status_state.data);
+            primary_as_commands_status_conversion_to_raw_struct(&raw, &ecumsg_as_commands_status_state.data);
             uint8_t data[8];
             //primary_ecu_steer_actuator_status_pack(data, &raw, PRIMARY_ECU_STEER_ACTUATOR_STATUS_BYTE_SIZE);
             primary_as_commands_status_pack(data, &raw, PRIMARY_AS_COMMANDS_STATUS_BYTE_SIZE);

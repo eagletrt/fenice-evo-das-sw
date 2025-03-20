@@ -414,17 +414,7 @@ int main(void) {
         static uint32_t last_steering_actuator_update = 0;
         if(HAL_GetTick() - last_steering_actuator_update > 100) {
             last_steering_actuator_update = HAL_GetTick();
-            ecumsg_ecu_steer_actuator_status_state.info.is_new = true;
-            primary_ecu_steer_actuator_status_t raw;
-            primary_ecu_steer_actuator_status_conversion_to_raw_struct(&raw, &ecumsg_ecu_steer_actuator_status_state.data);
-            uint8_t data[8];
-            primary_ecu_steer_actuator_status_pack(data, &raw, PRIMARY_ECU_STEER_ACTUATOR_STATUS_BYTE_SIZE);
-            CAN_MessageTypeDef msg = {0};
-            msg.hcan = &CAN_PRIMARY_NETWORK;
-            msg.id = PRIMARY_ECU_STEER_ACTUATOR_STATUS_FRAME_ID;
-            msg.size = PRIMARY_ECU_STEER_ACTUATOR_STATUS_BYTE_SIZE;
-            memcpy(msg.data, data, msg.size);
-            CAN_send(&msg, msg.hcan);
+            ecumsg_as_commands_status_state.info.is_new = true;
         }
 #endif
 

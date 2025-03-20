@@ -144,6 +144,7 @@ typedef struct {
     secondary_steer_angle_converted_t data;
 } ecumsg_steer_angle_t;
 
+/*
 typedef struct {
     CANMSG_MetadataTypeDef info;
     primary_ecu_set_steer_actuator_angle_converted_t data;
@@ -156,6 +157,20 @@ typedef struct {
     CANMSG_MetadataTypeDef info;
     primary_ecu_set_steer_actuator_status_tlm_converted_t data;
 } ecumsg_ecu_set_steer_actuator_status_tlm_t;
+*/
+
+typedef struct {
+    CANMSG_MetadataTypeDef info;
+    primary_as_commands_status_converted_t data;
+} ecumsg_as_commands_status_t;
+typedef struct {
+    CANMSG_MetadataTypeDef info;
+    primary_as_commands_set_status_converted_t data;
+} ecumsg_as_commands_set_status_t;
+typedef struct {
+    CANMSG_MetadataTypeDef info;
+    primary_as_commands_set_value_converted_t data;
+} ecumsg_as_commands_set_value_t;
 
 /* Inverter automatic message */
 typedef struct {
@@ -187,9 +202,15 @@ extern ecumsg_pedal_throttle_t ecumsg_pedal_throttle_state;
 extern ecumsg_pedal_brakes_pressure_t ecumsg_pedal_brakes_pressure_state;
 extern ecumsg_steer_angle_t ecumsg_steer_angle_state;
 
+/*
 extern ecumsg_ecu_set_steer_actuator_angle_t ecumsg_ecu_set_steer_actuator_angle_state;
 extern ecumsg_ecu_steer_actuator_status_t ecumsg_ecu_steer_actuator_status_state;
 extern ecumsg_ecu_set_steer_actuator_status_tlm_t ecumsg_ecu_set_steer_actuator_status_tlm_state;
+*/
+
+extern ecumsg_as_commands_status_t ecumsg_as_commands_status_state;
+extern ecumsg_as_commands_set_status_t ecumsg_as_commands_set_status_state;
+extern ecumsg_as_commands_set_value_t ecumsg_as_commands_set_value_state;
 
 extern ecumsg_hv_soc_t ecumsg_hv_soc_estimation_state_state;
 extern ecumsg_control_output_t ecumsg_control_output_state;

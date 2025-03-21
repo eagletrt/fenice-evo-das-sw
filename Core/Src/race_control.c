@@ -110,7 +110,7 @@ bool DAS_do_drive_routine(float brake_pressure) {
         ecumsg_ecu_control_status_state.data.control_enabled = true;
         torque_l_Nm                                          = ecumsg_control_output_state.data.torque_l;
         torque_r_Nm                                          = ecumsg_control_output_state.data.torque_r;
-        _DAS_clip_torques_to_driver_request(driver_request, &torque_l_Nm, &torque_r_Nm);
+        // _DAS_clip_torques_to_driver_request(driver_request, &torque_l_Nm, &torque_r_Nm);
     } else {
         torque_l_Nm = torque_r_Nm = driver_request;
     }

@@ -407,10 +407,12 @@ int main(void) {
         }
 
         // if (steer_actuator_is_enabled() && HAL_GetTick() - ecumsg_ecu_set_steer_actuator_angle_state.info.timestamp > 1000) {
-        //         ecumsg_ecu_steer_actuator_status_state.data.status = primary_ecu_steer_actuator_status_status_off;
+        //         ecumsg_ecu_steek_actuator_status_state.data.status = primary_ecu_steer_actuator_status_status_off;
         //         steer_actuator_disable();
         // }
 
+        ecumsg_as_commands_status_state.data.brakestatus = ecumsg_as_commands_set_status_state.data.brakestatus;
+        ecumsg_as_commands_status_state.data.throttlestatus = ecumsg_as_commands_set_status_state.data.throttlestatus;
         static uint32_t last_steering_actuator_update = 0;
         if(HAL_GetTick() - last_steering_actuator_update > 100) {
             last_steering_actuator_update = HAL_GetTick();

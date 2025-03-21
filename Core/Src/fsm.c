@@ -857,7 +857,7 @@ state_t do_wait_ts_discharge(state_data_t *data) {
     HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
 
     /* Wait until the BMS-HV no longer reports more than 60 Volts */
-    if (ecumsg_hv_feedback_status_state.data.ts_less_than_60v) {
+    if (ecumsg_hv_feedback_status_state.data.ts_less_than_60v == primary_hv_feedback_status_ts_less_than_60v_low) {
         next_state = NO_CHANGE;
     } else {
         /* Go to idle and close back the SD circuit */

@@ -306,7 +306,7 @@ int main(void) {
                 HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
                 ecumsg_ecu_errors_state.data.error_pedal_implausibility = 1;
             } else {
-                HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
+                // HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_SET);
                 ecumsg_ecu_errors_state.data.error_pedal_implausibility = 0;
             }
         }

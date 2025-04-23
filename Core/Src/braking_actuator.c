@@ -4,6 +4,7 @@
 
 #include "can_messages.h"
 #include "can_user_functions.h"
+#include "pedals.h"
 #include <math.h>
 #include <stdbool.h>
 
@@ -34,8 +35,7 @@ void brake_actuator_disable() {
 
 void brake_actuator_set_speed(float speed)
 {
-  //TODO: define new encoder method
-  float brake_angle = ENC_C_get_angle_deg();
+  float brake_angle = PED_get_brake_bar();
   
   if (fabs(brake_angle) > BRAKE_ACTUATOR_ANGLE_LIMIT) speed = 0.0;
   
@@ -45,8 +45,8 @@ void brake_actuator_set_speed(float speed)
   }
   
   //TODO: change GPIO Port for braking
-  HAL_GPIO_WritePin(STEERING_REVERSE_GPIO_Port, STEERING_REVERSE_Pin, speed < 0.0 ? 0 : 1);
-  TIM4->CCR2 = (uint32_t)(65535 * (fabs(speed) / BRAKE_ACTUATOR_SPEED_LIMIT));
+  //HAL_GPIO_WritePin(STEERING_REVERSE_GPIO_Port, STEERING_REVERSE_Pin, speed < 0.0 ? 0 : 1);
+  //TIM4->CCR2 = (uint32_t)(65535 * (fabs(speed) / BRAKE_ACTUATOR_SPEED_LIMIT));
 }
 
 void brake_actuator_pid_init(float kp, float ki, float kd, float sample_time, float anti_windup) {
@@ -55,8 +55,7 @@ void brake_actuator_pid_init(float kp, float ki, float kd, float sample_time, fl
 
 void brake_actuator_update_pid() {
   if (brake_actuator_enabled) {
-    //TODO: define new encoder method
-    pid_update(&pid_controller, ENC_C_get_angle_deg());
+    pid_update(&pid_controller, PED_get_brake_bar());
   }
 }
 

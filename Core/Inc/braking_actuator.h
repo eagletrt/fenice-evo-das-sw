@@ -10,7 +10,10 @@
 
 //TODO: need testing in order to define proper values
 #define BRAKE_ACTUATOR_SPEED_LIMIT 5.0
-#define BRAKE_ACTUATOR_ANGLE_LIMIT 100.0
+#define BRAKE_ACTUATOR_RANGE_LIMIT 100.0
+
+#define BRAKING_ACTUATOR_FREQ_HZ   200
+#define BRAKING_ACTUATOR_PERIOD_MS 1000 / BRAKING_ACTUATOR_FREQ_HZ
 
 void brake_actuator_update_set_point(float setPoint);
 

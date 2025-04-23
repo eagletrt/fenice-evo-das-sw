@@ -234,11 +234,10 @@ int main(void) {
 
 //TODO: find proper values for braking system
 #if AS_BRAKE_ACTUATOR_ENABLED == 1
-  //pid_parametersss
-  #define OSC_PULSE 13.1 //rad/s
-  #define KP_MAX 0.25
+  //pid_parametersss for braking system
+  #define KP_BRAKE_MAX 0.25
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
-  brake_actuator_pid_init(0.97 * KP_MAX, 0.1 * KP_MAX, 0.0, ENC_STEER_PERIOD_MS / 1000.0, 5.0);
+  brake_actuator_pid_init(0.97 * KP_BRAKE_MAX, 0.1 * KP_BRAKE_MAX, 0.0, BRAKING_ACTUATOR_PERIOD_MS / 1000.0, 5.0);
 #endif
 
     /* USER CODE END 2 */
@@ -401,6 +400,13 @@ int main(void) {
         _MAIN_avg_loop_duration_ms = loop_duration;
 
 #if AS_STEER_ACTUATOR_ENABLED == 1
+        static uint32_t last_steering_actuator_update = 0;
+        if(HAL_GetTick() - last_steering_actuator_update > 100 || last_steering_actuator_update == 0) {
+            last_steering_actuator_update = HAL_GetTick();
+            ecumsg_as_commands_status_state.info.is_new = true;
+            ecumsg_as_commands_set_value_state.info.is_new = true;
+        }
+
         steer_actuator_update_can();
 
         if (_MAIN_update_steer_actuator_pid) {
@@ -425,20 +431,16 @@ int main(void) {
 
         //ecumsg_as_commands_status_state.data.brakestatus = ecumsg_as_commands_set_status_state.data.brakestatus;
         ecumsg_as_commands_status_state.data.throttlestatus = ecumsg_as_commands_set_status_state.data.throttlestatus;
-        static uint32_t last_steering_actuator_update = 0;
-        if(HAL_GetTick() - last_steering_actuator_update > 100) {
-            last_steering_actuator_update = HAL_GetTick();
-            ecumsg_as_commands_status_state.info.is_new = true;
-        }
-#endif
-
-
-#ifdef DEBUG_CLI
-        cli_watch_flush_handler();
-        cli_loop(&cli_ecu);
 #endif
 
 #if AS_BRAKE_ACTUATOR_ENABLED == 1
+        static uint32_t last_braking_actuator_update = 0;
+        if(HAL_GetTick() - last_braking_actuator_update > 100 || last_braking_actuator_update == 0) {
+            last_braking_actuator_update = HAL_GetTick();
+            ecumsg_as_commands_status_state.info.is_new = true;
+            ecumsg_as_commands_set_value_state.info.is_new = true;
+        }
+
         brake_actuator_update_can();
 
         if (_MAIN_update_brake_actuator_pid) {
@@ -451,13 +453,13 @@ int main(void) {
             brake_actuator_update_speed();
         }
 
-        ecumsg_as_commands_status_state.data.brakestatus = ecumsg_as_commands_set_status_state.data.brakestatus;
         ecumsg_as_commands_status_state.data.throttlestatus = ecumsg_as_commands_set_status_state.data.throttlestatus;
-        static uint32_t last_brake_actuator_update = 0;
-        if(HAL_GetTick() - last_brake_actuator_update > 100) {
-            last_brake_actuator_update = HAL_GetTick();
-            ecumsg_as_commands_status_state.info.is_new = true;
-        }
+#endif
+
+
+#ifdef DEBUG_CLI
+        cli_watch_flush_handler();
+        cli_loop(&cli_ecu);
 #endif
 
     }
@@ -557,7 +559,7 @@ void _update_ecu_feedbacks() {
 }
 
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
-    static uint64_t last_speed_sample = 0, last_angle_sample = 0, last_steering_actuator_update = 0;
+    static uint64_t last_speed_sample = 0, last_angle_sample = 0, last_steering_actuator_update = 0, last_brake_sample = 0, last_braking_actuator_update = 0;
     if (htim->Instance == htim1.Instance) {
         _MAIN_update_watchdog = true;
         BUZ_timer_callback();
@@ -576,9 +578,13 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
             last_angle_sample = get_time();
         }
 
+        //it will depend on the encoder or not?
+        if ((true) && (get_time() - last_brake_sample > BRAKING_ACTUATOR_PERIOD_MS)) {
 #if AS_BRAKE_ACTUATOR_ENABLED == 1
-        _MAIN_update_brake_actuator_pid = true;
+            _MAIN_update_brake_actuator_pid = true;
 #endif
+            last_brake_sample = get_time();
+        }
 
         if (get_time() - last_steering_actuator_update > STEERING_ACTUATOR_PERIOD_MS) {
 #if AS_STEER_ACTUATOR_ENABLED == 1
@@ -587,9 +593,12 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
             last_steering_actuator_update = get_time();
         }
 
+        if ((true) && (get_time() - last_braking_actuator_update > BRAKING_ACTUATOR_PERIOD_MS)) {
 #if AS_BRAKE_ACTUATOR_ENABLED == 1
-        _MAIN_update_brake_actuator_speed = true;
+            _MAIN_update_brake_actuator_speed = true;
 #endif
+            last_braking_actuator_update = get_time();
+        }
 
     } else if (htim->Instance == htim13.Instance) {
         time_base_elapsed();

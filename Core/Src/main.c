@@ -578,7 +578,6 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
             last_angle_sample = get_time();
         }
 
-        //it will depend on the encoder or not?
         if ((true) && (get_time() - last_brake_sample > BRAKING_ACTUATOR_PERIOD_MS)) {
 #if AS_BRAKE_ACTUATOR_ENABLED == 1
             _MAIN_update_brake_actuator_pid = true;

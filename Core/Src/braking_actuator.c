@@ -37,20 +37,21 @@ void brake_actuator_set_speed(float speed)
 {
   float brake_bar = PED_get_brake_bar();
   
-  if (fabs(brake_bar) > BRAKE_ACTUATOR_RANGE_LIMIT) speed = 0.0;
+  if (fabs(brake_bar) > BRAKE_PRESSURE_RANGE_LIMIT) speed = 0.0;
   
   if (fabs(speed) > BRAKE_ACTUATOR_SPEED_LIMIT){
     if (speed > 0.0) speed = BRAKE_ACTUATOR_SPEED_LIMIT;
     else speed = -BRAKE_ACTUATOR_SPEED_LIMIT;
   }
   
-  //TODO: change GPIO pin for braking actuator
   //HAL_GPIO_WritePin(STEERING_REVERSE_GPIO_Port, STEERING_REVERSE_Pin, speed < 0.0 ? 0 : 1);
   //TIM4->CCR2 = (uint32_t)(65535 * (fabs(speed) / STEERING_ACTUATOR_SPEED_LIMIT));
-
+  
+  //TODO: change GPIO pin for braking actuator
   //possible version:
-  //configure actuator pins for step and dir and set new pwm timer
-  //HAL_GPIO_WritePin(BRAKING_GPIO_Port, BRAKING_Pin, speed < 0.0 ? 0 : 1);
+  //configure actuator pins for dir and set new pwm duty cycle for stepping
+  //with 0 the actuator "retracts" while with 1 it "extends"
+  //HAL_GPIO_WritePin(BRAKING_GPIO_Port, BRAKING_Dir_Pin, speed < 0.0 ? 0 : 1);
   //TIMX->CCRX = (uint32_t)(65535 * (fabs(speed) / BRAKING_ACTUATOR_SPEED_LIMIT));
 }
 
@@ -60,7 +61,7 @@ void brake_actuator_pid_init(float kp, float ki, float kd, float sample_time, fl
 
 void brake_actuator_update_pid() {
   if (brake_actuator_enabled) {
-    pid_update(&pid_controller, PED_get_brake_bar());
+    pid_update(&pid_controller, PED_get_brake_bar() / 100.0f);
   }
 }
 

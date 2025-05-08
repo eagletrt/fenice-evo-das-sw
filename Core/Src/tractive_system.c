@@ -42,7 +42,7 @@ TS_StatusTypeDef TS_get_status() {
  * @brief     Send a TS-ON message to the BMS-HV
  */
 void TS_power_on() {
-    ecumsg_hv_set_status_ecu_state.data.status = true;
+    ecumsg_hv_set_status_ecu_state.data.hv_status_set = true;
     ecumsg_hv_set_status_ecu_state.info.is_new        = true;
 }
 
@@ -50,6 +50,6 @@ void TS_power_on() {
  * @brief     Send a TS-OFF message to the BMS-HV
  */
 void TS_power_off() {
-    ecumsg_hv_set_status_ecu_state.data.status = false;
+    ecumsg_hv_set_status_ecu_state.data.hv_status_set = false;
     ecumsg_hv_set_status_ecu_state.info.is_new        = true;
 }

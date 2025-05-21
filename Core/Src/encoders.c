@@ -8,6 +8,7 @@
 #include "tim.h"
 #include "time_base.h"
 #include "usart.h"
+#include "ecu_config.h"
 
 #include <float.h>
 #include <math.h>
@@ -181,3 +182,18 @@ float _ENC_ms_to_radsec(float vel) {
     float rpm        = vel / enc_circ_m;
     return rpm * 0.10472f;
 }
+
+#if ENC_BRAKE_ACTUATOR_ENABLED
+uint32_t get_relative_counter(TIM_HandleTypeDef *htim){
+    return __HAL_TIM_GET_COUNTER(htim) % CPR_ENC_BRAKE_ACTUATOR;
+}
+
+uint32_t get_absolute_counter(TIM_HandleTypeDef *htim){
+    return __HAL_TIM_GET_COUNTER(htim);
+}
+
+float get_distance(TIM_HandleTypeDef *htim){
+    int32_t enc_counter = (int32_t)__HAL_TIM_GET_COUNTER(htim);
+    return enc_counter * ENC_MM_TICK_BRAKE_ACTUATOR;
+}
+#endif

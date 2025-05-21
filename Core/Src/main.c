@@ -193,6 +193,12 @@ int main(void) {
         LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM2");
     if (HAL_TIM_Encoder_Start(&ENC_R_TIM, TIM_CHANNEL_ALL) != HAL_OK)
         LOG_write(LOGLEVEL_ERR, "Timer start failed - TIM5");
+    
+    #if ENC_BRAKE_ACTUATOR_ENABLED
+        //TODO: use correct timer
+        // start brake actuator encoder's timer
+        HAL_TIM_Encoder_Start(&htimX, TIM_CHANNEL_ALL);
+    #endif
 
     /* Initialize the general purpose timer TIM1 to trigger every 10ms on CH2 */
     __HAL_TIM_SetAutoreload(&htim1, TIM_MS_TO_TICKS(&htim1, 10));
@@ -232,10 +238,10 @@ int main(void) {
   steer_actuator_pid_init(0.97 * KP_MAX, 0.1 * KP_MAX, 0.0, ENC_STEER_PERIOD_MS / 1000.0, 5.0);
 #endif
 
-//TODO: find proper values for braking system
+//TODO: find proper values for braking system and change TIM channel
 #if AS_BRAKE_ACTUATOR_ENABLED == 1
   //pid_parametersss for braking system
-  #define KP_BRAKE_MAX 0.25
+  #define KP_BRAKE_MAX 0.60
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
   brake_actuator_pid_init(0.97 * KP_BRAKE_MAX, 0.1 * KP_BRAKE_MAX, 0.0, BRAKING_ACTUATOR_PERIOD_MS / 1000.0, 5.0);
 #endif

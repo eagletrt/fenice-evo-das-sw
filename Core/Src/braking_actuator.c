@@ -5,6 +5,8 @@
 #include "can_messages.h"
 #include "can_user_functions.h"
 #include "pedals.h"
+#include "ecu_config.h"
+#include "encoders.h"
 #include <math.h>
 #include <stdbool.h>
 
@@ -36,23 +38,41 @@ void brake_actuator_disable() {
 void brake_actuator_set_speed(float speed)
 {
   float brake_bar = PED_get_brake_bar();
-  
-  if (fabs(brake_bar) > BRAKE_PRESSURE_RANGE_LIMIT) speed = 0.0;
-  
+
+  #if ENC_BRAKE_ACTUATOR_ENABLED
+    //TODO: use correct timer
+    // check encoder if actuator is in range
+    float distance = get_distance(TIM4);
+    if (fabs(brake_bar) > BRAKE_PRESSURE_RANGE_LIMIT || distance < 0 || distance > BRAKE_ACTUATOR_RANGE_LIMIT) speed = 0.0;
+  #else
+    if (fabs(brake_bar) > BRAKE_PRESSURE_RANGE_LIMIT) speed = 0.0;
+  #endif
+
   if (fabs(speed) > BRAKE_ACTUATOR_SPEED_LIMIT){
     if (speed > 0.0) speed = BRAKE_ACTUATOR_SPEED_LIMIT;
     else speed = -BRAKE_ACTUATOR_SPEED_LIMIT;
   }
   
-  //HAL_GPIO_WritePin(STEERING_REVERSE_GPIO_Port, STEERING_REVERSE_Pin, speed < 0.0 ? 0 : 1);
-  //TIM4->CCR2 = (uint32_t)(65535 * (fabs(speed) / STEERING_ACTUATOR_SPEED_LIMIT));
-  
   //TODO: change GPIO pin for braking actuator
-  //possible version:
-  //configure actuator pins for dir and set new pwm duty cycle for stepping
-  //with 0 the actuator "retracts" while with 1 it "extends"
-  //HAL_GPIO_WritePin(BRAKING_GPIO_Port, BRAKING_Dir_Pin, speed < 0.0 ? 0 : 1);
-  //TIMX->CCRX = (uint32_t)(65535 * (fabs(speed) / BRAKING_ACTUATOR_SPEED_LIMIT));
+
+  // HAL_GPIO_WritePin(ActuatorDir_GPIO_Port, ActuatorDir_Pin, speed < 0.0 ? RETRACT : EXTEND);
+
+  // // set new pwm frequency leaving constant the duty cycle ~ 50% of the new arr
+  // float steps_per_sec = fabs(speed) / MM_STEP;
+
+  // if (steps_per_sec > 0.0f) {
+  //     //84e6 is the timer clock, need to be changed based on the ioc file
+  //     uint32_t timer_clk = 84e6 / (TIMX->PSC + 1);
+  //     uint16_t arr = (uint16_t)((timer_clk / steps_per_sec) - 1);
+  //     // limit ARR to working range found by testing
+  //     if (arr > 4999) arr = 4999; // ~ 200 Hz
+  //     if (arr < 1249) arr = 1249; // ~ 600 Hz
+
+  //     TIMX->ARR = arr;
+  //     TIMX->CCRY = arr / 2; // 50% duty cycle
+  // } else {
+  //     TIMX->CCRY = 0; // stop pulses
+  // }
 }
 
 void brake_actuator_pid_init(float kp, float ki, float kd, float sample_time, float anti_windup) {

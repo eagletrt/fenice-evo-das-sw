@@ -121,7 +121,7 @@ float raw_to_angle(uint8_t byte0, uint8_t byte1) {
     return parsed / 4095.f * 360.f;
 }
 
-#define STEERING_WHEEL_ENCODER_CENTER_DEG 98.6f
+#define STEERING_WHEEL_ENCODER_CENTER_DEG (213.538f)
 float calibrate_angle(float angle) {
     angle = angle - STEERING_WHEEL_ENCODER_CENTER_DEG;
     angle = angle * -1.0;

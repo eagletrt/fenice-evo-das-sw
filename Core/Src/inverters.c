@@ -389,7 +389,7 @@ void _INV_minimum_cell_voltage_limit(float rpm_l, float rpm_r, float *torque_l, 
     float dV    = fmax(VOC - HV_MIN_CELL_VOLTAGE, 0.0);
     float R     = _INV_internal_resistance_model(ecumsg_hv_soc_estimation_state_state.data.soc);
     float I_max = dV / R;
-    I_max *= 4.0;  // 4 parallels
+    I_max *= BAT_PARALLELS;
 
     float packV = VOC * HV_CELL_COUNT;
     float P_max = packV * I_max;

@@ -121,13 +121,18 @@ float raw_to_angle(uint8_t byte0, uint8_t byte1) {
     return parsed / 4095.f * 360.f;
 }
 
-#define STEERING_WHEEL_ENCODER_CENTER_DEG (213.538f)
+// #define STEERING_WHEEL_ENCODER_CENTER_DEG (213.538f)
+#define STEERING_WHEEL_ENCODER_SX_DEG (162.f)
+#define STEERING_WHEEL_ENCODER_CENTER_DEG (116.769f)
 float calibrate_angle(float angle) {
-    angle = angle - STEERING_WHEEL_ENCODER_CENTER_DEG;
-    angle = angle * -1.0;
-    if (angle < -200.0) {
-        angle += 360.0;
-    }
+    angle = angle - STEERING_WHEEL_ENCODER_SX; // Remove offset turning the wheels all to the left
+    if (angle < 0.f)
+        angle += 360.f;     // Wrap around angles if negative to have the angle inside the [0,360] range
+    angle = angle - STEERING_WHEEL_ENCODER_CENTER_DEG;  // Remove offset keeping the wheels straight so the angle is 0 if the car doesn't turn
+    angle = angle * -1.0;   // Reverse the angle
+    // if (angle < -200.0) {
+    //     angle += 360.0;
+    // }
     return angle;
 }
 

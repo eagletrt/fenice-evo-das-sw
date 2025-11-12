@@ -22,7 +22,7 @@ typedef enum { INV_LEFT, INV_RIGHT } INV_SideTypeDef;
 
 #define HV_MAX_REGEN_CURRENT      -24.0f
 #define HV_MIN_CELL_VOLTAGE       2.8f
-#define HV_CELL_COUNT             120
+#define HV_CELL_COUNT             108 // 144
 #define P_BAT_MAX                 80 * 1e3  // W
 #define I_BAT_MAX                 125.0f 
 #define P_BAT_MIN                 (HV_MAX_REGEN_CURRENT * HV_MIN_CELL_VOLTAGE * HV_CELL_COUNT)

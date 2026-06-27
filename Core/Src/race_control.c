@@ -114,7 +114,7 @@ bool DAS_do_drive_routine(float brake_pressure) {
     } else {
         torque_l_Nm = torque_r_Nm = driver_request;
     }
-    // INV_apply_cutoff(INV_get_RPM(INV_LEFT), INV_get_RPM(INV_RIGHT), &torque_l_Nm, &torque_r_Nm);
+    INV_apply_cutoff(INV_get_RPM(INV_LEFT), INV_get_RPM(INV_RIGHT), &torque_l_Nm, &torque_r_Nm);
     // bool applied_bspd_limits = INV_apply_bspd_limits(&torque_l_Nm, &torque_r_Nm, brake_pressure);
 
     INV_set_torque_Nm(INV_LEFT, torque_l_Nm);

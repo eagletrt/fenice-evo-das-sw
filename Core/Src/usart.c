@@ -22,6 +22,8 @@
 
 /* USER CODE BEGIN 0 */
 
+#include <string.h>
+
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart2;
@@ -108,5 +110,14 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle) {
 }
 
 /* USER CODE BEGIN 1 */
+
+enum PalReturnCode usart_logger_send(const struct PalMessage *message) {
+    if (message == NULL) {
+        return PAL_RC_NULL_POINTER;
+    }
+
+    HAL_StatusTypeDef status = HAL_UART_Transmit(&huart2, message->payload, strlen((const char *)message->payload), HAL_MAX_DELAY);
+    return (status == HAL_OK) ? PAL_RC_OK : PAL_RC_IO_ERROR;
+}
 
 /* USER CODE END 1 */

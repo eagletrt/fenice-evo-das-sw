@@ -22,8 +22,8 @@ Functions and types have been generated with prefix "fsm_"
 
 #include "pedals.h"
 #include "buzzer.h"
+#include "logger.h"
 #include "can-communications.h"
-#include "vehicle.h"
 
 struct FsmInitData {
     pedals_set_brake_light_callback set_brake_light;
@@ -32,6 +32,8 @@ struct FsmInitData {
     buzzer_off_callback off_buzzer;
     buzzer_on_callback on_buzzer;
     buzzer_tick_callback tick_buzzer;
+
+    struct LoggerConfig logger_config;
 
     struct CanCommunicationsNetworkConfig can_network_configs[CAN_COMMUNICATION_NETWORK_COUNT];
 };

@@ -19,7 +19,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "can.h"
-#include "inverter-api.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -29,6 +28,9 @@
 
 #include "fsm.h"
 #include "buzzer-api.h"
+#include "pal-api.h"
+#include "inverter-api.h"
+#include "arena-allocator-api.h"
 #include "can-communications-router-api.h"
 
 /* USER CODE END Includes */
@@ -121,6 +123,11 @@ int main(void) {
                 .cs_enter = __disable_irq,
                 .cs_exit = __enable_irq,
             } },
+        .logger_config = {
+            .send = usart_logger_send,
+            .cs_enter = __disable_irq,
+            .cs_exit = __enable_irq,
+        },
         .tick_buzzer = HAL_GetTick,
         .on_buzzer = tim_buzzer_on,
         .off_buzzer = tim_buzzer_off,

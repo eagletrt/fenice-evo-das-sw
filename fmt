@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -xe
+
+if ! [ -d .git ]; then
+    echo "[!] Please run this script from the root of the repository"
+    exit 1
+fi
+
+clang-format -i Core/Src/*.c Core/Inc/*.h Core/Src/vcu/*.c Core/Inc/vcu/*.h
+

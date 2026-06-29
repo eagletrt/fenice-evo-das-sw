@@ -11,3 +11,5 @@ build/
 
 .stm32env
 STM32Make.make
+.pio
+compile_commands.json

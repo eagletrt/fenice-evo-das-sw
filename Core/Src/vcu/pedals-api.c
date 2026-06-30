@@ -44,10 +44,6 @@ enum PedalsReturnCode pedals_api_set_brake(float brake) {
     }
 
     pedals_handler.brake = brake;
-    if (pedals_handler.set_brake_light != NULL) {
-        pedals_handler.set_brake_light((brake >= PEDALS_BRAKE_THRESHOLD_PERCENTAGE) ? true : false);
-    }
-
     return PEDALS_RC_OK;
 }
 
@@ -57,6 +53,10 @@ enum PedalsReturnCode pedals_api_set_brake_pressure(float brake_pressure) {
     }
 
     pedals_handler.brake_pressure = brake_pressure;
+    if (pedals_handler.set_brake_light != NULL) {
+        pedals_handler.set_brake_light(pedals_api_is_brake_pressed());
+    }
+
     return PEDALS_RC_OK;
 }
 
@@ -65,7 +65,7 @@ float pedals_api_get_requested_throttle_torque() {
 }
 
 bool pedals_api_is_brake_pressed() {
-    return (pedals_handler.brake >= PEDALS_BRAKE_THRESHOLD_PERCENTAGE);
+    return (pedals_handler.brake_pressure >= PEDALS_BRAKE_THRESHOLD_LIGHT_BAR);
 }
 
 float pedals_api_get_throttle() {

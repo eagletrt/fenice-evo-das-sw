@@ -238,11 +238,13 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
         logger_api_log(LOGGER_LEVEL_INFO, "[FSM IDLE] Vehicle requested state is READY, starting precharge");
         next_state = FSM_STATE_START_TS_PRECHARGE;
         // TODO: really needed?
+        /*
         if (!fsm_data->shutdown_closed()) {
             next_state = FSM_STATE_IDLE;
         } else if (!vehicle_api_is_shutdown_end_closed()) {
             next_state = FSM_STATE_IDLE;
         }
+        */
     }
 
     /*** USER CODE END DO_IDLE ***/
@@ -330,11 +332,13 @@ fsm_state_t fsm_do_start_ts_precharge(fsm_state_data_t *data) {
     }
 
     // TODO: really needed?
+    /*
     if (!fsm_data->shutdown_closed()) {
         next_state = FSM_STATE_START_TS_DISCHARGE;
     } else if (!vehicle_api_is_shutdown_end_closed()) {
         next_state = FSM_STATE_START_TS_DISCHARGE;
     }
+    */
 
     /*** USER CODE END DO_START_TS_PRECHARGE ***/
 

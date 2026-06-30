@@ -78,7 +78,7 @@ enum LoggerReturnCode logger_api_log(enum LoggerLevel level, const char *format,
     if (actual_len < sizeof(final_buffer) - 3U) {
         final_buffer[actual_len++] = '\n'; // Append newline if space allows
         final_buffer[actual_len++] = '\r'; // Append carriage return if space allows
-        final_buffer[actual_len] = '\0'; // Ensure null termination
+        final_buffer[actual_len] = '\0';   // Ensure null termination
     }
 
     // Determine transmission size including the string null terminator

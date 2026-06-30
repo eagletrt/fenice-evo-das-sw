@@ -561,7 +561,6 @@ fsm_state_t fsm_do_drive(fsm_state_data_t *data) {
             logger_api_log(LOGGER_LEVEL_INFO, "[FSM DRIV] Inverter is ready and in DRIVE state");
             float requested_torque = pedals_api_get_requested_throttle_torque();
             inverter_api_set_torque(EPHORUS_WHEEL_FRONT_LEFT, requested_torque);
-
         }
     }
 

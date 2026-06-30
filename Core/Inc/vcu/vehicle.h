@@ -3,6 +3,7 @@
 
 enum VehicleReturnCode {
     VEHICLE_RC_OK,
+    VEHICLE_RC_ERROR,
     VEHICLE_RC_NULL_POINTER,
 };
 

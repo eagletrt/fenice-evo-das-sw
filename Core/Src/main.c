@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "can.h"
+#include "stm32f4xx_hal.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -30,6 +31,7 @@
 #include "buzzer-api.h"
 #include "inverter-api.h"
 #include "can-communications-router-api.h"
+#include "vehicle-api.h"
 
 /* USER CODE END Includes */
 
@@ -159,6 +161,7 @@ int main(void) {
 
         inverter_api_step(HAL_GetTick());
         buzzer_api_routine();
+        vehicle_api_periodically_send_state(state, HAL_GetTick());
 
         /* USER CODE END WHILE */
 

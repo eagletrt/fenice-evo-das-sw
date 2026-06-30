@@ -20,7 +20,7 @@ enum LoggerReturnCode logger_api_init(struct LoggerConfig config, bool logger_st
     }
 
     arena_allocator_api_init(&logger_handler.arena_handler);
-    pal_api_init(&logger_handler.pal_handler, 0, 128, 128, NULL, config.send, config.cs_enter, config.cs_exit, &logger_handler.arena_handler);
+    pal_api_init(&logger_handler.pal_handler, 1, 128, 128, NULL, config.send, config.cs_enter, config.cs_exit, &logger_handler.arena_handler);
 
     logger_handler.logger_state = logger_state;
 
@@ -74,6 +74,12 @@ enum LoggerReturnCode logger_api_log(enum LoggerLevel level, const char *format,
 
     // Measure the actual string safely populated inside the buffer boundary
     size_t actual_len = strlen(final_buffer);
+
+    if (actual_len < sizeof(final_buffer) - 3U) {
+        final_buffer[actual_len++] = '\n'; // Append newline if space allows
+        final_buffer[actual_len++] = '\r'; // Append carriage return if space allows
+        final_buffer[actual_len] = '\0'; // Ensure null termination
+    }
 
     // Determine transmission size including the string null terminator
     uint32_t tx_bytes = (uint32_t)(actual_len + 1U);

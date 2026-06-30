@@ -28,9 +28,7 @@
 
 #include "fsm.h"
 #include "buzzer-api.h"
-#include "pal-api.h"
 #include "inverter-api.h"
-#include "arena-allocator-api.h"
 #include "can-communications-router-api.h"
 
 /* USER CODE END Includes */

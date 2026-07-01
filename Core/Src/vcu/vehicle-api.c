@@ -71,7 +71,7 @@ enum VehicleReturnCode vehicle_api_periodically_send_state(fsm_state_t state, ui
 
 enum VehicleReturnCode vehicle_api_periodically_send_identity(uint32_t tick) {
     EAGLETRT_STATIC uint32_t last_send_tick = 0;
-    if (tick - last_send_tick >= 1000) {
+    if (tick - last_send_tick >= 2000) {
         last_send_tick = tick;
         union CanPrimaryMessages message = { 0 };
         struct CanCommunicationFrame frame = { 0 };

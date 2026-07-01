@@ -33,6 +33,7 @@
 #include "can-communications-router-api.h"
 #include "can-communications-api.h"
 #include "vehicle-api.h"
+#include "logger-api.h"
 
 /* USER CODE END Includes */
 
@@ -165,16 +166,20 @@ int main(void) {
             case INVERTER_RC_OK:
                 break;
             case INVERTER_RC_TX_ERROR:
-                HAL_UART_Transmit(&huart2, (uint8_t *)"Failed to send inverter setpoints\r\n", 35, HAL_MAX_DELAY);
+                logger_api_log(LOGGER_LEVEL_ERROR, "Inverter TX error");
                 break;
             default:
-                HAL_UART_Transmit(&huart2, (uint8_t *)"Unknown inverter error\r\n", 25, HAL_MAX_DELAY);
+                logger_api_log(LOGGER_LEVEL_ERROR, "Inverter error");
                 break;
         }
 
         buzzer_api_routine();
         if (vehicle_api_periodically_send_state(state, HAL_GetTick()) != VEHICLE_RC_OK) {
-            HAL_UART_Transmit(&huart2, (uint8_t *)"Failed to send vehicle state\r\n", 30, HAL_MAX_DELAY);
+            logger_api_log(LOGGER_LEVEL_ERROR, "Failed to send vehicle state");
+        }
+
+        if (vehicle_api_periodically_send_identity(HAL_GetTick()) != VEHICLE_RC_OK) {
+            logger_api_log(LOGGER_LEVEL_ERROR, "Failed to send vehicle identity");
         }
 
         can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_PRIMARY);

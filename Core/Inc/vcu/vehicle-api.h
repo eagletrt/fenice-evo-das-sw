@@ -22,4 +22,6 @@ void vehicle_api_set_higher_than_60v(bool higher);
 
 enum VehicleReturnCode vehicle_api_periodically_send_state(fsm_state_t state, uint32_t tick);
 
+enum VehicleReturnCode vehicle_api_periodically_send_identity(uint32_t tick);
+
 #endif // VEHICLE_API_H

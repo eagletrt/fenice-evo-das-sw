@@ -31,6 +31,7 @@
 #include "buzzer-api.h"
 #include "inverter-api.h"
 #include "can-communications-router-api.h"
+#include "can-communications-api.h"
 #include "vehicle-api.h"
 
 /* USER CODE END Includes */
@@ -148,6 +149,7 @@ int main(void) {
 
     struct FsmData fsm_data = {
         .shutdown_closed = gpio_shutdown_closed,
+        .set_shutdown = gpio_set_shutdown,
         .get_tick = HAL_GetTick,
     };
 
@@ -159,9 +161,26 @@ int main(void) {
 
         state = fsm_run_state(state, &fsm_data);
 
-        inverter_api_step(HAL_GetTick());
+        switch (inverter_api_step(HAL_GetTick())) {
+            case INVERTER_RC_OK:
+                break;
+            case INVERTER_RC_TX_ERROR:
+                HAL_UART_Transmit(&huart2, (uint8_t *)"Failed to send inverter setpoints\r\n", 35, HAL_MAX_DELAY);
+                break;
+            default:
+                HAL_UART_Transmit(&huart2, (uint8_t *)"Unknown inverter error\r\n", 25, HAL_MAX_DELAY);
+                break;
+        }
+
         buzzer_api_routine();
-        vehicle_api_periodically_send_state(state, HAL_GetTick());
+        if (vehicle_api_periodically_send_state(state, HAL_GetTick()) != VEHICLE_RC_OK) {
+            HAL_UART_Transmit(&huart2, (uint8_t *)"Failed to send vehicle state\r\n", 30, HAL_MAX_DELAY);
+        }
+
+        can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_PRIMARY);
+        can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_INVERTER);
+        can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_PRIMARY);
+        can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_INVERTER);
 
         /* USER CODE END WHILE */
 

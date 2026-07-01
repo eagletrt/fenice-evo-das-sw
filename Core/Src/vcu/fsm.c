@@ -137,7 +137,7 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
     buzzer_api_set_frequency(1000);
     buzzer_api_set_amplitude(0.33f);
     buzzer_api_set_duration(800);
-    buzzer_api_play_sync();
+    // buzzer_api_play_sync();
 
     /*** USER CODE END DO_INIT ***/
 
@@ -158,9 +158,23 @@ fsm_state_t fsm_do_enable_inv_updates(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_ENABLE_INV_UPDATES ***/
 
+    if (data == NULL) {
+        logger_api_log(LOGGER_LEVEL_ERROR, "[FSM IDLE] FSM data is NULL");
+        next_state = FSM_STATE_FATAL_ERROR;
+    }
+
+    struct FsmData *fsm_data = (struct FsmData *)data;
+
+    if (fsm_data->shutdown_closed == NULL) {
+        logger_api_log(LOGGER_LEVEL_ERROR, "[FSM IDLE] FSM data shutdown_closed is NULL");
+        next_state = FSM_STATE_FATAL_ERROR;
+    }
+
     logger_api_log(LOGGER_LEVEL_INFO, "[FMS INVUP] Entering state enable_inv_updates");
 
     inverter_api_disarm(EPHORUS_WHEEL_FRONT_LEFT);
+
+    fsm_data->set_shutdown(true);
 
     next_state = FSM_STATE_CHECK_INV_SETTINGS;
 
@@ -270,6 +284,23 @@ fsm_state_t fsm_do_fatal_error(fsm_state_data_t *data) {
     /*** USER CODE BEGIN DO_FATAL_ERROR ***/
 
     logger_api_log(LOGGER_LEVEL_ERROR, "[FSM ERR] Entering state fatal_error");
+
+    if (data == NULL) {
+        logger_api_log(LOGGER_LEVEL_ERROR, "[FSM IDLE] FSM data is NULL");
+        next_state = FSM_STATE_FATAL_ERROR;
+    }
+
+    struct FsmData *fsm_data = (struct FsmData *)data;
+
+    if (fsm_data->shutdown_closed == NULL) {
+        logger_api_log(LOGGER_LEVEL_ERROR, "[FSM IDLE] FSM data shutdown_closed is NULL");
+        next_state = FSM_STATE_FATAL_ERROR;
+    }
+
+    if (fsm_data->shutdown_closed()) {
+        logger_api_log(LOGGER_LEVEL_INFO, "[FSM ERR] Shutdown is closed, opening it");
+        fsm_data->set_shutdown(false);
+    }
 
     /*** USER CODE END DO_FATAL_ERROR ***/
 

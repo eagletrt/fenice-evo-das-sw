@@ -90,4 +90,8 @@ bool gpio_shutdown_closed(void) {
     return HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin) == GPIO_PIN_SET;
 }
 
+void gpio_set_shutdown(bool closed) {
+    HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, closed ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
 /* USER CODE END 2 */

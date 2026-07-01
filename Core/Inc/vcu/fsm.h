@@ -39,10 +39,12 @@ struct FsmInitData {
 };
 
 typedef bool (*fsm_shutdown_closed_callback)(void);
+typedef void (*fsm_shutdown_set_callback)(bool closed);
 typedef uint32_t (*fsm_get_tick_callback)(void);
 
 struct FsmData {
     fsm_shutdown_closed_callback shutdown_closed;
+    fsm_shutdown_set_callback set_shutdown;
     fsm_get_tick_callback get_tick;
 };
 

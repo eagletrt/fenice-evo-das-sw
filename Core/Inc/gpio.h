@@ -44,6 +44,8 @@ void gpio_set_brake_light(bool on);
 
 bool gpio_shutdown_closed(void);
 
+void gpio_set_shutdown(bool closed);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

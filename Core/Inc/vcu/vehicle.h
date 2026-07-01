@@ -15,10 +15,9 @@ enum VehicleRequestedState {
 
 struct VehicleHandler {
     enum VehicleRequestedState requested_state;
-
     bool higher_than_60v;
-
     bool shutdown_end_closed;
+    long build_time;
 };
 
 #endif // VEHICLE_H

@@ -19,7 +19,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "can.h"
-#include "stm32f4xx_hal.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -152,6 +151,7 @@ int main(void) {
         .shutdown_closed = gpio_shutdown_closed,
         .set_shutdown = gpio_set_shutdown,
         .get_tick = HAL_GetTick,
+        .is_button_pressed = gpio_is_ts_button_pressed
     };
 
     /* USER CODE END 2 */

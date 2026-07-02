@@ -20,6 +20,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "gpio.h"
+#include "main.h"
+#include "stm32f4xx_hal_gpio.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -78,6 +80,12 @@ void MX_GPIO_Init(void) {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(RTD_BUZZER_GPIO_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : TS_Button_Pin */
+    GPIO_InitStruct.Pin = TS_Button_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    HAL_GPIO_Init(TS_Button_GPIO_Port, &GPIO_InitStruct);
 }
 
 /* USER CODE BEGIN 2 */
@@ -92,6 +100,10 @@ bool gpio_shutdown_closed(void) {
 
 void gpio_set_shutdown(bool closed) {
     HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, closed ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+bool gpio_is_ts_button_pressed(void) {
+    return HAL_GPIO_ReadPin(TS_Button_GPIO_Port, TS_Button_Pin) == GPIO_PIN_SET;
 }
 
 /* USER CODE END 2 */

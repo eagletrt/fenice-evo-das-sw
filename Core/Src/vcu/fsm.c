@@ -27,12 +27,16 @@ Functions and types have been generated with prefix "fsm_"
 #include "tsac.h"
 #include "vehicle-api.h"
 #include "tsac-api.h"
+#include <string.h>
+
+#define TS_BUTTON_LONG_PRESS_MS 1000
 
 /*** USER CODE END MACROS ***/
 
 // GLOBALS
 // State human-readable names
 const char *fsm_state_names[] = { "init", "enable_inv_updates", "check_inv_settings", "idle", "fatal_error", "start_ts_precharge", "wait_ts_precharge", "start_ts_discharge", "wait_driver", "enable_inv_drive", "drive", "disable_inv_drive", "re_enable_inv_drive", "wait_ts_discharge" };
+uint32_t ts_button_timer = 0;
 
 // List of state functions
 fsm_state_func_t *const fsm_state_table[FSM_NUM_STATES] = {
@@ -237,7 +241,7 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
 
     struct FsmData *fsm_data = (struct FsmData *)data;
 
-    if (fsm_data->shutdown_closed == NULL) {
+    if (fsm_data->shutdown_closed == NULL || fsm_data->is_button_pressed == NULL) {
         logger_api_log(LOGGER_LEVEL_ERROR, "[FSM IDLE] FSM data shutdown_closed is NULL");
         next_state = FSM_STATE_FATAL_ERROR;
     }
@@ -248,17 +252,28 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
         inverter_reset = true;
     }
 
-    if (vehicle_api_get_requested_state() == VEHICLE_REQUESTED_STATE_READY) {
-        logger_api_log(LOGGER_LEVEL_INFO, "[FSM IDLE] Vehicle requested state is READY, starting precharge");
-        next_state = FSM_STATE_START_TS_PRECHARGE;
-        // TODO: really needed?
-        /*
-        if (!fsm_data->shutdown_closed()) {
-            next_state = FSM_STATE_IDLE;
-        } else if (!vehicle_api_is_shutdown_end_closed()) {
-            next_state = FSM_STATE_IDLE;
+    //if (vehicle_api_get_requested_state() == VEHICLE_REQUESTED_STATE_READY) { // TS Button PB4
+    if (fsm_data->is_button_pressed()) {
+        if (ts_button_timer == 0) {
+            ts_button_timer = fsm_data->get_tick(); //start timer
+        } else if (fsm_data->get_tick() - ts_button_timer >= TS_BUTTON_LONG_PRESS_MS) {
+            logger_api_log(LOGGER_LEVEL_INFO, "[FSM IDLE] TS button held, starting precharge");
+            next_state = FSM_STATE_START_TS_PRECHARGE;
+            ts_button_timer = 0;
+            // TODO: really needed?
+            /*
+            if (!fsm_data->shutdown_closed()) {
+                next_state = FSM_STATE_IDLE;
+            } else if (!vehicle_api_is_shutdown_end_closed()) {
+                next_state = FSM_STATE_IDLE;
+            }
+            */
         }
-        */
+    } else if (vehicle_api_get_requested_state() == VEHICLE_REQUESTED_STATE_READY) {
+        logger_api_log(LOGGER_LEVEL_INFO, "[FSM IDLE] TS button held, starting precharge");
+        next_state = FSM_STATE_START_TS_PRECHARGE;
+    } else {
+        ts_button_timer = 0; // reset rtimer
     }
 
     /*** USER CODE END DO_IDLE ***/
@@ -488,6 +503,18 @@ fsm_state_t fsm_do_wait_driver(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_WAIT_DRIVER ***/
 
+    if (data == NULL) {
+        logger_api_log(LOGGER_LEVEL_ERROR, "[FSM WPRE] FSM data is NULL");
+        return FSM_STATE_FATAL_ERROR;
+    }
+
+    struct FsmData *fsm_data = (struct FsmData *)data;
+
+    if (fsm_data->is_button_pressed == NULL) {
+        logger_api_log(LOGGER_LEVEL_ERROR, "[FSM WPRE] FSM data shutdown_closed or get_tick is NULL");
+        return FSM_STATE_FATAL_ERROR;
+    }
+
     logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Entering state wait_driver");
 
     if (tsac_api_get_status() != TSAC_STATUS_ON) {
@@ -495,10 +522,7 @@ fsm_state_t fsm_do_wait_driver(fsm_state_data_t *data) {
         next_state = FSM_STATE_START_TS_DISCHARGE;
     } else {
         enum VehicleRequestedState requested_state = vehicle_api_get_requested_state();
-        if (requested_state == VEHICLE_REQUESTED_STATE_IDLE) {
-            logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Vehicle requested state is IDLE, starting discharge");
-            next_state = FSM_STATE_START_TS_DISCHARGE;
-        } else if (requested_state == VEHICLE_REQUESTED_STATE_DRIVE) {
+        if (requested_state == VEHICLE_REQUESTED_STATE_DRIVE || fsm_data->is_button_pressed()) {
             if (vehicle_api_is_driver_ready()) {
                 logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Vehicle requested state is DRIVE and driver is ready");
                 next_state = FSM_STATE_ENABLE_INV_DRIVE;

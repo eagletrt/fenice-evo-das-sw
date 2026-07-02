@@ -46,6 +46,8 @@ bool gpio_shutdown_closed(void);
 
 void gpio_set_shutdown(bool closed);
 
+bool gpio_is_ts_button_pressed(void);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

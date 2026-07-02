@@ -65,6 +65,8 @@ void Error_Handler(void);
 #define AUX_BUZZER_GPIO_Port GPIOC
 #define RTD_BUZZER_Pin GPIO_PIN_8
 #define RTD_BUZZER_GPIO_Port GPIOA
+#define TS_Button_Pin GPIO_PIN_4
+#define TS_Button_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

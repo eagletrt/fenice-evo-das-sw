@@ -27,6 +27,7 @@ Functions and types have been generated with prefix "fsm_"
 #include "tsac.h"
 #include "vehicle-api.h"
 #include "tsac-api.h"
+#include "vehicle.h"
 #include <string.h>
 
 #define TS_BUTTON_LONG_PRESS_MS 1000
@@ -522,11 +523,30 @@ fsm_state_t fsm_do_wait_driver(fsm_state_data_t *data) {
         next_state = FSM_STATE_START_TS_DISCHARGE;
     } else {
         enum VehicleRequestedState requested_state = vehicle_api_get_requested_state();
-        if (requested_state == VEHICLE_REQUESTED_STATE_DRIVE || fsm_data->is_button_pressed()) {
+        if (fsm_data->is_button_pressed()) {
+            if (ts_button_timer == 0) {
+                ts_button_timer = fsm_data->get_tick();
+            }
+            if (fsm_data->get_tick() - ts_button_timer >= TS_BUTTON_LONG_PRESS_MS) {
+                if (vehicle_api_is_driver_ready()) {
+                    logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Vehicle requested state is DRIVE and driver is ready");
+                    next_state = FSM_STATE_ENABLE_INV_DRIVE;
+                } else {
+                    logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Vehicle requested state is DISCHARGE");
+                    next_state = FSM_STATE_START_TS_DISCHARGE;
+                }
+            }
+
+        } else if (requested_state == VEHICLE_REQUESTED_STATE_DRIVE) {
             if (vehicle_api_is_driver_ready()) {
                 logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Vehicle requested state is DRIVE and driver is ready");
                 next_state = FSM_STATE_ENABLE_INV_DRIVE;
             }
+        } else if (requested_state == VEHICLE_REQUESTED_STATE_IDLE) {
+            logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Vehicle requested state is DISCHARGE");
+            next_state = FSM_STATE_START_TS_DISCHARGE;
+        } else {
+            ts_button_timer = 0;
         }
     }
 

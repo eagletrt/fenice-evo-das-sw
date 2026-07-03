@@ -7,6 +7,7 @@
 #include "tsac-api.h"
 #include "vehicle-api.h"
 #include "pedals-api.h"
+#include <stdio.h>
 
 enum CanCommunicationReturnCode can_communications_router_api_receive_primary(const struct CanCommunicationFrame *frame) {
     if (frame == NULL) {
@@ -18,7 +19,7 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
     }
 
     union CanPrimaryMessages message = { 0 };
-    if (can_primary_api_deserialize_from_index(CAN_PRIMARY_MESSAGE_INDEX_STEERING_WHEEL_SET_ECU_STATUS, (uint8_t *)frame->data, &message) != 0) {
+    if (can_primary_api_deserialize_from_id(frame->id, (uint8_t *)frame->data, &message) != 0) {
         return CAN_COMMUNICATION_RC_ERROR;
     }
     switch (frame->id) {

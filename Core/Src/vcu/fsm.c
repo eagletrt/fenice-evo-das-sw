@@ -109,7 +109,7 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
         next_state = FSM_STATE_FATAL_ERROR;
     }
 
-    if (logger_api_init(init_data->logger_config, true) != LOGGER_RC_OK) {
+    if (logger_api_init(init_data->logger_config, false) != LOGGER_RC_OK) {
         next_state = FSM_STATE_FATAL_ERROR;
     }
 

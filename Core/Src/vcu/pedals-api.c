@@ -79,3 +79,9 @@ float pedals_api_get_brake() {
 float pedals_api_get_brake_pressure() {
     return pedals_handler.brake_pressure;
 }
+
+void pedals_api_set_brake_light(bool on) {
+    if (pedals_handler.set_brake_light != NULL) {
+        pedals_handler.set_brake_light(on);
+    }
+}

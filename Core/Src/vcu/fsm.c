@@ -142,7 +142,7 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
     buzzer_api_set_frequency(1000);
     buzzer_api_set_amplitude(0.33f);
     buzzer_api_set_duration(800);
-    // buzzer_api_play_sync();
+    buzzer_api_play_sync();
 
     /*** USER CODE END DO_INIT ***/
 
@@ -511,7 +511,7 @@ fsm_state_t fsm_do_wait_driver(fsm_state_data_t *data) {
 
     struct FsmData *fsm_data = (struct FsmData *)data;
 
-    if (fsm_data->is_button_pressed == NULL) {
+    if (fsm_data->is_button_pressed == NULL || fsm_data->get_tick == NULL || fsm_data->is_button_brake_pressed == NULL) {
         logger_api_log(LOGGER_LEVEL_ERROR, "[FSM WPRE] FSM data shutdown_closed or get_tick is NULL");
         return FSM_STATE_FATAL_ERROR;
     }
@@ -526,9 +526,8 @@ fsm_state_t fsm_do_wait_driver(fsm_state_data_t *data) {
         if (fsm_data->is_button_pressed()) {
             if (ts_button_timer == 0) {
                 ts_button_timer = fsm_data->get_tick();
-            }
-            if (fsm_data->get_tick() - ts_button_timer >= TS_BUTTON_LONG_PRESS_MS) {
-                if (vehicle_api_is_driver_ready()) {
+            } else if (fsm_data->get_tick() - ts_button_timer >= TS_BUTTON_LONG_PRESS_MS) {
+                if (vehicle_api_is_driver_ready() || fsm_data->is_button_brake_pressed()) {
                     logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Vehicle requested state is DRIVE and driver is ready");
                     next_state = FSM_STATE_ENABLE_INV_DRIVE;
                 } else {
@@ -614,6 +613,18 @@ fsm_state_t fsm_do_drive(fsm_state_data_t *data) {
     fsm_state_t next_state = FSM_NO_CHANGE;
 
     /*** USER CODE BEGIN DO_DRIVE ***/
+
+    if (data == NULL) {
+        logger_api_log(LOGGER_LEVEL_ERROR, "[FSM WPRE] FSM data is NULL");
+        return FSM_STATE_FATAL_ERROR;
+    }
+
+    struct FsmData *fsm_data = (struct FsmData *)data;
+
+    if (fsm_data->is_button_brake_pressed == NULL) {
+        logger_api_log(LOGGER_LEVEL_ERROR, "[FSM WPRE] FSM data shutdown_closed or get_tick is NULL");
+        return FSM_STATE_FATAL_ERROR;
+    }
 
     logger_api_log(LOGGER_LEVEL_INFO, "[FSM DRIV] Entering state drive");
 

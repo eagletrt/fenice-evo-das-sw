@@ -84,4 +84,6 @@ float pedals_api_get_brake();
  */
 float pedals_api_get_brake_pressure();
 
+void pedals_api_set_brake_light(bool on);
+
 #endif // PEDALS_API_H

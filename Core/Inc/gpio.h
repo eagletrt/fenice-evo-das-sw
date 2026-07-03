@@ -48,6 +48,8 @@ void gpio_set_shutdown(bool closed);
 
 bool gpio_is_ts_button_pressed(void);
 
+bool gpio_is_brake_button_pressed(void);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

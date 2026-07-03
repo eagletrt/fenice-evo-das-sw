@@ -66,6 +66,30 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+void can_config_filters(void) {
+    CAN_FilterTypeDef filter = {
+        .FilterMode = CAN_FILTERMODE_IDMASK,
+        .FilterScale = CAN_FILTERSCALE_32BIT,
+        .FilterIdHigh = 0x0000,
+        .FilterIdLow = 0x0000,
+        .FilterMaskIdHigh = 0x0000,
+        .FilterMaskIdLow = 0x0000,
+        .FilterFIFOAssignment = CAN_FILTER_FIFO0,
+        .FilterActivation = CAN_FILTER_ENABLE,
+        .SlaveStartFilterBank = 14,
+    };
+
+    filter.FilterBank = 0;
+    if (HAL_CAN_ConfigFilter(&hcan1, &filter) != HAL_OK) {
+        Error_Handler();
+    }
+
+    filter.FilterBank = 14;
+    if (HAL_CAN_ConfigFilter(&hcan2, &filter) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -139,6 +163,8 @@ int main(void) {
 
     state = fsm_run_state(state, &init_data);
 
+    can_config_filters();
+
     HAL_CAN_Start(&hcan1);
     HAL_CAN_Start(&hcan2);
 
@@ -151,8 +177,10 @@ int main(void) {
         .shutdown_closed = gpio_shutdown_closed,
         .set_shutdown = gpio_set_shutdown,
         .get_tick = HAL_GetTick,
-        .is_button_pressed = gpio_is_ts_button_pressed
+        .is_button_pressed = gpio_is_ts_button_pressed,
+        .is_button_brake_pressed = gpio_is_brake_button_pressed,
     };
+
 
     /* USER CODE END 2 */
 
@@ -181,6 +209,8 @@ int main(void) {
         if (vehicle_api_periodically_send_identity(HAL_GetTick()) != VEHICLE_RC_OK) {
             logger_api_log(LOGGER_LEVEL_ERROR, "Failed to send vehicle identity");
         }
+
+        // gpio_set_brake_light(gpio_is_brake_button_pressed());
 
         can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_PRIMARY);
         can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_INVERTER);

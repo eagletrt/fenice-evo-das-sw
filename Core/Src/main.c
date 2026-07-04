@@ -33,7 +33,7 @@
 #include "can-communications-api.h"
 #include "vehicle-api.h"
 #include "logger-api.h"
-
+#include "pedals-api.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -199,6 +199,12 @@ int main(void) {
             default:
                 logger_api_log(LOGGER_LEVEL_ERROR, "Inverter error");
                 break;
+        }
+
+        if (pedals_api_get_throttle() < 0.05f ){
+            pedals_api_set_brake_light(true);
+        }else{
+            pedals_api_set_brake_light(false);
         }
 
         buzzer_api_routine();

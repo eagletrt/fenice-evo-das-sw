@@ -23,7 +23,7 @@
 
 #include "ephorus.h"
 
-#define INVERTER_DEFAULT_SPEED_RPM (1500) /*!< Default speed for the inverter in RPM. */
+#define INVERTER_DEFAULT_SPEED_RPM (2000) /*!< Default speed for the inverter in RPM. */
 
 /*! \brief The single CAN network every inverter lives on. */
 #define INVERTER_NETWORK CAN_COMMUNICATION_NETWORK_INVERTER

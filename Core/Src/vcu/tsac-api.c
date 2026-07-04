@@ -3,6 +3,7 @@
 #include "can-primary.h"
 #include "eagletrt.h"
 #include "can-communications-api.h"
+#include "tsac.h"
 #include <string.h>
 
 EAGLETRT_STATIC struct TsacHandler tsac_handler;
@@ -67,7 +68,7 @@ enum TsacStatus tsac_api_convert_from_can_status(enum CanPrimaryHvBmsStatusName 
             return TSAC_STATUS_ON;
         case CAN_PRIMARY_HV_BMS_STATUS_NAME_INIT:
         case CAN_PRIMARY_HV_BMS_STATUS_NAME_IDLE:
-            return TSAC_STATUS_FATAL;
+            return TSAC_STATUS_OFF;
         default:
             return TSAC_STATUS_UNKNOWN;
     }

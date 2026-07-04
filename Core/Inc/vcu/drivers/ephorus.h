@@ -37,7 +37,7 @@
 #define EPHORUS_DEFAULT_RUN_RPM (100)    /*!< Speed commanded while running. */
 #define EPHORUS_DEFAULT_TORQUE_NM (2.0f) /*!< +/- torque window. */
 #define EPHORUS_RPM_SLEW (4000.0f)       /*!< Max commanded RPM change per second (ramp). */
-#define EPHORUS_MAX_RPM (777)            /*!< Upper clamp for the run setpoint. */
+#define EPHORUS_MAX_RPM (2500)            /*!< Upper clamp for the run setpoint. */
 #define EPHORUS_MAX_TORQUE_NM (60.0f)    /*!< Upper clamp for the torque window. */
 
 /*!

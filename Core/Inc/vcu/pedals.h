@@ -6,7 +6,7 @@
 #define PEDALS_MAX_BRAKE_PRESSURE (100.0f)
 #define PEDALS_MAX_TORQUE_NM (30.0f)
 #define PEDALS_BRAKE_THRESHOLD_LIGHT_BAR (1.2f)
-#define PEDALS_COMMUNICATION_TIMEOUT_MS (100U) // TODO: figure out a real number
+#define PEDALS_COMMUNICATION_TIMEOUT_MS (250U) // TODO: figure out a real number
 
 typedef void (*pedals_set_brake_light_callback)(bool brake_pressed);
 typedef uint32_t (*pedals_get_tick_callback)(void);

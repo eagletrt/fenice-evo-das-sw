@@ -109,7 +109,7 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
         next_state = FSM_STATE_FATAL_ERROR;
     }
 
-    if (logger_api_init(init_data->logger_config, false) != LOGGER_RC_OK) {
+    if (logger_api_init(init_data->logger_config, true) != LOGGER_RC_OK) {
         next_state = FSM_STATE_FATAL_ERROR;
     }
 
@@ -126,7 +126,7 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
     }
 
     inverter_api_init();
-    if (inverter_api_attach(EPHORUS_WHEEL_FRONT_LEFT) != INVERTER_RC_OK) {
+    if (inverter_api_attach(EPHORUS_WHEEL_FRONT_RIGHT) != INVERTER_RC_OK) {
         next_state = FSM_STATE_FATAL_ERROR;
     }
 
@@ -175,9 +175,7 @@ fsm_state_t fsm_do_enable_inv_updates(fsm_state_data_t *data) {
         next_state = FSM_STATE_FATAL_ERROR;
     }
 
-    logger_api_log(LOGGER_LEVEL_INFO, "[FMS INVUP] Entering state enable_inv_updates");
-
-    inverter_api_disarm(EPHORUS_WHEEL_FRONT_LEFT);
+    inverter_api_disarm(EPHORUS_WHEEL_FRONT_RIGHT);
 
     fsm_data->set_shutdown(true);
 
@@ -204,10 +202,8 @@ fsm_state_t fsm_do_check_inv_settings(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_CHECK_INV_SETTINGS ***/
 
-    logger_api_log(LOGGER_LEVEL_INFO, "[FSM INVSET] Entering state check_inv_settings");
-
-    inverter_api_set_speed(EPHORUS_WHEEL_FRONT_LEFT, INVERTER_DEFAULT_SPEED_RPM);
-    inverter_api_set_torque(EPHORUS_WHEEL_FRONT_LEFT, 0.0f);
+    inverter_api_set_speed(EPHORUS_WHEEL_FRONT_RIGHT, INVERTER_DEFAULT_SPEED_RPM);
+    inverter_api_set_torque(EPHORUS_WHEEL_FRONT_RIGHT, 0.0f);
 
     next_state = FSM_STATE_IDLE;
 
@@ -226,14 +222,14 @@ fsm_state_t fsm_do_check_inv_settings(fsm_state_data_t *data) {
     return next_state;
 }
 
+EAGLETRT_STATIC uint32_t precharge_start_time = 0;
+
 // Function to be executed in state idle
 // valid return states: FSM_NO_CHANGE, FSM_STATE_IDLE, FSM_STATE_FATAL_ERROR, FSM_STATE_START_TS_PRECHARGE
 fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
     fsm_state_t next_state = FSM_NO_CHANGE;
 
     /*** USER CODE BEGIN DO_IDLE ***/
-
-    logger_api_log(LOGGER_LEVEL_INFO, "[FSM IDLE] Entering state idle");
 
     if (data == NULL) {
         logger_api_log(LOGGER_LEVEL_ERROR, "[FSM IDLE] FSM data is NULL");
@@ -249,7 +245,7 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
 
     if (!inverter_reset) {
         logger_api_log(LOGGER_LEVEL_INFO, "[FSM IDLE] Disarming inverter");
-        inverter_api_disarm(EPHORUS_WHEEL_FRONT_LEFT);
+        inverter_api_disarm(EPHORUS_WHEEL_FRONT_RIGHT);
         inverter_reset = true;
     }
 
@@ -261,6 +257,7 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
             logger_api_log(LOGGER_LEVEL_INFO, "[FSM IDLE] TS button held, starting precharge");
             next_state = FSM_STATE_START_TS_PRECHARGE;
             ts_button_timer = 0;
+            precharge_start_time = 0;
             // TODO: really needed?
             /*
             if (!fsm_data->shutdown_closed()) {
@@ -299,8 +296,6 @@ fsm_state_t fsm_do_fatal_error(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_FATAL_ERROR ***/
 
-    logger_api_log(LOGGER_LEVEL_ERROR, "[FSM ERR] Entering state fatal_error");
-
     if (data == NULL) {
         logger_api_log(LOGGER_LEVEL_ERROR, "[FSM IDLE] FSM data is NULL");
         next_state = FSM_STATE_FATAL_ERROR;
@@ -331,7 +326,6 @@ fsm_state_t fsm_do_fatal_error(fsm_state_data_t *data) {
     return next_state;
 }
 
-EAGLETRT_STATIC uint32_t precharge_start_time = 0;
 
 // Function to be executed in state start_ts_precharge
 // valid return states: FSM_NO_CHANGE, FSM_STATE_START_TS_PRECHARGE, FSM_STATE_WAIT_TS_PRECHARGE, FSM_STATE_START_TS_DISCHARGE
@@ -339,8 +333,6 @@ fsm_state_t fsm_do_start_ts_precharge(fsm_state_data_t *data) {
     fsm_state_t next_state = FSM_NO_CHANGE;
 
     /*** USER CODE BEGIN DO_START_TS_PRECHARGE ***/
-
-    logger_api_log(LOGGER_LEVEL_INFO, "[FSM SPRE] Entering state start_ts_precharge");
 
     if (data == NULL) {
         logger_api_log(LOGGER_LEVEL_ERROR, "[FSM SPRE] FSM data is NULL");
@@ -368,6 +360,7 @@ fsm_state_t fsm_do_start_ts_precharge(fsm_state_data_t *data) {
         if (tsac_status == TSAC_STATUS_ON || tsac_status == TSAC_STATUS_PRECHARGING) {
             logger_api_log(LOGGER_LEVEL_INFO, "[FSM SPRE] Precharge started successfully");
             next_state = FSM_STATE_WAIT_TS_PRECHARGE;
+            precharge_start_time = 0;
         } else if (tsac_status == TSAC_STATUS_OFF) {
             logger_api_log(LOGGER_LEVEL_INFO, "[FSM SPRE] Precharge not started, asking TSAC to power on");
             EAGLETRT_API_UNUSED(tsac_api_ask_power_on());
@@ -375,6 +368,7 @@ fsm_state_t fsm_do_start_ts_precharge(fsm_state_data_t *data) {
         } else if (tsac_status == TSAC_STATUS_FATAL) {
             logger_api_log(LOGGER_LEVEL_ERROR, "[FSM SPRE] TSAC in fatal state");
             next_state = FSM_STATE_START_TS_DISCHARGE;
+            precharge_start_time = 0;
         }
     }
 
@@ -408,8 +402,6 @@ fsm_state_t fsm_do_wait_ts_precharge(fsm_state_data_t *data) {
     fsm_state_t next_state = FSM_NO_CHANGE;
 
     /*** USER CODE BEGIN DO_WAIT_TS_PRECHARGE ***/
-
-    logger_api_log(LOGGER_LEVEL_INFO, "[FSM WPRE] Entering state wait_ts_precharge");
 
     if (data == NULL) {
         logger_api_log(LOGGER_LEVEL_ERROR, "[FSM WPRE] FSM data is NULL");
@@ -471,8 +463,6 @@ fsm_state_t fsm_do_start_ts_discharge(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_START_TS_DISCHARGE ***/
 
-    logger_api_log(LOGGER_LEVEL_INFO, "[FSM SDIS] Entering state start_ts_discharge");
-
     enum TsacStatus tsac_status = tsac_api_get_status();
     if (tsac_status == TSAC_STATUS_ON || tsac_status == TSAC_STATUS_PRECHARGING) {
         logger_api_log(LOGGER_LEVEL_INFO, "[FSM SDIS] TSAC is ON or PRECHARGING, asking TSAC to power off");
@@ -516,27 +506,29 @@ fsm_state_t fsm_do_wait_driver(fsm_state_data_t *data) {
         return FSM_STATE_FATAL_ERROR;
     }
 
-    logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Entering state wait_driver");
-
     if (tsac_api_get_status() != TSAC_STATUS_ON) {
         logger_api_log(LOGGER_LEVEL_WARN, "[FSM WDRV] TSAC is not ON, starting discharge");
         next_state = FSM_STATE_START_TS_DISCHARGE;
     } else {
-        enum VehicleRequestedState requested_state = vehicle_api_get_requested_state();
+        // enum VehicleRequestedState requested_state = vehicle_api_get_requested_state();
         if (fsm_data->is_button_pressed()) {
             if (ts_button_timer == 0) {
                 ts_button_timer = fsm_data->get_tick();
             } else if (fsm_data->get_tick() - ts_button_timer >= TS_BUTTON_LONG_PRESS_MS) {
-                if (vehicle_api_is_driver_ready() || fsm_data->is_button_brake_pressed()) {
+                /*if (vehicle_api_is_driver_ready() || fsm_data->is_button_brake_pressed()) {
                     logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Vehicle requested state is DRIVE and driver is ready");
                     next_state = FSM_STATE_ENABLE_INV_DRIVE;
                 } else {
                     logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Vehicle requested state is DISCHARGE");
                     next_state = FSM_STATE_START_TS_DISCHARGE;
-                }
+                }*/
+                logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Vehicle requested state is DRIVE and driver is ready");
+                next_state = FSM_STATE_ENABLE_INV_DRIVE;
             }
 
-        } else if (requested_state == VEHICLE_REQUESTED_STATE_DRIVE) {
+        }
+        /*
+        else if (requested_state == VEHICLE_REQUESTED_STATE_DRIVE) {
             if (vehicle_api_is_driver_ready()) {
                 logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Vehicle requested state is DRIVE and driver is ready");
                 next_state = FSM_STATE_ENABLE_INV_DRIVE;
@@ -544,7 +536,9 @@ fsm_state_t fsm_do_wait_driver(fsm_state_data_t *data) {
         } else if (requested_state == VEHICLE_REQUESTED_STATE_IDLE) {
             logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDRV] Vehicle requested state is DISCHARGE");
             next_state = FSM_STATE_START_TS_DISCHARGE;
-        } else {
+        }
+        */
+        else {
             ts_button_timer = 0;
         }
     }
@@ -560,7 +554,6 @@ fsm_state_t fsm_do_wait_driver(fsm_state_data_t *data) {
         default:
             next_state = FSM_NO_CHANGE;
     }
-
     return next_state;
 }
 
@@ -571,16 +564,17 @@ fsm_state_t fsm_do_enable_inv_drive(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_ENABLE_INV_DRIVE ***/
 
-    logger_api_log(LOGGER_LEVEL_INFO, "[FSM EDRV] Entering state enable_inv_drive");
+    inverter_api_arm(EPHORUS_WHEEL_FRONT_RIGHT);
 
-    inverter_api_arm(EPHORUS_WHEEL_FRONT_LEFT);
+    const struct EphorusWheelTelemetry *wheel_tlm = inverter_api_wheel_telemetry(EPHORUS_WHEEL_FRONT_RIGHT);
 
-    const struct EphorusWheelTelemetry *wheel_tlm = inverter_api_wheel_telemetry(EPHORUS_WHEEL_FRONT_LEFT);
-
+    /*
     if (vehicle_api_get_requested_state() == VEHICLE_REQUESTED_STATE_IDLE) {
         logger_api_log(LOGGER_LEVEL_INFO, "[FSM EDRV] Vehicle requested state is IDLE");
         next_state = FSM_STATE_DISABLE_INV_DRIVE;
-    } else if (wheel_tlm->ready && wheel_tlm->state == EPHORUS_STATE_DRIVE) {
+    } else
+    */
+    if (wheel_tlm->ready && wheel_tlm->state == EPHORUS_STATE_DRIVE) {
         logger_api_log(LOGGER_LEVEL_INFO, "[FSM EDRV] Inverter is ready and in DRIVE state");
         buzzer_api_set_duration(2000);
         buzzer_api_play_async();
@@ -626,29 +620,38 @@ fsm_state_t fsm_do_drive(fsm_state_data_t *data) {
         return FSM_STATE_FATAL_ERROR;
     }
 
-    logger_api_log(LOGGER_LEVEL_INFO, "[FSM DRIV] Entering state drive");
+    const struct EphorusWheelTelemetry *wheel_tlm = inverter_api_wheel_telemetry(EPHORUS_WHEEL_FRONT_RIGHT);
 
-    const struct EphorusWheelTelemetry *wheel_tlm = inverter_api_wheel_telemetry(EPHORUS_WHEEL_FRONT_LEFT);
-
+    /*
     if (vehicle_api_get_requested_state() == VEHICLE_REQUESTED_STATE_IDLE) {
         logger_api_log(LOGGER_LEVEL_INFO, "[FSM DRIV] Vehicle requested state is IDLE");
         next_state = FSM_STATE_DISABLE_INV_DRIVE;
     } else {
-        if (!wheel_tlm->ready || wheel_tlm->state != EPHORUS_STATE_DRIVE) {
-            logger_api_log(LOGGER_LEVEL_WARN, "[FSM DRIV] Inverter is not ready or not in DRIVE state");
+    */
+        if (!wheel_tlm->ready) {
+            logger_api_log(LOGGER_LEVEL_WARN, "[FSM DRIV] Inverter not ready");
             // TODO: check how much it faults
             // next_state = FSM_STATE_RE_ENABLE_INV_DRIVE;
             next_state = FSM_STATE_DISABLE_INV_DRIVE;
-        } else if (tsac_api_get_status() != TSAC_STATUS_ON || pedals_api_communication_timeout()) {
-            logger_api_log(LOGGER_LEVEL_WARN, "[FSM DRIV] TSAC is not ON or pedals communication timeout");
-            inverter_api_disarm(EPHORUS_WHEEL_FRONT_LEFT);
+        } else if (wheel_tlm->state != EPHORUS_STATE_DRIVE) {
+            logger_api_log(LOGGER_LEVEL_WARN, "[FSM DRIV] Inverter left DRIVE state (state=%d)", wheel_tlm->state);
+            next_state = FSM_STATE_DISABLE_INV_DRIVE;
+        } else if (tsac_api_get_status() != TSAC_STATUS_ON) {
+            logger_api_log(LOGGER_LEVEL_WARN, "[FSM DRIV] TSAC not ON (status=%d)", tsac_api_get_status());
+            inverter_api_disarm(EPHORUS_WHEEL_FRONT_RIGHT);
+            next_state = FSM_STATE_DISABLE_INV_DRIVE;
+        } else if (pedals_api_communication_timeout()) {
+            logger_api_log(LOGGER_LEVEL_WARN, "[FSM DRIV] Pedals communication timeout");
+            inverter_api_disarm(EPHORUS_WHEEL_FRONT_RIGHT);
             next_state = FSM_STATE_DISABLE_INV_DRIVE;
         } else {
-            logger_api_log(LOGGER_LEVEL_INFO, "[FSM DRIV] Inverter is ready and in DRIVE state");
             float requested_torque = pedals_api_get_requested_throttle_torque();
-            inverter_api_set_torque(EPHORUS_WHEEL_FRONT_LEFT, requested_torque);
+            inverter_api_set_torque(EPHORUS_WHEEL_FRONT_RIGHT, requested_torque);
+            inverter_api_set_run(EPHORUS_WHEEL_FRONT_RIGHT, true);
         }
-    }
+    // }
+
+   
 
     /*** USER CODE END DO_DRIVE ***/
 
@@ -672,13 +675,11 @@ fsm_state_t fsm_do_disable_inv_drive(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_DISABLE_INV_DRIVE ***/
 
-    logger_api_log(LOGGER_LEVEL_INFO, "[FSM DDRV] Entering state disable_inv_drive");
-
-    const struct EphorusWheelTelemetry *wheel_tlm = inverter_api_wheel_telemetry(EPHORUS_WHEEL_FRONT_LEFT);
+    const struct EphorusWheelTelemetry *wheel_tlm = inverter_api_wheel_telemetry(EPHORUS_WHEEL_FRONT_RIGHT);
 
     if (wheel_tlm->state == EPHORUS_STATE_DRIVE) {
         logger_api_log(LOGGER_LEVEL_INFO, "[FSM DDRV] Disarming inverter");
-        inverter_api_disarm(EPHORUS_WHEEL_FRONT_LEFT);
+        inverter_api_disarm(EPHORUS_WHEEL_FRONT_RIGHT);
     } else {
         logger_api_log(LOGGER_LEVEL_INFO, "[FSM DDRV] Inverter is not in DRIVE state, starting discharge");
         next_state = FSM_STATE_START_TS_DISCHARGE;
@@ -706,8 +707,6 @@ fsm_state_t fsm_do_re_enable_inv_drive(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_RE_ENABLE_INV_DRIVE ***/
 
-    logger_api_log(LOGGER_LEVEL_INFO, "[FSM REDR] Entering state re_enable_inv_drive");
-
     /*** USER CODE END DO_RE_ENABLE_INV_DRIVE ***/
 
     switch (next_state) {
@@ -726,8 +725,6 @@ fsm_state_t fsm_do_wait_ts_discharge(fsm_state_data_t *data) {
     fsm_state_t next_state = FSM_NO_CHANGE;
 
     /*** USER CODE BEGIN DO_WAIT_TS_DISCHARGE ***/
-
-    logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDIS] Entering state wait_ts_discharge");
 
     if (!vehicle_api_is_higher_than_60v()) {
         logger_api_log(LOGGER_LEVEL_INFO, "[FSM WDIS] TSAC lower than 60V, going to idle");
@@ -775,6 +772,9 @@ fsm_state_t fsm_run_state(fsm_state_t cur_state, fsm_state_data_t *data) {
         fsm_fired_event = NULL;
     if (new_state == FSM_NO_CHANGE)
         new_state = cur_state;
+    if (new_state != cur_state) {
+        logger_api_log(LOGGER_LEVEL_INFO, "[FSM] %s -> %s", fsm_state_names[cur_state], fsm_state_names[new_state]);
+    }
     return new_state;
 };
 

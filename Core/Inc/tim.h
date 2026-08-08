@@ -58,8 +58,6 @@ void MX_TIM8_Init(void);
 void MX_TIM10_Init(void);
 void MX_TIM13_Init(void);
 
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-
 /* USER CODE BEGIN Prototypes */
 
 enum BuzzerReturnCode tim_buzzer_on(uint32_t frequency, float amplitude);

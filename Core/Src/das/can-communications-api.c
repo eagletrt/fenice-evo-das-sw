@@ -71,17 +71,6 @@ EAGLETRT_STATIC enum PalReturnCode prv_pal_send_primary(const struct PalMessage 
 }
 
 /*!
- * \brief PAL send shim for the inverter network.
- *
- * \param[in] message PAL message whose payload is a raw CanCommunicationFrame.
- *
- * \return Whatever prv_pal_send_dispatch returns.
- */
-EAGLETRT_STATIC enum PalReturnCode prv_pal_send_inverter(const struct PalMessage *message) {
-    return prv_pal_send_dispatch(CAN_COMMUNICATION_NETWORK_INVERTER, message);
-}
-
-/*!
  * \brief Initialise one network slot in the module's file-static handler.
  *
  * \param[in] network  Network ID to initialise.
@@ -122,7 +111,6 @@ enum CanCommunicationReturnCode can_communications_api_init(const struct CanComm
 
     const pal_send_callback pal_send_callbacks[CAN_COMMUNICATION_NETWORK_COUNT] = {
         [CAN_COMMUNICATION_NETWORK_PRIMARY] = prv_pal_send_primary,
-        [CAN_COMMUNICATION_NETWORK_INVERTER] = prv_pal_send_inverter,
     };
 
     for (enum CanCommunicationNetwork network = 0; network < CAN_COMMUNICATION_NETWORK_COUNT; ++network) {

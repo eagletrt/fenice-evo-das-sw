@@ -22,10 +22,6 @@
 
 /* USER CODE BEGIN 0 */
 
-#include "buzzer.h"
-#include "eagletrt.h"
-#include "gpio.h"
-
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim1;
@@ -206,8 +202,6 @@ void MX_TIM8_Init(void) {
 
     TIM_ClockConfigTypeDef sClockSourceConfig = { 0 };
     TIM_MasterConfigTypeDef sMasterConfig = { 0 };
-    TIM_OC_InitTypeDef sConfigOC = { 0 };
-    TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = { 0 };
 
     /* USER CODE BEGIN TIM8_Init 1 */
 
@@ -226,37 +220,14 @@ void MX_TIM8_Init(void) {
     if (HAL_TIM_ConfigClockSource(&htim8, &sClockSourceConfig) != HAL_OK) {
         Error_Handler();
     }
-    if (HAL_TIM_PWM_Init(&htim8) != HAL_OK) {
-        Error_Handler();
-    }
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
     if (HAL_TIMEx_MasterConfigSynchronization(&htim8, &sMasterConfig) != HAL_OK) {
         Error_Handler();
     }
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = 0;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-    sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-    if (HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, TIM_CHANNEL_4) != HAL_OK) {
-        Error_Handler();
-    }
-    sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
-    sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
-    sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
-    sBreakDeadTimeConfig.DeadTime = 0;
-    sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
-    sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
-    sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-    if (HAL_TIMEx_ConfigBreakDeadTime(&htim8, &sBreakDeadTimeConfig) != HAL_OK) {
-        Error_Handler();
-    }
     /* USER CODE BEGIN TIM8_Init 2 */
 
     /* USER CODE END TIM8_Init 2 */
-    HAL_TIM_MspPostInit(&htim8);
 }
 /* TIM10 init function */
 void MX_TIM10_Init(void) {
@@ -426,30 +397,6 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *tim_baseHandle) {
         /* USER CODE END TIM13_MspInit 1 */
     }
 }
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *timHandle) {
-
-    GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-    if (timHandle->Instance == TIM8) {
-        /* USER CODE BEGIN TIM8_MspPostInit 0 */
-
-        /* USER CODE END TIM8_MspPostInit 0 */
-
-        __HAL_RCC_GPIOC_CLK_ENABLE();
-        /**TIM8 GPIO Configuration
-    PC9     ------> TIM8_CH4
-    */
-        GPIO_InitStruct.Pin = AUX_BUZZER_Pin;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF3_TIM8;
-        HAL_GPIO_Init(AUX_BUZZER_GPIO_Port, &GPIO_InitStruct);
-
-        /* USER CODE BEGIN TIM8_MspPostInit 1 */
-
-        /* USER CODE END TIM8_MspPostInit 1 */
-    }
-}
 
 void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *tim_baseHandle) {
 
@@ -569,64 +516,5 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *tim_baseHandle) {
 }
 
 /* USER CODE BEGIN 1 */
-
-EAGLETRT_STATIC uint32_t tim_get_clock(void) {
-    RCC_ClkInitTypeDef clk = { 0 };
-    uint32_t latency;
-    HAL_RCC_GetClockConfig(&clk, &latency);
-
-    uint32_t pclk2 = HAL_RCC_GetPCLK2Freq();
-
-    if (clk.APB2CLKDivider != RCC_HCLK_DIV1) {
-        return pclk2 * 2;
-    } else {
-        return pclk2;
-    }
-}
-
-enum BuzzerReturnCode tim_buzzer_on(uint32_t frequency, float amplitude) {
-    if (frequency == 0 || amplitude < 0.0f || amplitude > 1.0f)
-        return BUZZER_RC_ERROR;
-
-    uint32_t timer_clk = tim_get_clock();
-    uint32_t psc = htim8.Instance->PSC;
-    uint32_t arr = (timer_clk / (frequency * (psc + 1))) - 1;
-
-    __HAL_TIM_SET_AUTORELOAD(&htim8, arr);
-
-    uint32_t pulse = (uint32_t)((float)(arr + 1) * amplitude);
-    if (pulse > arr)
-        pulse = arr;
-    __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_4, pulse);
-
-    htim8.Instance->EGR = TIM_EGR_UG;
-
-    if (htim8.State != HAL_TIM_STATE_BUSY) {
-        if (HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_4) != HAL_OK) {
-            HAL_GPIO_WritePin(RTD_BUZZER_GPIO_Port, RTD_BUZZER_Pin, GPIO_PIN_SET);
-            return BUZZER_RC_ERROR;
-        }
-    }
-
-    return BUZZER_RC_OK;
-}
-
-enum BuzzerReturnCode tim_buzzer_off(void) {
-    if (HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_4) != HAL_OK) {
-        HAL_GPIO_WritePin(RTD_BUZZER_GPIO_Port, RTD_BUZZER_Pin, GPIO_PIN_RESET);
-        return BUZZER_RC_ERROR;
-    }
-    return BUZZER_RC_OK;
-}
-
-enum BuzzerReturnCode tim_buzzer_play_sync(uint32_t frequency, float amplitude, uint32_t duration_ms) {
-    if (tim_buzzer_on(frequency, amplitude) != BUZZER_RC_OK) {
-        return BUZZER_RC_ERROR;
-    }
-
-    HAL_Delay(duration_ms);
-
-    return tim_buzzer_off();
-}
 
 /* USER CODE END 1 */

@@ -19,7 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "can.h"
-#include "stm32f4xx_hal.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -28,12 +28,8 @@
 /* USER CODE BEGIN Includes */
 
 #include "fsm.h"
-#include "buzzer-api.h"
-#include "inverter-api.h"
 #include "can-communications-router-api.h"
-#include "can-communications-api.h"
-#include "vehicle-api.h"
-#include "logger-api.h"
+#include "can-primary.h"
 
 /* USER CODE END Includes */
 
@@ -100,13 +96,13 @@ int main(void) {
     MX_USART2_UART_Init();
     MX_TIM8_Init();
     MX_CAN1_Init();
-    MX_CAN2_Init();
     MX_TIM13_Init();
     MX_TIM10_Init();
     MX_TIM1_Init();
     MX_TIM6_Init();
     MX_TIM7_Init();
     MX_TIM4_Init();
+    MX_SPI2_Init();
     /* USER CODE BEGIN 2 */
 
     fsm_state_t state = FSM_STATE_INIT;
@@ -119,38 +115,22 @@ int main(void) {
                 .cs_enter = __disable_irq,
                 .cs_exit = __enable_irq,
             },
-            [CAN_COMMUNICATION_NETWORK_INVERTER] = {
-                .on_receive = can_communications_router_api_receive_inverter,
-                .send = can_send_inverter,
-                .cs_enter = __disable_irq,
-                .cs_exit = __enable_irq,
-            } },
+        },
         .logger_config = {
             .send = usart_logger_send,
             .cs_enter = __disable_irq,
             .cs_exit = __enable_irq,
         },
-        .tick_buzzer = HAL_GetTick,
-        .on_buzzer = tim_buzzer_on,
-        .off_buzzer = tim_buzzer_off,
-        .play_sync_buzzer = tim_buzzer_play_sync,
-        .set_brake_light = gpio_set_brake_light,
-        .pedals_get_tick = HAL_GetTick,
     };
 
     state = fsm_run_state(state, &init_data);
 
     HAL_CAN_Start(&hcan1);
-    HAL_CAN_Start(&hcan2);
 
     HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
     HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO1_MSG_PENDING);
-    HAL_CAN_ActivateNotification(&hcan2, CAN_IT_RX_FIFO0_MSG_PENDING);
-    HAL_CAN_ActivateNotification(&hcan2, CAN_IT_RX_FIFO1_MSG_PENDING);
 
     struct FsmData fsm_data = {
-        .shutdown_closed = gpio_shutdown_closed,
-        .set_shutdown = gpio_set_shutdown,
         .get_tick = HAL_GetTick,
     };
 
@@ -159,33 +139,14 @@ int main(void) {
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
+        EAGLETRT_STATIC uint32_t last_tick = 0;
 
         state = fsm_run_state(state, &fsm_data);
 
-        switch (inverter_api_step(HAL_GetTick())) {
-            case INVERTER_RC_OK:
-                break;
-            case INVERTER_RC_TX_ERROR:
-                logger_api_log(LOGGER_LEVEL_ERROR, "Inverter TX error");
-                break;
-            default:
-                logger_api_log(LOGGER_LEVEL_ERROR, "Inverter error");
-                break;
+        if (HAL_GetTick() - last_tick > can_primary_cycle_time_steeringencoder) {
+            last_tick = HAL_GetTick();
+            spi_start_read_encoder_it();
         }
-
-        buzzer_api_routine();
-        if (vehicle_api_periodically_send_state(state, HAL_GetTick()) != VEHICLE_RC_OK) {
-            logger_api_log(LOGGER_LEVEL_ERROR, "Failed to send vehicle state");
-        }
-
-        if (vehicle_api_periodically_send_identity(HAL_GetTick()) != VEHICLE_RC_OK) {
-            logger_api_log(LOGGER_LEVEL_ERROR, "Failed to send vehicle identity");
-        }
-
-        can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_PRIMARY);
-        can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_INVERTER);
-        can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_PRIMARY);
-        can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_INVERTER);
 
         /* USER CODE END WHILE */
 

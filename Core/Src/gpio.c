@@ -41,57 +41,12 @@
 */
 void MX_GPIO_Init(void) {
 
-    GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOH_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-
-    /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, GPIO_PIN_RESET);
-
-    /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(BRAKE_LIGHT_GPIO_Port, BRAKE_LIGHT_Pin, GPIO_PIN_RESET);
-
-    /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(RTD_BUZZER_GPIO_Port, RTD_BUZZER_Pin, GPIO_PIN_RESET);
-
-    /*Configure GPIO pin : SD_CLOSE_Pin */
-    GPIO_InitStruct.Pin = SD_CLOSE_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(SD_CLOSE_GPIO_Port, &GPIO_InitStruct);
-
-    /*Configure GPIO pin : BRAKE_LIGHT_Pin */
-    GPIO_InitStruct.Pin = BRAKE_LIGHT_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(BRAKE_LIGHT_GPIO_Port, &GPIO_InitStruct);
-
-    /*Configure GPIO pin : RTD_BUZZER_Pin */
-    GPIO_InitStruct.Pin = RTD_BUZZER_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(RTD_BUZZER_GPIO_Port, &GPIO_InitStruct);
 }
 
 /* USER CODE BEGIN 2 */
-
-void gpio_set_brake_light(bool on) {
-    HAL_GPIO_WritePin(BRAKE_LIGHT_GPIO_Port, BRAKE_LIGHT_Pin, on ? GPIO_PIN_SET : GPIO_PIN_RESET);
-}
-
-bool gpio_shutdown_closed(void) {
-    return HAL_GPIO_ReadPin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin) == GPIO_PIN_SET;
-}
-
-void gpio_set_shutdown(bool closed) {
-    HAL_GPIO_WritePin(SD_CLOSE_GPIO_Port, SD_CLOSE_Pin, closed ? GPIO_PIN_SET : GPIO_PIN_RESET);
-}
 
 /* USER CODE END 2 */

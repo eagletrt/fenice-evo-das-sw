@@ -70,7 +70,6 @@ enum CanCommunicationReturnCode {
  */
 enum CanCommunicationNetwork {
     CAN_COMMUNICATION_NETWORK_PRIMARY,  /*!< Primary CAN bus (FDCAN1) */
-    CAN_COMMUNICATION_NETWORK_INVERTER, /*!< Secondary CAN bus (FDCAN2) */
     CAN_COMMUNICATION_NETWORK_COUNT,
 };
 

@@ -52,3 +52,4 @@ void gpio_set_shutdown(bool closed);
 }
 #endif
 #endif /*__ GPIO_H__ */
+

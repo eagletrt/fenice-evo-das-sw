@@ -54,3 +54,4 @@ enum CanCommunicationReturnCode can_send_inverter(const struct CanCommunicationF
 #endif
 
 #endif /* __CAN_H__ */
+

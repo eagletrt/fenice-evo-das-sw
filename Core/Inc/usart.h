@@ -53,3 +53,4 @@ enum PalReturnCode usart_logger_send(const struct PalMessage *message);
 #endif
 
 #endif /* __USART_H__ */
+

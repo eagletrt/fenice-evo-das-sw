@@ -30,6 +30,7 @@
 #include "fsm.h"
 #include "can-communications-router-api.h"
 #include "can-primary.h"
+#include "logger-api.h"
 
 /* USER CODE END Includes */
 
@@ -123,9 +124,9 @@ int main(void) {
         },
     };
 
-    state = fsm_run_state(state, &init_data);
-
     HAL_CAN_Start(&hcan1);
+
+    state = fsm_run_state(state, &init_data);
 
     HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
     HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO1_MSG_PENDING);
@@ -140,12 +141,20 @@ int main(void) {
     /* USER CODE BEGIN WHILE */
     while (1) {
         EAGLETRT_STATIC uint32_t last_tick = 0;
+        EAGLETRT_STATIC uint32_t last_print = 0;
 
         state = fsm_run_state(state, &fsm_data);
 
         if (HAL_GetTick() - last_tick > can_primary_cycle_time_steeringencoder) {
             last_tick = HAL_GetTick();
-            spi_start_read_encoder_it();
+            if (spi_start_read_encoder_it() != ENCODER_RC_OK) {
+                logger_api_log(LOGGER_LEVEL_ERROR, "Failed to start reading encoder");
+            }
+        }
+
+        if (HAL_GetTick() - last_print > 1000) {
+            last_print = HAL_GetTick();
+            logger_api_log(LOGGER_LEVEL_INFO, "encoder: %d", encoder_api_get_angle(ENCODER_NAME_STEERING));
         }
 
         /* USER CODE END WHILE */

@@ -17,6 +17,7 @@ digraph "das_fsm" {
     # { rank=sink;drive; }
 
     init -> idle [label="init_done"]
+    idle -> idle [label="no_error"]
     idle -> fatal_error [label="fatal_error"]
     init -> fatal_error [label="fatal_error"]
 }

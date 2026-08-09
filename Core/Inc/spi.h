@@ -53,3 +53,4 @@ enum EncoderReturnCode spi_start_read_encoder_it();
 #endif
 
 #endif /* __SPI_H__ */
+

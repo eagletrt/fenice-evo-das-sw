@@ -23,6 +23,7 @@
 /* USER CODE BEGIN 0 */
 
 #include "eagletrt.h"
+#include "logger-api.h"
 
 EAGLETRT_STATIC uint8_t encoder_raw_buf[2] = { 0 };
 
@@ -47,7 +48,7 @@ void MX_SPI2_Init(void) {
     hspi2.Init.CLKPolarity = SPI_POLARITY_HIGH;
     hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
     hspi2.Init.NSS = SPI_NSS_SOFT;
-    hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+    hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
     hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
     hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
     hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -130,9 +131,21 @@ enum EncoderReturnCode spi_start_read_encoder_it() {
      * \note Clock rate must be <= 4 MHz (from RM44SC0012B10F2F10 datasheet)
      *       Also, the interval between two consecutive conversions must be > 20 μs
      */
-    return HAL_SPI_Receive_IT(&hspi2, encoder_raw_buf, 2) == HAL_OK ? ENCODER_RC_OK : ENCODER_RC_ERROR;
+    // return HAL_SPI_Receive_IT(&hspi2, encoder_raw_buf, 2) == HAL_OK ? ENCODER_RC_OK : ENCODER_RC_ERROR;
+    HAL_SPI_Receive(&hspi2, encoder_raw_buf, 2, 30);
+
+    uint16_t angle = raw_to_degrees(encoder_raw_buf[0], encoder_raw_buf[1]);
+
+    logger_api_log(LOGGER_LEVEL_DEBUG, "Encoder raw: %02X %02X, angle: %d", encoder_raw_buf[0], encoder_raw_buf[1], angle);
+
+    if (encoder_api_set_angle(ENCODER_NAME_STEERING, angle) != ENCODER_RC_OK) {
+        // TODO: check error
+        return ENCODER_RC_ERROR;
+    }
+    return ENCODER_RC_OK;
 }
 
+/*
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
     if (hspi == &hspi2) {
         uint16_t angle = raw_to_degrees(encoder_raw_buf[0], encoder_raw_buf[1]);
@@ -142,5 +155,6 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
         }
     }
 }
+*/
 
 /* USER CODE END 1 */
